@@ -3,17 +3,21 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import time
-from anki.utils import intTime, hexifyID, timestampID, joinFields
-from anki.consts import *
+
+from anki.consts import MODEL_STD
+from anki.utils import intTime, joinFields, timestampID
 
 # temporary
 _warned = False
+
+
 def warn():
     global _warned
     if _warned:
         return
     import sys
-    sys.stderr.write("Ignore the above, please download the fix assertion addon.")
+    sys.stderr.write(
+        "Ignore the above, please download the fix assertion addon.")
     _warned = True
 
 # Cards
@@ -26,6 +30,7 @@ def warn():
 # - new queue: note id or random int
 # - rev queue: integer day
 # - lrn queue: integer timestamp
+
 
 class Card(object):
 
@@ -81,7 +86,8 @@ class Card(object):
         self.mod = intTime()
         self.usn = self.col.usn()
         # bug check
-        if self.queue == 2 and self.odue and not self.col.decks.isDyn(self.did):
+        if self.queue == 2 and self.odue \
+                and not self.col.decks.isDyn(self.did):
             warn()
         assert self.due < 4294967296
         self.col.db.execute(
@@ -111,7 +117,8 @@ insert or replace into cards values
         self.mod = intTime()
         self.usn = self.col.usn()
         # bug checks
-        if self.queue == 2 and self.odue and not self.col.decks.isDyn(self.did):
+        if self.queue == 2 and self.odue \
+                and not self.col.decks.isDyn(self.did):
             warn()
         assert self.due < 4294967296
         self.col.db.execute(
@@ -133,7 +140,9 @@ lapses=?, left=?, odue=?, odid=?, did=? where id = ?""",
 
     def _getQA(self, reload=False, browser=False):
         if not self._qa or reload:
-            f = self.note(reload); m = self.model(); t = self.template()
+            f = self.note(reload)
+            m = self.model()
+            t = self.template()
             data = [self.id, f.id, m['id'], self.odid or self.did, self.ord,
                     f.stringTags(), f.joinedFields()]
             if browser:
@@ -164,7 +173,7 @@ lapses=?, left=?, odue=?, odid=?, did=? where id = ?""",
     def timeLimit(self):
         "Time limit for answering in milliseconds."
         conf = self.col.decks.confForDid(self.odid or self.did)
-        return conf['maxTaken']*1000
+        return conf['maxTaken'] * 1000
 
     def shouldShowTimer(self):
         conf = self.col.decks.confForDid(self.odid or self.did)
@@ -172,7 +181,7 @@ lapses=?, left=?, odue=?, odid=?, did=? where id = ?""",
 
     def timeTaken(self):
         "Time taken to answer card, in integer MS."
-        total = int((time.time() - self.timerStarted)*1000)
+        total = int((time.time() - self.timerStarted) * 1000)
         return min(total, self.timeLimit())
 
     def isEmpty(self):

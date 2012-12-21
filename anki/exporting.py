@@ -2,13 +2,16 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import itertools, time, re, os, HTMLParser, zipfile, shutil
-from operator import itemgetter
-from anki.cards import Card
-from anki.lang import _
-from anki.utils import stripHTML, ids2str, splitFields, json
-from anki.hooks import runHook
+import re
+import os
+import shutil
+import zipfile
+
 from anki import Collection
+from anki.hooks import runHook
+from anki.lang import _
+from anki.utils import ids2str, json, splitFields
+
 
 class Exporter(object):
     def __init__(self, col, did=None):
@@ -39,6 +42,7 @@ class Exporter(object):
 # Cards as TSV
 ######################################################################
 
+
 class TextCardExporter(Exporter):
 
     key = _("Cards in Plain Text")
@@ -51,6 +55,7 @@ class TextCardExporter(Exporter):
     def doExport(self, file):
         ids = sorted(self.cardIds())
         strids = ids2str(ids)
+
         def esc(s):
             # strip off the repeated question in answer if exists
             s = re.sub("(?si)^.*<hr id=answer>\n*", "", s)
@@ -64,6 +69,7 @@ class TextCardExporter(Exporter):
 
 # Notes as TSV
 ######################################################################
+
 
 class TextNoteExporter(Exporter):
 
@@ -101,6 +107,7 @@ where cards.id in %s)""" % ids2str(cardIds)):
 ######################################################################
 # media files are stored in self.mediaFiles, but not exported.
 
+
 class AnkiExporter(Exporter):
 
     key = _("Anki 2.0 Deck")
@@ -128,7 +135,7 @@ class AnkiExporter(Exporter):
         nids = {}
         data = []
         for row in self.src.db.execute(
-            "select * from cards where id in "+ids2str(cids)):
+                "select * from cards where id in " + ids2str(cids)):
             nids[row[1]] = True
             data.append(row)
         self.dst.db.executemany(
@@ -136,18 +143,18 @@ class AnkiExporter(Exporter):
             data)
         # notes
         strnids = ids2str(nids.keys())
-        notedata = self.src.db.all("select * from notes where id in "+
-                               strnids)
+        notedata = self.src.db.all("select * from notes where id in " +
+                                   strnids)
         self.dst.db.executemany(
             "insert into notes values (?,?,?,?,?,?,?,?,?,?,?)",
             notedata)
         # models used by the notes
-        mids = self.dst.db.list("select distinct mid from notes where id in "+
+        mids = self.dst.db.list("select distinct mid from notes where id in " +
                                 strnids)
         # card history and revlog
         if self.includeSched:
             data = self.src.db.all(
-                "select * from revlog where cid in "+ids2str(cids))
+                "select * from revlog where cid in " + ids2str(cids))
             self.dst.db.executemany(
                 "insert into revlog values (?,?,?,?,?,?,?,?,?)",
                 data)
@@ -210,6 +217,7 @@ class AnkiExporter(Exporter):
 
 # Packaged Anki decks
 ######################################################################
+
 
 class AnkiPackageExporter(AnkiExporter):
 
@@ -278,6 +286,7 @@ class AnkiPackageExporter(AnkiExporter):
 
 # Export modules
 ##########################################################################
+
 
 def exporters():
     def id(obj):

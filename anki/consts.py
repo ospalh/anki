@@ -43,20 +43,22 @@ MODEL_CLOZE = 1
 
 # deck schema & syncing vars
 SCHEMA_VERSION = 11
-SYNC_ZIP_SIZE = int(2.5*1024*1024)
+SYNC_ZIP_SIZE = int(2.5 * 1024 * 1024)
 SYNC_URL = os.environ.get("SYNC_URL") or "https://ankiweb.net/sync/"
 SYNC_VER = 5
 
-HELP_SITE="http://ankisrs.net/docs/dev/manual.html"
+HELP_SITE = "http://ankisrs.net/docs/dev/manual.html"
 
 # Labels
 ##########################################################################
+
 
 def newCardOrderLabels():
     return {
         0: _("Show new cards in random order"),
         1: _("Show new cards in order added")
         }
+
 
 def newCardSchedulingLabels():
     return {
@@ -65,12 +67,14 @@ def newCardSchedulingLabels():
         2: _("Show new cards before reviews"),
         }
 
+
 def alignmentLabels():
     return {
         0: _("Center"),
         1: _("Left"),
         2: _("Right"),
         }
+
 
 def dynOrderLabels():
     return {

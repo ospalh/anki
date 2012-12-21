@@ -3,20 +3,21 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import copy
-from anki.utils import intTime, ids2str, json
-from anki.hooks import runHook
-from anki.consts import *
-from anki.lang import _
+
+from anki.consts import NEW_CARDS_DUE, REM_DECK
 from anki.errors import DeckRenameError
+from anki.hooks import runHook
+from anki.lang import _
+from anki.utils import intTime, ids2str, json
 
 # fixmes:
 # - make sure users can't set grad interval < 1
 
 defaultDeck = {
-    'newToday': [0, 0], # currentDay, count
+    'newToday': [0, 0],  # currentDay, count
     'revToday': [0, 0],
     'lrnToday': [0, 0],
-    'timeToday': [0, 0], # time in ms
+    'timeToday': [0, 0],  # time in ms
     'conf': 1,
     'usn': 0,
     'desc': "",
@@ -38,17 +39,17 @@ defaultDynamicDeck = {
     'usn': 0,
     'delays': None,
     'separate': True,
-     # list of (search, limit, order); we only use first element for now
+    # list of (search, limit, order); we only use first element for now
     'terms': [["", 100, 0]],
     'resched': True,
-    'return': True, # currently unused
+    'return': True,  # currently unused
 }
 
 defaultConf = {
     'name': _("Default"),
     'new': {
         'delays': [1, 10],
-        'ints': [1, 4, 7], # 7 is not currently used
+        'ints': [1, 4, 7],  # 7 is not currently used
         'initialFactor': 2500,
         'separate': True,
         'order': NEW_CARDS_DUE,
@@ -78,6 +79,7 @@ defaultConf = {
     'usn': 0,
 }
 
+
 class DeckManager(object):
 
     # Registry save/load
@@ -101,8 +103,8 @@ class DeckManager(object):
     def flush(self):
         if self.changed:
             self.col.db.execute("update col set decks=?, dconf=?",
-                                 json.dumps(self.decks),
-                                 json.dumps(self.dconf))
+                                json.dumps(self.decks),
+                                json.dumps(self.dconf))
             self.changed = False
 
     # Deck save/load
@@ -226,7 +228,7 @@ class DeckManager(object):
         # rename children
         for grp in self.all():
             if grp['name'].startswith(g['name'] + "::"):
-                grp['name'] = grp['name'].replace(g['name']+ "::",
+                grp['name'] = grp['name'].replace(g['name'] + "::",
                                                   newName + "::", 1)
                 self.save(grp)
         # adjust name
@@ -242,29 +244,33 @@ class DeckManager(object):
         draggedDeckName = draggedDeck['name']
         ontoDeckName = self.get(ontoDeckDid)['name']
 
-        if ontoDeckDid == None or ontoDeckDid == '':
+        if ontoDeckDid is None or ontoDeckDid == '':
             if len(self._path(draggedDeckName)) > 1:
                 self.rename(draggedDeck, self._basename(draggedDeckName))
         elif self._canDragAndDrop(draggedDeckName, ontoDeckName):
             draggedDeck = self.get(draggedDeckDid)
             draggedDeckName = draggedDeck['name']
             ontoDeckName = self.get(ontoDeckDid)['name']
-            self.rename(draggedDeck, ontoDeckName + "::" + self._basename(draggedDeckName))
+            self.rename(draggedDeck, ontoDeckName + "::" + self._basename(
+                    draggedDeckName))
 
     def _canDragAndDrop(self, draggedDeckName, ontoDeckName):
-        return draggedDeckName <> ontoDeckName \
+        return draggedDeckName != ontoDeckName \
                 and not self._isParent(ontoDeckName, draggedDeckName) \
                 and not self._isAncestor(draggedDeckName, ontoDeckName)
 
     def _isParent(self, parentDeckName, childDeckName):
-        return self._path(childDeckName) == self._path(parentDeckName) + [ self._basename(childDeckName) ]
+        return self._path(childDeckName) == self._path(parentDeckName) + [
+            self._basename(childDeckName)]
 
     def _isAncestor(self, ancestorDeckName, descendantDeckName):
         ancestorPath = self._path(ancestorDeckName)
-        return ancestorPath == self._path(descendantDeckName)[0:len(ancestorPath)]
+        return ancestorPath == self._path(descendantDeckName)[
+            0:len(ancestorPath)]
 
     def _path(self, name):
         return name.split("::")
+
     def _basename(self, name):
         return self._path(name)[-1]
 
@@ -375,7 +381,7 @@ class DeckManager(object):
 
     def setDeck(self, cids, did):
         self.col.db.execute(
-            "update cards set did=?,usn=?,mod=? where id in "+
+            "update cards set did=?,usn=?,mod=? where id in " +
             ids2str(cids), did, self.col.usn(), intTime())
 
     def maybeAddToActive(self):
@@ -389,13 +395,13 @@ class DeckManager(object):
         dids = [did]
         for name, id in self.children(did):
             dids.append(id)
-        return self.col.db.list("select id from cards where did in "+
+        return self.col.db.list("select id from cards where did in " +
                                 ids2str(dids))
 
     def recoverOrphans(self):
         dids = self.decks.keys()
         mod = self.col.db.mod
-        self.col.db.execute("update cards set did = 1 where did not in "+
+        self.col.db.execute("update cards set did = 1 where did not in " +
                             ids2str(dids))
         self.col.db.mod = mod
 
