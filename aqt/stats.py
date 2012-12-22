@@ -4,11 +4,7 @@
 
 from aqt.qt import *
 import os, time
-from aqt.webview import AnkiWebView
-from aqt.utils import saveGeom, restoreGeom, maybeHideClose, openFolder, \
-    showInfo
-from anki.utils import namedtmp
-from anki.hooks import addHook
+from aqt.utils import saveGeom, restoreGeom, maybeHideClose, showInfo, addCloseShortcut
 import aqt
 
 # Deck Stats
@@ -42,6 +38,7 @@ class DeckStats(QDialog):
         c(f.life, s, lambda: self.changePeriod(2))
         c(f.web, SIGNAL("loadFinished(bool)"), self.loadFin)
         maybeHideClose(self.form.buttonBox)
+        addCloseShortcut(self)
         self.refresh()
         self.exec_()
 

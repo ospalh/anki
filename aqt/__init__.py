@@ -8,7 +8,7 @@ import anki.lang
 from anki.consts import HELP_SITE
 from anki.lang import langDir
 
-appVersion="2.0.3"
+appVersion="2.0.3+beta1"
 appWebsite="http://ankisrs.net/"
 appChanges="http://ankisrs.net/docs/changes.html"
 appDonate="http://ankisrs.net/support/"
@@ -172,7 +172,7 @@ def parseArgs(argv):
 
 def run():
     global mw
-    from anki.utils import isWin, isMac
+    from anki.utils import  isMac
 
     # on osx we'll need to add the qt plugins to the search path
     if isMac and getattr(sys, 'frozen', None):

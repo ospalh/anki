@@ -1,10 +1,13 @@
 # coding: utf-8
 
 import time, copy
-from tests.shared import assertException, getEmptyDeck
-from anki.utils import stripHTML, intTime
+from tests.shared import  getEmptyDeck
+from anki.utils import  intTime
 from anki.hooks import addHook
-from anki.consts import *
+
+def checkRevIvl(d, targetIvl):
+    min, max = d.sched._fuzzIvlRange(targetIvl)
+    return min <= targetIvl <= max
 
 def test_basics():
     d = getEmptyDeck()
@@ -149,7 +152,7 @@ def test_learn():
     d.sched.answerCard(c, 3)
     assert c.type == 2
     assert c.queue == 2
-    assert c.ivl == 4
+    assert checkRevIvl(d, 4)
     # revlog should have been updated each time
     assert d.db.scalar("select count() from revlog where type = 0") == 5
     # now failed card handling
@@ -303,8 +306,8 @@ def test_reviews():
     d.sched.answerCard(c, 2)
     assert c.queue == 2
     # the new interval should be (100 + 8/4) * 1.2 = 122
-    assert c.ivl == 122
-    assert c.due == d.sched.today + 122
+    assert checkRevIvl(d, 122)
+    assert c.due == d.sched.today + c.ivl
     # factor should have been decremented
     assert c.factor == 2350
     # check counters
@@ -316,8 +319,8 @@ def test_reviews():
     c.flush()
     d.sched.answerCard(c, 3)
     # the new interval should be (100 + 8/2) * 2.5 = 260
-    assert c.ivl == 260
-    assert c.due == d.sched.today + 260
+    assert checkRevIvl(d, 260)
+    assert c.due == d.sched.today + c.ivl
     # factor should have been left alone
     assert c.factor == 2500
     # ease 4
@@ -326,8 +329,8 @@ def test_reviews():
     c.flush()
     d.sched.answerCard(c, 4)
     # the new interval should be (100 + 8) * 2.5 * 1.3 = 351
-    assert c.ivl == 351
-    assert c.due == d.sched.today + 351
+    assert checkRevIvl(d, 351)
+    assert c.due == d.sched.today + c.ivl
     # factor should have been increased
     assert c.factor == 2650
     # leech handling
@@ -768,6 +771,7 @@ def test_cram_resched():
 
 def test_adjIvl():
     d = getEmptyDeck()
+    d.sched._spreadRev = False
     # add two more templates and set second active
     m = d.models.current(); mm = d.models
     t = mm.newTemplate("Reverse")
@@ -1144,3 +1148,25 @@ def test_norelearn():
     d.sched.answerCard(c, 1)
     d.sched._cardConf(c)['lapse']['delays'] = []
     d.sched.answerCard(c, 1)
+
+def test_failmult():
+    d = getEmptyDeck()
+    f = d.newNote()
+    f['Front'] = u"one"; f['Back'] = u"two"
+    d.addNote(f)
+    c = f.cards()[0]
+    c.type = 2
+    c.queue = 2
+    c.ivl = 100
+    c.due = d.sched.today - c.ivl
+    c.factor = 2500
+    c.reps = 3
+    c.lapses = 1
+    c.startTimer()
+    c.flush()
+    d.sched._cardConf(c)['lapse']['mult'] = 0.5
+    c = d.sched.getCard()
+    d.sched.answerCard(c, 1)
+    assert c.ivl == 50
+    d.sched.answerCard(c, 1)
+    assert c.ivl == 25

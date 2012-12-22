@@ -2,23 +2,19 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import os, sys, re, stat, traceback, signal
-import shutil, time, zipfile
-from operator import itemgetter
+import os, sys, re, traceback, signal
+import  zipfile
 
 from aqt.qt import *
 QtConfig = pyqtconfig.Configuration()
 
 from anki import Collection
-from anki.utils import stripHTML, checksum, isWin, isMac, intTime, json
-from anki.hooks import runHook, addHook, remHook
-import anki.consts
+from anki.utils import  isWin, isMac, intTime
+from anki.hooks import runHook, addHook
 
 import aqt, aqt.progress, aqt.webview, aqt.toolbar, aqt.stats
-from aqt.utils import saveGeom, restoreGeom, showInfo, showWarning, \
-    saveState, restoreState, getOnlyText, askUser, GetTextDialog, \
-    askUserDialog, applyStyles, getText, showText, showCritical, getFile, \
-    tooltip, openHelp, openLink
+from aqt.utils import  restoreGeom, showInfo, showWarning,\
+    restoreState, getOnlyText, askUser, applyStyles, showText, tooltip, openHelp, openLink
 
 class AnkiQt(QMainWindow):
     def __init__(self, app, profileManager, args):
@@ -623,10 +619,13 @@ upload, overwriting any changes either here or on AnkiWeb. Proceed?""")):
     ##########################################################################
 
     def onUndo(self):
+        n = self.col.undoName()
         cid = self.col.undo()
         if cid and self.state == "review":
             card = self.col.getCard(cid)
             self.reviewer.cardQueue.append(card)
+        else:
+            tooltip(_("Reverted to state prior to '%s'.") % n.lower())
         self.reset()
         self.maybeEnableUndo()
 
@@ -691,6 +690,10 @@ and check the statistics for a home deck instead."""))
     def onPrefs(self):
         import aqt.preferences
         aqt.preferences.Preferences(self)
+
+    def onNoteTypes(self):
+        import aqt.models
+        aqt.models.Models(self, self, fromMain=True)
 
     def onAbout(self):
         import aqt.about
@@ -757,6 +760,7 @@ and check the statistics for a home deck instead."""))
         self.connect(m.actionStudyDeck, s, self.onStudyDeck)
         self.connect(m.actionCreateFiltered, s, self.onCram)
         self.connect(m.actionEmptyCards, s, self.onEmptyCards)
+        self.connect(m.actionNoteTypes, s, self.onNoteTypes)
 
     def updateTitleBar(self):
         self.setWindowTitle("Anki")

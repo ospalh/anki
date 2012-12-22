@@ -4,17 +4,23 @@
 
 import urllib, os, sys, httplib2, gzip
 from cStringIO import StringIO
-from datetime import date
 from anki.db import DB
-from anki.errors import *
-from anki.utils import ids2str, checksum, intTime, json, isWin, isMac
+from anki.utils import ids2str, intTime, json, isWin, isMac
 from anki.consts import *
-from anki.lang import _
 from hooks import runHook
 
 # syncing vars
 HTTP_TIMEOUT = 30
 HTTP_PROXY = None
+
+try:
+    # httplib2 >=0.7.7
+    _proxy_info_from_environment = httplib2.proxy_info_from_environment
+    _proxy_info_from_url = httplib2.proxy_info_from_url
+except AttributeError:
+    # httplib2 <0.7.7
+    _proxy_info_from_environment = httplib2.ProxyInfo.from_environment
+    _proxy_info_from_url = httplib2.ProxyInfo.from_url
 
 # Httplib2 connection object
 ######################################################################
@@ -34,7 +40,8 @@ def httpCon():
             assert 0
     return httplib2.Http(
         timeout=HTTP_TIMEOUT, ca_certs=certs,
-        proxy_info=HTTP_PROXY)
+        proxy_info=HTTP_PROXY,
+        disable_ssl_certificate_validation=not not HTTP_PROXY)
 
 # Proxy handling
 ######################################################################
@@ -42,7 +49,7 @@ def httpCon():
 def _setupProxy():
     global HTTP_PROXY
     # set in env?
-    p = httplib2.ProxyInfo.from_environment()
+    p = _proxy_info_from_environment()
     if not p:
         # platform-specific fetch
         url = None
@@ -59,7 +66,7 @@ def _setupProxy():
             elif 'http' in r:
                 url = r['http']
         if url:
-            p = httplib2.ProxyInfo.from_url(url, _proxyMethod(url))
+            p = _proxy_info_from_url(url, _proxyMethod(url))
     HTTP_PROXY = p
 
 def _proxyMethod(url):
@@ -72,8 +79,6 @@ _setupProxy()
 
 # Incremental syncing
 ##########################################################################
-
-from anki.consts import *
 
 class Syncer(object):
 

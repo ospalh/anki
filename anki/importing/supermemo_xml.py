@@ -15,6 +15,10 @@ from anki.lang import _
 from anki.lang import ngettext
 from anki.stdmodels import addBasicModel
 
+from xml.dom import minidom, Node
+from types import DictType, InstanceType
+from string import capwords, maketrans
+import re, unicodedata, time
 
 class SmartDict(dict):
     """

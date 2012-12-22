@@ -2,10 +2,10 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from aqt.qt import *
-import re, os, sys, urllib, time, subprocess
+import re, os, sys, urllib, subprocess
 import aqt
-from anki.sound import playFromText, stripSounds
-from anki.utils import call, isWin, isMac
+from anki.sound import  stripSounds
+from anki.utils import  isWin, isMac
 
 def openHelp(section):
     link = aqt.appHelpSite
@@ -357,6 +357,13 @@ def maybeHideClose(bbox):
         b = bbox.button(QDialogButtonBox.Close)
         if b:
             bbox.removeButton(b)
+
+def addCloseShortcut(widg):
+    if not isMac:
+        return
+    widg._closeShortcut = QShortcut(QKeySequence("Ctrl+W"), widg)
+    widg.connect(widg._closeShortcut, SIGNAL("activated()"),
+                 widg, SLOT("reject()"))
 
 # Tooltips
 ######################################################################

@@ -3,7 +3,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from aqt.qt import *
-import re, os, sys, urllib2, ctypes, traceback
+import re, os, urllib2, ctypes
 from anki.utils import stripHTML, isWin, isMac, namedtmp, json
 from anki.sound import play
 from anki.hooks import runHook, runFilter
@@ -275,6 +275,8 @@ def _filterHTML(html):
                 continue
             if k.strip() == "color" and not v.strip() == "rgb(0, 0, 0)":
                 preserve += "color:%s;" % v
+            if k.strip() in ("font-weight", "font-style"):
+                preserve += item + ";"
         if preserve:
             # preserve colour attribute, delete implicit class
             tag.attrs = ((u"style", preserve),)
@@ -1085,7 +1087,7 @@ class EditorWebView(AnkiWebView):
         except urllib2.URLError, e:
             showWarning(self.errtxt % e)
             return
-        path = namedtmp(os.path.basename(url))
+        path = namedtmp(os.path.basename(urllib2.unquote(url)))
         file = open(path, "wb")
         file.write(filecontents)
         file.close()

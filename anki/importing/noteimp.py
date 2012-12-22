@@ -6,9 +6,9 @@ import cgi
 
 from anki.importing.base import Importer
 from anki.lang import _
-from anki.lang import ngettext
 from anki.utils import fieldChecksum, guid64, timestampID, \
     joinFields, intTime, splitFields
+from anki.lang import ngettext
 
 # Stores a list of fields, tags and deck
 ######################################################################

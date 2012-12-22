@@ -4,15 +4,13 @@
 
 import sre_constants, cgi
 from aqt.qt import *
-import time, types, sys, re
-from operator import attrgetter, itemgetter
-import anki, anki.utils, aqt.forms
+import time, re
+from operator import  itemgetter
+import anki, aqt.forms
 from anki.utils import fmtTimeSpan, ids2str, stripHTMLMedia, isWin, intTime, isMac
 from aqt.utils import saveGeom, restoreGeom, saveSplitter, restoreSplitter, \
     saveHeader, restoreHeader, saveState, restoreState, applyStyles, getTag, \
     showInfo, askUser, tooltip, openHelp, showWarning, shortcut
-from anki.errors import *
-from anki.db import *
 from anki.hooks import runHook, addHook, remHook
 from aqt.webview import AnkiWebView
 from aqt.toolbar import Toolbar
@@ -66,8 +64,17 @@ class DataModel(QAbstractTableModel):
         if not index.isValid():
             return
         if role == Qt.FontRole:
-            return
-        if role == Qt.TextAlignmentRole:
+            if self.activeCols[index.column()] not in (
+                "question", "answer", "noteFld"):
+                return
+            f = QFont()
+            row = index.row()
+            c = self.getCard(index)
+            t = c.template()
+            f.setFamily(t.get("bfont", "Arial"))
+            f.setPixelSize(t.get("bsize", 12))
+            return f
+        elif role == Qt.TextAlignmentRole:
             align = Qt.AlignVCenter
             if self.activeCols[index.column()] not in ("question", "answer",
                "template", "deck", "noteFld", "note"):
@@ -975,9 +982,8 @@ where id in %s""" % ids2str(sf))
         self.col.db.execute("""
 update cards set usn=?, mod=?, did=? where id in """ + scids,
                             usn, mod, did)
-        self.onSearch(reset=False)
-        self.mw.requireReset()
         self.model.endReset()
+        self.mw.requireReset()
 
     # Tags
     ######################################################################

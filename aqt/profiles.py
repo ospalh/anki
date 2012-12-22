@@ -7,13 +7,12 @@
 # - Saves in sqlite rather than a flat file so the config can't be corrupted
 
 from aqt.qt import *
-import os, sys, time, random, cPickle, shutil, locale, re, atexit, urllib
+import os, random, cPickle, shutil, locale, re
 from anki.db import DB
 from anki.utils import isMac, isWin, intTime, checksum
 from anki.lang import langs
 from aqt.utils import showWarning
 from aqt import appHelpSite
-import anki.sync
 import aqt.forms
 
 metaConf = dict(
@@ -35,7 +34,6 @@ profileConf = dict(
     mainWindowState=None,
     numBackups=30,
     lastOptimize=intTime(),
-
     # editing
     fullSearch=False,
     searchHistory=[],
@@ -45,11 +43,12 @@ profileConf = dict(
     # not exposed in gui
     deleteMedia=False,
     preserveKeyboard=True,
-
     # syncing
     syncKey=None,
     syncMedia=True,
     autoSync=True,
+    # importing
+    allowHTML=False,
 )
 
 class ProfileManager(object):

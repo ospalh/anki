@@ -64,6 +64,8 @@ defaultTemplate = {
     'did': None,
     'bqfmt': "",
     'bafmt': "",
+    'bfont': "Arial",
+    'bsize': 12,
 }
 
 

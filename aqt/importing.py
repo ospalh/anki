@@ -1,13 +1,11 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import os, copy, time, sys, re, traceback, zipfile, json
+import os, re, traceback, zipfile, json
 from aqt.qt import *
-import anki
 import anki.importing as importing
-from aqt.utils import getOnlyText, getFile, showText, showWarning, openHelp, \
-    askUserDialog, askUser, tooltip
-from anki.errors import *
+from aqt.utils import getOnlyText, getFile, showText, showWarning, openHelp,\
+    askUser, tooltip
 from anki.hooks import addHook, remHook
 import aqt.forms, aqt.modelchooser, aqt.deckchooser
 
@@ -61,7 +59,6 @@ class ImportDialog(QDialog):
         self.importer = importer
         self.frm = aqt.forms.importing.Ui_ImportDialog()
         self.frm.setupUi(self)
-        from aqt.tagedit import TagEdit
         self.connect(self.frm.buttonBox.button(QDialogButtonBox.Help),
                      SIGNAL("clicked()"), self.helpRequested)
         self.setupMappingFrame()
@@ -72,6 +69,7 @@ class ImportDialog(QDialog):
         self.connect(self.frm.autoDetect, SIGNAL("clicked()"),
                      self.onDelimiter)
         self.updateDelimiterButtonText()
+        self.frm.allowHTML.setChecked(self.mw.pm.profile.get('allowHTML', False))
         self.exec_()
 
     def setupOptions(self):
@@ -140,6 +138,7 @@ you can enter it here. Use \\t to represent tab."""),
             return
         self.importer.importMode = self.frm.importMode.currentIndex()
         self.importer.allowHTML = self.frm.allowHTML.isChecked()
+        self.mw.pm.profile['allowHTML'] = self.importer.allowHTML
         did = self.deck.selectedId()
         if did != self.importer.model['did']:
             self.importer.model['did'] = did
@@ -325,6 +324,7 @@ def setupApkgImport(mw, importer):
     if not full:
         # adding
         return True
+    backup = re.match("backup-.*\\.apkg", base)
     if not askUser(_("""\
 This will delete your existing collection and replace it with the data in \
 the file you're importing. Are you sure?"""), msgfunc=QMessageBox.warning):
@@ -333,9 +333,9 @@ the file you're importing. Are you sure?"""), msgfunc=QMessageBox.warning):
     # called as part of the startup routine
     mw.progress.start(immediate=True)
     mw.progress.timer(
-        100, lambda mw=mw, f=importer.file: replaceWithApkg(mw, f), False)
+        100, lambda mw=mw, f=importer.file: replaceWithApkg(mw, f, backup), False)
 
-def replaceWithApkg(mw, file):
+def replaceWithApkg(mw, file, backup):
     # unload collection, which will also trigger a backup
     mw.unloadCollection()
     # overwrite collection
@@ -351,4 +351,6 @@ def replaceWithApkg(mw, file):
     z.close()
     # reload
     mw.loadCollection()
+    if backup:
+        mw.col.modSchema(check=False)
     mw.progress.finish()
