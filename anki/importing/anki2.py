@@ -5,11 +5,9 @@
 import os
 
 from anki import Collection
-from anki.utils import intTime, splitFields, joinFields, checksum, guid64, \
-    incGuid
 from anki.importing.base import Importer
 from anki.lang import _, ngettext
-from anki.utils import incGuid, intTime, joinFields, splitFields
+from anki.utils import intTime, splitFields, joinFields, incGuid
 
 MID = 2
 GUID = 1
@@ -239,7 +237,7 @@ class Anki2Importer(Importer):
             # does the card's note exist in dst col?
             if guid not in self._notes:
                 continue
-            dnid = self._notes[guid]
+            # dnid = self._notes[guid]
             # does the card already exist in the dst col?
             ord = card[5]
             if (guid, ord) in self._cards:

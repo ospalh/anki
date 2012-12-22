@@ -18,8 +18,7 @@ regexps = {
     "standard": re.compile(
         r"\[latex\](.+?)\[/latex\]", re.DOTALL | re.IGNORECASE),
     "expression": re.compile(r"\[\$\](.+?)\[/\$\]", re.DOTALL | re.IGNORECASE),
-    "math": re.compile(r"\[\$\$\](.+?)\[/\$\$\]", re.DOTALL | re.IGNORECASE),
-    }
+    "math": re.compile(r"\[\$\$\](.+?)\[/\$\$\]", re.DOTALL | re.IGNORECASE)}
 
 # add standard tex install location to osx
 if isMac:
@@ -39,15 +38,18 @@ def stripLatex(text):
 def mungeQA(html, type, fields, model, data, col):
     "Convert TEXT with embedded latex tags to image links."
     for match in regexps['standard'].finditer(html):
-        html = html.replace(match.group(), _imgLink(
-                col, match.group(1), model))
+        html = html.replace(
+            match.group(),
+            _imgLink(col, match.group(1), model))
     for match in regexps['expression'].finditer(html):
-        html = html.replace(match.group(), _imgLink(
-                col, "$" + match.group(1) + "$", model))
+        html = html.replace(
+            match.group(),
+            _imgLink(col, "$" + match.group(1) + "$", model))
     for match in regexps['math'].finditer(html):
-        html = html.replace(match.group(), _imgLink(
-                col, "\\begin{displaymath}" + match.group(1) +
-                    "\\end{displaymath}", model))
+        html = html.replace(
+            match.group(),
+            _imgLink(col, "\\begin{displaymath}" + match.group(1) +
+                     "\\end{displaymath}", model))
     return html
 
 

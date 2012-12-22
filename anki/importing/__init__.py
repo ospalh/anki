@@ -15,5 +15,4 @@ Importers = (
     (_("Packaged Anki Deck (*.apkg)"), AnkiPackageImporter),
     (_("Anki 1.2 Deck (*.anki)"), Anki1Importer),
     (_("Mnemosyne 2.0 Deck (*.db)"), MnemosyneImporter),
-    (_("Supermemo XML export (*.xml)"), SupermemoXmlImporter),
-    )
+    (_("Supermemo XML export (*.xml)"), SupermemoXmlImporter))

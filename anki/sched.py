@@ -542,7 +542,7 @@ did = ? and queue = 3 and due <= ? limit ?""", did, self.today,
                     resched = self._resched(card)
                     if 'mult' in conf and resched:
                         # review that's lapsed
-                        card.ivl = max(1, card.ivl*conf['mult'])
+                        card.ivl = max(1, card.ivl * conf['mult'])
                     else:
                         # new card; no ivl adjustment
                         pass
@@ -896,14 +896,14 @@ select id from cards where did in %s and queue = 2 and due <= ? limit ?)"""
         elif ivl == 2:
             return [2, 3]
         elif ivl < 7:
-            fuzz = int(ivl*0.25)
+            fuzz = int(ivl * 0.25)
         elif ivl < 30:
-            fuzz = max(2, int(ivl*0.15))
+            fuzz = max(2, int(ivl * 0.15))
         else:
-            fuzz = max(4, int(ivl*0.05))
+            fuzz = max(4, int(ivl * 0.05))
         # fuzz at least a day
         fuzz = max(fuzz, 1)
-        return [ivl-fuzz, ivl+fuzz]
+        return [ivl - fuzz, ivl + fuzz]
 
     def _constrainedIvl(self, ivl, conf, prev):
         """

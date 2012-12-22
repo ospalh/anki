@@ -2,7 +2,9 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import sys, os, platform
+import os
+import platform
+import sys
 
 if sys.version_info[0] > 2:
     raise Exception("Anki should be run with Python 2")
