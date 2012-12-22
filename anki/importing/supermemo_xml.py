@@ -15,6 +15,7 @@ from types import DictType, InstanceType
 from string import capwords, maketrans
 import re, unicodedata, time
 
+
 class SmartDict(dict):
     """
     See http://www.peterbe.com/plog/SmartDict
@@ -37,6 +38,7 @@ class SmartDict(dict):
 
         dict.__init__(self, **kw)
         self.__dict__ = self
+
 
 class SuperMemoElement(SmartDict):
   "SmartDict wrapper to store SM Element data"
@@ -61,6 +63,8 @@ class SuperMemoElement(SmartDict):
 
 
 # This is an AnkiImporter
+
+
 class SupermemoXmlImporter(NoteImporter):
 
     needMapper = False
