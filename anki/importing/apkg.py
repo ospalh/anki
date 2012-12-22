@@ -2,9 +2,12 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import zipfile, os
-from anki.utils import tmpfile, json
+import os
+import zipfile
+
 from anki.importing.anki2 import Anki2Importer
+from anki.utils import tmpfile, json
+
 
 class AnkiPackageImporter(Anki2Importer):
 

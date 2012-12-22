@@ -3,12 +3,13 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
-from anki.utils import ids2str, splitFields, joinFields, stripHTML, intTime
-from anki.consts import *
+from .utils import ids2str, intTime, joinFields, splitFields
+from .consts import MODEL_CLOZE
 import sre_constants
 
 # Find
 ##########################################################################
+
 
 class Finder(object):
 
@@ -42,7 +43,7 @@ class Finder(object):
         else:
             preds = "1"
         sql = """
-select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
+select distinct(n.id) from cards c, notes n where c.nid=n.id and """ + preds
         try:
             res = self.col.db.list(sql, *args)
         except:
@@ -111,6 +112,7 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
         # state and query
         s = dict(isnot=False, isor=False, join=False, q="", bad=False)
         args = []
+
         def add(txt, wrap=True):
             # failed command?
             if not txt:
@@ -263,7 +265,7 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
             return """
 (c.queue in (2,3) and c.due <= %d) or
 (c.queue = 1 and c.due <= %d)""" % (
-    self.col.sched.today, self.col.sched.dayCutoff)
+                self.col.sched.today, self.col.sched.dayCutoff)
 
     def _findRated(self, val):
         # days(:optional_ease)
@@ -279,7 +281,7 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
             if r[1] not in ("1", "2", "3", "4"):
                 return
             ease = "and ease=%s" % r[1]
-        cutoff = (self.col.sched.dayCutoff - 86400*days)*1000
+        cutoff = (self.col.sched.dayCutoff - 86400 * days) * 1000
         return ("c.id in (select cid from revlog where id>%d %s)" %
                 (cutoff, ease))
 
@@ -288,7 +290,7 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
             days = int(val)
         except ValueError:
             return
-        cutoff = (self.col.sched.dayCutoff - 86400*days)*1000
+        cutoff = (self.col.sched.dayCutoff - 86400 * days) * 1000
         return "c.id > %d" % cutoff
 
     def _findProp(self, val):
@@ -317,14 +319,14 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
             q.append("(c.queue in (2,3))")
         elif prop == "ease":
             prop = "factor"
-            val = int(val*1000)
+            val = int(val * 1000)
         q.append("(%s %s %s)" % (prop, cmp, val))
         return " and ".join(q)
 
     def _findText(self, val, args):
         val = val.replace("*", "%")
-        args.append("%"+val+"%")
-        args.append("%"+val+"%")
+        args.append("%" + val + "%")
+        args.append("%" + val + "%")
         return "(n.sfld like ? escape '\\' or n.flds like ? escape '\\')"
 
     def _findNids(self, val):
@@ -347,6 +349,7 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
         # deck types
         elif val == "filtered":
             return "c.odid"
+
         def dids(did):
             if not did:
                 return None
@@ -363,7 +366,7 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
             ids = set()
             val = val.replace("*", ".*")
             for d in self.col.decks.all():
-                if re.match("(?i)"+val, d['name']):
+                if re.match("(?i)" + val, d['name']):
                     ids.update(dids(d['id']))
         if not ids:
             return
@@ -408,16 +411,15 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
         # gather nids
         regex = re.escape(val).replace("\\_", ".").replace("\\%", ".*")
         nids = []
-        for (id,mid,flds) in self.col.db.execute("""
+        for (id, mid, flds) in self.col.db.execute("""
 select id, mid, flds from notes
 where mid in %s and flds like ? escape '\\'""" % (
-                         ids2str(mods.keys())),
-                         "%"+val+"%"):
+                ids2str(mods.keys())), "%" + val + "%"):
             flds = splitFields(flds)
             ord = mods[str(mid)][1]
             strg = flds[ord]
             try:
-                if re.search("(?i)^"+regex+"$", strg):
+                if re.search("(?i)^" + regex + "$", strg):
                     nids.append(id)
             except sre_constants.error:
                 return
@@ -427,6 +429,7 @@ where mid in %s and flds like ? escape '\\'""" % (
 
 # Find and replace
 ##########################################################################
+
 
 def findReplace(col, nids, src, dst, regex=False, field=None, fold=True):
     "Find and replace fields in a note."
@@ -442,15 +445,16 @@ def findReplace(col, nids, src, dst, regex=False, field=None, fold=True):
     if not regex:
         src = re.escape(src)
     if fold:
-        src = "(?i)"+src
+        src = "(?i)" + src
     regex = re.compile(src)
+
     def repl(str):
         return re.sub(regex, dst, str)
     d = []
     snids = ids2str(nids)
     nids = []
     for nid, mid, flds in col.db.execute(
-        "select id, mid, flds from notes where id in "+snids):
+            "select id, mid, flds from notes where id in " + snids):
         origFlds = flds
         # does it match?
         sflds = splitFields(flds)
@@ -467,7 +471,7 @@ def findReplace(col, nids, src, dst, regex=False, field=None, fold=True):
         flds = joinFields(sflds)
         if flds != origFlds:
             nids.append(nid)
-            d.append(dict(nid=nid,flds=flds,u=col.usn(),m=intTime()))
+            d.append(dict(nid=nid, flds=flds, u=col.usn(), m=intTime()))
     if not d:
         return 0
     # replace
@@ -476,6 +480,7 @@ def findReplace(col, nids, src, dst, regex=False, field=None, fold=True):
     col.updateFieldCache(nids)
     col.genCards(nids)
     return len(d)
+
 
 def fieldNames(col, downcase=True):
     fields = set()
@@ -492,22 +497,24 @@ def fieldNames(col, downcase=True):
 # Find duplicates
 ##########################################################################
 
+
 def findDupes(col, fieldName, search=""):
     # limit search to notes with applicable field name
     if search:
-        search = "("+search+") "
+        search = "(" + search + ") "
     search += "'%s:*'" % fieldName
     # go through notes
     vals = {}
     dupes = []
     fields = {}
+
     def ordForMid(mid):
         if mid not in fields:
             model = col.models.get(mid)
             fields[mid] = col.models.fieldMap(model)[fieldName][0]
         return fields[mid]
     for nid, mid, flds in col.db.all(
-        "select id, mid, flds from notes where id in "+ids2str(
+        "select id, mid, flds from notes where id in " + ids2str(
             col.findNotes(search))):
         flds = splitFields(flds)
         val = flds[ordForMid(mid)]

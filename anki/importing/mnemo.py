@@ -2,14 +2,14 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import time, re
+import re
+import time
+
 from anki.db import DB
-from anki.importing.base import Importer
 from anki.importing.noteimp import NoteImporter, ForeignNote, ForeignCard
-from anki.utils import checksum, base91
-from anki.stdmodels import addBasicModel
-from anki.lang import _
 from anki.lang import ngettext
+from anki.stdmodels import addBasicModel
+
 
 class MnemosyneImporter(NoteImporter):
 
@@ -63,18 +63,18 @@ acq_reps+ret_reps, lapses from cards"""):
                 continue
             # add the card
             c = ForeignCard()
-            c.factor = int(row[5]*1000)
+            c.factor = int(row[5] * 1000)
             c.reps = row[6]
             c.lapses = row[7]
             # ivl is inferred in mnemosyne
             next, prev = row[3:5]
-            c.ivl = max(1, (next - prev)/86400)
+            c.ivl = max(1, (next - prev) / 86400)
             # work out how long we've got left
-            rem = int((next - time.time())/86400)
-            c.due = self.col.sched.today+rem
+            rem = int((next - time.time()) / 86400)
+            c.due = self.col.sched.today + rem
             # get ord
             m = re.match("\d+\.(\d+)", row[1])
-            ord = int(m.group(1))-1
+            ord = int(m.group(1)) - 1
             if 'cards' not in note:
                 note['cards'] = {}
             note['cards'][ord] = c
@@ -84,7 +84,8 @@ acq_reps+ret_reps, lapses from cards"""):
         total += self.total
         self._addVocabulary(vocabulary)
         self.total += total
-        self.log.append(ngettext("%d note imported.", "%d notes imported.", self.total) % self.total)
+        self.log.append(ngettext("%d note imported.", "%d notes imported.",
+                                 self.total) % self.total)
 
     def fields(self):
         return self._fields

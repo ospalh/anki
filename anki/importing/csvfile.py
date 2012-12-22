@@ -2,10 +2,13 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import codecs, csv, re
+import codecs
+import csv
+import re
+
 from anki.importing.noteimp import NoteImporter, ForeignNote
 from anki.lang import _
-from anki.errors import *
+
 
 class TextImporter(NoteImporter):
 
@@ -24,22 +27,23 @@ class TextImporter(NoteImporter):
         # process all lines
         log = []
         notes = []
-        lineNum = 0
+        # lineNum = 0
         ignored = 0
         if self.delimiter:
-            reader = csv.reader(self.data, delimiter=self.delimiter, doublequote=True)
+            reader = csv.reader(
+                self.data, delimiter=self.delimiter, doublequote=True)
         else:
             reader = csv.reader(self.data, self.dialect, doublequote=True)
         for row in reader:
             row = [unicode(x, "utf-8") for x in row]
             if len(row) != self.numFields:
                 log.append(_(
-                    "'%(row)s' had %(num1)d fields, "
-                    "expected %(num2)d") % {
-                    "row": u" ".join(row),
-                    "num1": len(row),
-                    "num2": self.numFields,
-                    })
+                        "'%(row)s' had %(num1)d fields, "
+                        "expected %(num2)d") % {
+                        "row": u" ".join(row),
+                        "num1": len(row),
+                        "num2": self.numFields,
+                        })
                 ignored += 1
                 continue
             note = self.noteFromFields(row)
@@ -65,9 +69,10 @@ class TextImporter(NoteImporter):
         self.data = self.fileobj.read()
         if self.data.startswith(codecs.BOM_UTF8):
             self.data = self.data[len(codecs.BOM_UTF8):]
+
         def sub(s):
             return re.sub("^\#.*", "", s)
-        self.data = [sub(x)+"\n" for x in self.data.split("\n") if sub(x)]
+        self.data = [sub(x) + "\n" for x in self.data.split("\n") if sub(x)]
         if self.data:
             if self.data[0].startswith("tags:"):
                 tags = unicode(self.data[0][5:], "utf8").strip()
@@ -107,7 +112,8 @@ class TextImporter(NoteImporter):
                     self.delimiter = ","
                 else:
                     self.delimiter = " "
-            reader = csv.reader(self.data, delimiter=self.delimiter, doublequote=True)
+            reader = csv.reader(
+                self.data, delimiter=self.delimiter, doublequote=True)
         try:
             self.numFields = len(reader.next())
         except:

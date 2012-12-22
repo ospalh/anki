@@ -2,10 +2,14 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import traceback, os, re
+import os
+import re
+import traceback
+
 from anki.lang import _
 from anki.upgrade import Upgrader
 from anki.importing.anki2 import Anki2Importer
+
 
 class Anki1Importer(Anki2Importer):
 

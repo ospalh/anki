@@ -2,16 +2,17 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import time, cgi
-from anki.lang import _
-from anki.utils import fieldChecksum, ids2str, guid64, timestampID, \
-    joinFields, intTime, splitFields
-from anki.errors import *
+import cgi
+
 from anki.importing.base import Importer
+from anki.lang import _
 from anki.lang import ngettext
+from anki.utils import fieldChecksum, guid64, timestampID, \
+    joinFields, intTime, splitFields
 
 # Stores a list of fields, tags and deck
 ######################################################################
+
 
 class ForeignNote(object):
     "An temporary object storing fields and attributes."
@@ -19,7 +20,8 @@ class ForeignNote(object):
         self.fields = []
         self.tags = []
         self.deck = None
-        self.cards = {} # map of ord -> card
+        self.cards = {}  # map of ord -> card
+
 
 class ForeignCard(object):
     def __init__(self):
@@ -42,6 +44,7 @@ class ForeignCard(object):
 # 0: update if first field matches existing note
 # 1: ignore if first field matches existing note
 # 2: import even if first field matches existing note
+
 
 class NoteImporter(Importer):
 
@@ -99,7 +102,7 @@ class NoteImporter(Importer):
         # gather checks for duplicate comparison
         csums = {}
         for csum, id in self.col.db.execute(
-            "select csum, id from notes where mid = ?", self.model['id']):
+                "select csum, id from notes where mid = ?", self.model['id']):
             if csum in csums:
                 csums[csum].append(id)
             else:
@@ -164,13 +167,15 @@ class NoteImporter(Importer):
         self.col.updateFieldCache(self._ids)
         # generate cards
         if self.col.genCards(self._ids):
-            self.log.insert(0, _(
-                "Empty cards found. Please run Tools>Maintenance>Empty Cards."))
+            self.log.insert(0, _("""\
+Empty cards found. Please run Tools>Maintenance>Empty Cards."""))
         # apply scheduling updates
         self.updateCards()
         # make sure to update sflds, etc
-        part1 = ngettext("%d note added", "%d notes added", len(new)) % len(new)
-        part2 = ngettext("%d note updated", "%d notes updated", self.updateCount) % self.updateCount
+        part1 = ngettext("%d note added", "%d notes added",
+                         len(new)) % len(new)
+        part2 = ngettext("%d note updated", "%d notes updated",
+                         self.updateCount) % self.updateCount
         self.log.append("%s, %s." % (part1, part2))
         if self._emptyNotes:
             self.log.append(_("""\
@@ -226,7 +231,7 @@ where id = ? and flds != ?""", rows)
 
     def processFields(self, note, fields=None):
         if not fields:
-            fields = [""]*len(self.model['flds'])
+            fields = [""] * len(self.model['flds'])
         for c, f in enumerate(self.mapping):
             if not f:
                 continue

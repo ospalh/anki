@@ -18,12 +18,14 @@ automatically but can be called with _old().
 
 _hooks = {}
 
+
 def runHook(hook, *args):
     "Run all functions on hook."
     hook = _hooks.get(hook, None)
     if hook:
         for func in hook:
             func(*args)
+
 
 def runFilter(hook, arg, *args):
     hook = _hooks.get(hook, None)
@@ -32,12 +34,14 @@ def runFilter(hook, arg, *args):
             arg = func(arg, *args)
     return arg
 
+
 def addHook(hook, func):
     "Add a function to hook. Ignore if already on hook."
     if not _hooks.get(hook, None):
         _hooks[hook] = []
     if func not in _hooks[hook]:
         _hooks[hook].append(func)
+
 
 def remHook(hook, func):
     "Remove a function if is on hook."
@@ -47,6 +51,7 @@ def remHook(hook, func):
 
 # Instrumenting
 ##############################################################################
+
 
 def wrap(old, new, pos="after"):
     "Override an existing function."
