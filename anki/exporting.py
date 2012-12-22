@@ -54,7 +54,8 @@ class TextCardExporter(Exporter):
 
     def doExport(self, file):
         ids = sorted(self.cardIds())
-        strids = ids2str(ids)
+        # The ids2str has no side effect, so take out redundant call
+        # strids = ids2str(ids)
 
         def esc(s):
             # strip off the repeated question in answer if exists
