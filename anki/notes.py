@@ -2,10 +2,9 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import time
-from anki.errors import AnkiError
-from anki.utils import fieldChecksum, intTime, \
-    joinFields, splitFields, ids2str, stripHTML, timestampID, guid64
+from anki.utils import fieldChecksum, guid64, intTime, joinFields, \
+    splitFields, stripHTML, timestampID
+
 
 class Note(object):
 
@@ -52,7 +51,8 @@ from notes where id = ?""", self.id)
         sfld = stripHTML(self.fields[self.col.models.sortIdx(self._model)])
         tags = self.stringTags()
         csum = fieldChecksum(self.fields[0])
-        res = self.col.db.execute("""
+        # res = self.col.db.execute("""
+        self.col.db.execute("""
 insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)""",
                             self.id, self.guid, self.mid,
                             self.mod, self.usn, tags,
@@ -133,9 +133,9 @@ insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)""",
             return 1
         csum = fieldChecksum(val)
         # find any matching csums and compare
-        for flds in self.col.db.list(
-            "select flds from notes where csum = ? and id != ? and mid = ?",
-            csum, self.id or 0, self.mid):
+        for flds in self.col.db.list("""\
+select flds from notes where csum = ? and id != ? and mid = ?""",
+                                     csum, self.id or 0, self.mid):
             if stripHTML(splitFields(flds)[0]) == stripHTML(self.fields[0]):
                 return 2
         return False
@@ -151,7 +151,8 @@ insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)""",
     def _postFlush(self):
         # generate missing cards
         if not self.newlyAdded:
-            rem = self.col.genCards([self.id])
+            # rem = self.col.genCards([self.id])
+            self.col.genCards([self.id])
             # popping up a dialog while editing is confusing; instead we can
             # document that the user should open the templates window to
             # garbage collect empty cards

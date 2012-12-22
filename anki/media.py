@@ -2,14 +2,20 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import os, shutil, re, urllib, urllib2, time, unicodedata, \
-    sys, zipfile
+import os
+import re
+import shutil
+import sys
+import unicodedata
+import urllib
+import zipfile
 from cStringIO import StringIO
-from anki.utils import checksum, intTime, namedtmp, isWin, isMac, json
-from anki.lang import _
+
+from anki.consts import MEDIA_ADD, MEDIA_REM, SYNC_ZIP_SIZE
 from anki.db import DB
-from anki.consts import *
 from anki.latex import mungeQA
+from anki.utils import checksum, isWin, isMac, json
+
 
 class MediaManager(object):
 
@@ -41,7 +47,7 @@ class MediaManager(object):
     def connect(self):
         if self.col.server:
             return
-        path = self.dir()+".db"
+        path = self.dir() + ".db"
         create = not os.path.exists(path)
         os.chdir(self._dir)
         self.db = DB(path)
@@ -83,9 +89,10 @@ If the same name exists, compare checksums."""
             return base
         # otherwise, find a unique name
         (root, ext) = os.path.splitext(base)
+
         def repl(match):
             n = int(match.group(1))
-            return " (%d)" % (n+1)
+            return " (%d)" % (n + 1)
         while True:
             path = os.path.join(mdir, root + ext)
             if not os.path.exists(path):
@@ -138,6 +145,7 @@ If the same name exists, compare checksums."""
         # dropbox they become unreadable if we escape them.
         if isWin:
             return string
+
         def repl(match):
             tag = match.group(1)
             fname = match.group(2)
@@ -155,6 +163,7 @@ If the same name exists, compare checksums."""
         mdir = self.dir()
         # generate card q/a and look through all references
         normrefs = {}
+
         def norm(s):
             if isinstance(s, unicode):
                 return unicodedata.normalize('NFD', s)
@@ -237,7 +246,7 @@ If the same name exists, compare checksums."""
         for i in z.infolist():
             # check for zip bombs
             sizecnt += i.file_size
-            assert sizecnt < 100*1024*1024
+            assert sizecnt < 100 * 1024 * 1024
             if i.filename == "_meta" or i.filename == "_usn":
                 # ignore previously-retrieved meta
                 continue
@@ -261,7 +270,7 @@ If the same name exists, compare checksums."""
         if media:
             self.db.executemany(
                 "insert or replace into media values (?,?,?)", media)
-        self.setUsn(nextUsn) # commits
+        self.setUsn(nextUsn)  # commits
         # if we have finished adding, we need to record the new folder mtime
         # so that we don't trigger a needless scan
         if finished:
@@ -385,7 +394,7 @@ create table log (fname text primary key, type int);
     def _changes(self):
         self.cache = {}
         for (name, csum, mod) in self.db.execute(
-            "select * from media"):
+                "select * from media"):
             self.cache[name] = [csum, mod, False]
         added = []
         removed = []

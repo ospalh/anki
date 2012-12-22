@@ -2,22 +2,33 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import re, sys, threading, time, subprocess, os, signal, errno, atexit
-import shutil, random
-from anki.hooks import addHook, runHook
-from anki.utils import namedtmp, tmpdir, isWin, isMac
+import atexit
+import os
+import random
+import re
+import subprocess
+import sys
+import threading
+import time
+
+from anki.hooks import addHook
+from anki.lang import _
+from anki.utils import isMac, isWin, tmpdir
 
 # Shared utils
 ##########################################################################
 
 _soundReg = "\[sound:(.*?)\]"
 
+
 def playFromText(text):
     for match in re.findall(_soundReg, text):
         play(match)
 
+
 def stripSounds(text):
     return re.sub(_soundReg, "", text)
+
 
 def hasSound(text):
     return re.search(_soundReg, text) is not None
@@ -30,8 +41,7 @@ processingChain = []
 recFiles = []
 
 processingChain = [
-    ["lame", "rec.wav", processingDst, "--noreplaygain", "--quiet"],
-    ]
+    ["lame", "rec.wav", processingDst, "--noreplaygain", "--quiet"], ]
 
 # don't show box on windows
 if isWin:
@@ -51,6 +61,7 @@ if isMac:
     dir = os.path.abspath(dir + "/../../../..")
     os.environ['PATH'] += ":" + dir + "/audio"
 
+
 def retryWait(proc):
     # osx throws interrupted system call errors frequently
     while 1:
@@ -66,7 +77,7 @@ if isWin:
     mplayerCmd = ["mplayer.exe", "-ao", "win32"]
     dir = os.path.dirname(os.path.abspath(sys.argv[0]))
     os.environ['PATH'] += ";" + dir
-    os.environ['PATH'] += ";" + dir + "\\..\\win\\top" # for testing
+    os.environ['PATH'] += ";" + dir + "\\..\\win\\top"  # for testing
 else:
     mplayerCmd = ["mplayer"]
 mplayerCmd += ["-really-quiet", "-noautosub"]
@@ -79,6 +90,7 @@ mplayerManager = None
 mplayerReader = None
 mplayerEvt = threading.Event()
 mplayerClear = False
+
 
 class MplayerMonitor(threading.Thread):
 
@@ -126,6 +138,7 @@ class MplayerMonitor(threading.Thread):
                 time.sleep(1)
             # wait() on finished processes. we don't want to block on the
             # wait, so we keep trying each time we're reactivated
+
             def clean(pl):
                 if pl.poll() is not None:
                     pl.wait()
@@ -155,6 +168,7 @@ class MplayerMonitor(threading.Thread):
             mplayerEvt.clear()
             raise Exception("Did you install mplayer?")
 
+
 def queueMplayer(path):
     ensureMplayerThreads()
     if isWin and os.path.exists(path):
@@ -175,11 +189,13 @@ def queueMplayer(path):
     mplayerQueue.append(path)
     mplayerEvt.set()
 
+
 def clearMplayerQueue():
     global mplayerClear, mplayerQueue
     mplayerQueue = []
     mplayerClear = True
     mplayerEvt.set()
+
 
 def ensureMplayerThreads():
     global mplayerManager
@@ -192,6 +208,7 @@ def ensureMplayerThreads():
         tmpdir()
         # clean up mplayer on exit
         atexit.register(stopMplayer)
+
 
 def stopMplayer(*args):
     if not mplayerManager:
@@ -214,6 +231,7 @@ try:
 except:
     pass
 
+
 class _Recorder(object):
 
     def postprocess(self, encode=True):
@@ -227,9 +245,8 @@ class _Recorder(object):
             except:
                 ret = True
             if ret:
-                raise Exception(_(
-                    "Error running %s") %
-                                u" ".join(c))
+                raise Exception(_("Error running %s") % u" ".join(c))
+
 
 class PyAudioThreadedRecorder(threading.Thread):
 
@@ -271,6 +288,7 @@ class PyAudioThreadedRecorder(threading.Thread):
         wf.writeframes(data)
         wf.close()
 
+
 class PyAudioRecorder(_Recorder):
 
     def __init__(self):
@@ -303,8 +321,10 @@ class PyAudioRecorder(_Recorder):
 _player = queueMplayer
 _queueEraser = clearMplayerQueue
 
+
 def play(path):
     _player(path)
+
 
 def clearAudioQueue():
     _queueEraser()
