@@ -2,11 +2,16 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import urllib, os, sys, httplib2, gzip
 from cStringIO import StringIO
+import gzip
+import httplib2
+import os
+import sys
+import urllib
+
+from anki.consts import REM_CARD, REM_NOTE, SYNC_URL, SYNC_VER
 from anki.db import DB
 from anki.utils import ids2str, intTime, json, isWin, isMac
-from anki.consts import *
 from hooks import runHook
 
 # syncing vars
@@ -24,6 +29,7 @@ except AttributeError:
 
 # Httplib2 connection object
 ######################################################################
+
 
 def httpCon():
     certs = os.path.join(os.path.dirname(__file__), "ankiweb.certs")
@@ -45,6 +51,7 @@ def httpCon():
 
 # Proxy handling
 ######################################################################
+
 
 def _setupProxy():
     global HTTP_PROXY
@@ -69,6 +76,7 @@ def _setupProxy():
             p = _proxy_info_from_url(url, _proxyMethod(url))
     HTTP_PROXY = p
 
+
 def _proxyMethod(url):
     if url.lower().startswith("https"):
         return "https"
@@ -79,6 +87,7 @@ _setupProxy()
 
 # Incremental syncing
 ##########################################################################
+
 
 class Syncer(object):
 
@@ -273,7 +282,7 @@ from notes where %s""" % d)
                 # if we're the client, mark the objects as having been sent
                 if not self.col.server:
                     self.col.db.execute(
-                        "update %s set usn=? where usn=-1"%curTable,
+                        "update %s set usn=? where usn=-1" % curTable,
                         self.maxUsn)
             buf[curTable] = rows
             lim -= fetched
@@ -311,7 +320,7 @@ from notes where %s""" % d)
                 decks.append(oid)
         if not self.col.server:
             self.col.db.execute("update graves set usn=? where usn=-1",
-                                 self.maxUsn)
+                                self.maxUsn)
         return dict(cards=cards, notes=notes, decks=decks)
 
     def start(self, minUsn, lnewer, graves):
@@ -340,7 +349,8 @@ from notes where %s""" % d)
 
     def getModels(self):
         if self.col.server:
-            return [m for m in self.col.models.all() if m['usn'] >= self.minUsn]
+            return [m for m in self.col.models.all()
+                    if m['usn'] >= self.minUsn]
         else:
             mods = [m for m in self.col.models.all() if m['usn'] == -1]
             for m in mods:
@@ -362,8 +372,8 @@ from notes where %s""" % d)
         if self.col.server:
             return [
                 [g for g in self.col.decks.all() if g['usn'] >= self.minUsn],
-                [g for g in self.col.decks.allConf() if g['usn'] >= self.minUsn]
-            ]
+                [g for g in self.col.decks.allConf()
+                 if g['usn'] >= self.minUsn]]
         else:
             decks = [g for g in self.col.decks.all() if g['usn'] == -1]
             for g in decks:
@@ -454,12 +464,14 @@ from notes where %s""" % d)
 # Local syncing for unit tests
 ##########################################################################
 
+
 class LocalServer(Syncer):
 
     # serialize/deserialize payload, so we don't end up sharing objects
     # between cols
     def applyChanges(self, changes):
-        l = json.loads; d = json.dumps
+        l = json.loads
+        d = json.dumps
         return l(d(Syncer.applyChanges(self, l(d(changes)))))
 
 # HTTP syncing tools
@@ -469,6 +481,7 @@ class LocalServer(Syncer):
 # - 501: client needs upgrade
 # - 502: ankiweb down
 # - 503/504: server too busy
+
 
 class HttpSyncer(object):
 
@@ -482,14 +495,15 @@ class HttpSyncer(object):
 
     # Posting data as a file
     ######################################################################
-    # We don't want to post the payload as a form var, as the percent-encoding is
-    # costly. We could send it as a raw post, but more HTTP clients seem to
-    # support file uploading, so this is the more compatible choice.
+    # We don't want to post the payload as a form var, as the
+    # percent-encoding is costly. We could send it as a raw post, but
+    # more HTTP clients seem to support file uploading, so this is the
+    # more compatible choice.
 
     def req(self, method, fobj=None, comp=6,
-                 badAuthRaises=True, hkey=True):
-        BOUNDARY="Anki-sync-boundary"
-        bdry = "--"+BOUNDARY
+            badAuthRaises=True, hkey=True):
+        BOUNDARY = "Anki-sync-boundary"
+        bdry = "--" + BOUNDARY
         buf = StringIO()
         # compression flag and session key as post vars
         vars = {}
@@ -530,7 +544,7 @@ Content-Type: application/octet-stream\r\n\r\n""")
         body = buf.getvalue()
         buf.close()
         resp, cont = self.con.request(
-            SYNC_URL+method, "POST", headers=headers, body=body)
+            SYNC_URL + method, "POST", headers=headers, body=body)
         if not badAuthRaises:
             # return false if bad auth instead of raising
             if resp['status'] == '403':
@@ -540,6 +554,7 @@ Content-Type: application/octet-stream\r\n\r\n""")
 
 # Incremental sync over HTTP
 ######################################################################
+
 
 class RemoteServer(HttpSyncer):
 
@@ -591,6 +606,7 @@ class RemoteServer(HttpSyncer):
 # Full syncing
 ##########################################################################
 
+
 class FullSyncer(HttpSyncer):
 
     def __init__(self, col, hkey, con):
@@ -625,6 +641,7 @@ class FullSyncer(HttpSyncer):
 
 # Media syncing
 ##########################################################################
+
 
 class MediaSyncer(object):
 
@@ -697,6 +714,7 @@ Media sanity check failed. Please copy and paste the text below:\n%s\n%s""" %
 
 # Remote media syncing
 ##########################################################################
+
 
 class RemoteMediaServer(HttpSyncer):
 

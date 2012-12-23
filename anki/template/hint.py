@@ -5,6 +5,7 @@
 from anki.hooks import addHook
 from anki.lang import _
 
+
 def hint(txt, extra, context, tag, fullname):
     if not txt.strip():
         return ""
@@ -12,9 +13,11 @@ def hint(txt, extra, context, tag, fullname):
     domid = "hint%d" % id(txt)
     return """
 <a class=hint href="#"
-onclick="this.style.display='none';document.getElementById('%s').style.display='block';return false;">
+onclick="this.style.display='none';document.getElementById(\
+'%s').style.display='block';return false;">
 %s</a><div id="%s" class=hint style="display: none">%s</div>
 """ % (domid, _("Show %s") % tag, domid, txt)
+
 
 def install():
     addHook('fmod_hint', hint)

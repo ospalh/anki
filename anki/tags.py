@@ -13,6 +13,7 @@ tracked, so unused tags can only be removed from the list with a DB check.
 This module manages the tag cache and tags for notes.
 """
 
+
 class TagManager(object):
 
     # Registry save/load
@@ -28,7 +29,7 @@ class TagManager(object):
     def flush(self):
         if self.changed:
             self.col.db.execute("update col set tags=?",
-                                 json.dumps(self.tags))
+                                json.dumps(self.tags))
             self.changed = False
 
     # Registering and fetching tags
@@ -59,8 +60,9 @@ class TagManager(object):
             lim = ""
             self.tags = {}
             self.changed = True
-        self.register(set(self.split(
-            " ".join(self.col.db.list("select distinct tags from notes"+lim)))))
+        self.register(
+            set(self.split(" ".join(self.col.db.list(
+                            "select distinct tags from notes" + lim)))))
 
     def allItems(self):
         return self.tags.items()
@@ -86,7 +88,7 @@ class TagManager(object):
             l = "tags "
             fn = self.remFromStr
         lim = " or ".join(
-            [l+"like :_%d" % c for c, t in enumerate(newTags)])
+            [l + "like :_%d" % c for c, t in enumerate(newTags)])
         res = self.col.db.all(
             "select id, tags from notes where id in %s and (%s)" % (
                 ids2str(ids), lim),
@@ -94,10 +96,11 @@ class TagManager(object):
                     for x, y in enumerate(newTags)]))
         # update tags
         nids = []
+
         def fix(row):
             nids.append(row[0])
-            return {'id': row[0], 't': fn(tags, row[1]), 'n':intTime(),
-                'u':self.col.usn()}
+            return {'id': row[0], 't': fn(tags, row[1]), 'n': intTime(),
+                    'u': self.col.usn()}
         self.col.db.executemany(
             "update notes set tags=:t,mod=:n,usn=:u where id = :id",
             [fix(row) for row in res])

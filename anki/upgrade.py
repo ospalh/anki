@@ -2,18 +2,22 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/copyleft/agpl.html
 
-import  time, re, datetime, shutil
-from anki.utils import intTime, tmpfile, ids2str, splitFields, base91, json
-from anki.db import DB
+import datetime
+import re
+import shutil
+import time
+
 from anki.collection import _Collection
-from anki.consts import *
-from anki.storage import _addSchema, _getColVars, _addColVars, \
-    _updateIndices
+from anki.consts import SCHEMA_VERSION
+from anki.db import DB
+from anki.storage import _addSchema, _getColVars, _addColVars,  _updateIndices
+from anki.utils import intTime, tmpfile, ids2str, splitFields, base91, json
 
 #
 # Upgrading is the first step in migrating to 2.0.
 # Caller should have called check() on path before calling upgrade().
 #
+
 
 class Upgrader(object):
 
@@ -127,17 +131,15 @@ f.id = cards.factId)"""):
 
         for mid in db.list("select id from models"):
             # ensure the ordinals are correct for each cardModel
-            for c, cmid in enumerate(db.list(
-                "select id from cardModels where modelId = ? order by ordinal",
-                mid)):
-                db.execute("update cardModels set ordinal = ? where id = ?",
-                           c, cmid)
+            for c, cmid in enumerate(db.list("""select id from cardModels
+where modelId = ? order by ordinal""", mid)):
+                db.execute(
+                    "update cardModels set ordinal = ? where id = ?", c, cmid)
             # and fieldModel
-            for c, fmid in enumerate(db.list(
-                "select id from fieldModels where modelId = ? order by ordinal",
-                mid)):
-                db.execute("update fieldModels set ordinal = ? where id = ?",
-                           c, fmid)
+            for c, fmid in enumerate(db.list("""select id from fieldModels
+where modelId = ? order by ordinal""", mid)):
+                db.execute(
+                    "update fieldModels set ordinal = ? where id = ?", c, fmid)
         # then fix ordinals numbers on cards & fields
         db.execute("""update cards set ordinal = (select ordinal from
 cardModels where cardModels.id = cardModelId)""")
@@ -160,8 +162,8 @@ select id, id, modelId, cast(created*1000 as int), cast(modified as int),
 0, tags from facts order by created""")
         # build field hash
         fields = {}
-        for (fid, ord, val) in db.execute(
-            "select factId, ordinal, value from fields order by factId, ordinal"):
+        for (fid, ord, val) in db.execute("""select factId, ordinal, value
+ from fields order by factId, ordinal"""):
             if fid not in fields:
                 fields[fid] = []
             val = self._mungeField(val)
@@ -187,12 +189,14 @@ select id, id, modelId, cast(created*1000 as int), cast(modified as int),
             map[oldid] = row[0]
             # convert old 64bit id into a string, discarding sign bit
             row[1] = base91(abs(row[1]))
-            row.append(minimizeHTML("\x1f".join([x[1] for x in sorted(fields[oldid])])))
+            row.append(minimizeHTML("\x1f".join(
+                        [x[1] for x in sorted(fields[oldid])])))
             data.append(row)
         # and put the facts into the new table
         db.execute("drop table facts")
         _addSchema(db, False)
-        db.executemany("insert into notes values (?,?,?,?,?,?,?,'','',0,'')", data)
+        db.executemany(
+            "insert into notes values (?,?,?,?,?,?,?,'','',0,'')", data)
         db.execute("drop table fields")
 
         # cards
@@ -256,7 +260,7 @@ yesCount from reviewHistory"""):
             # no ease 0 anymore
             row[3] = row[3] or 1
             # determine type, overwriting yesCount
-            newInt = row[4]
+            # newInt = row[4]
             oldInt = row[5]
             yesCnt = row[8]
             # yesCnt included the current answer
@@ -307,13 +311,15 @@ insert or replace into col select id, cast(created as int), :t,
 "", "", "", "", "" from decks""", t=intTime())
         # prepare a deck to store the old deck options
         g, gc, conf = _getColVars(db)
-        # delete old selective study settings, which we can't auto-upgrade easily
+        # delete old selective study settings, which we can't
+        # auto-upgrade easily
         keys = ("newActive", "newInactive", "revActive", "revInactive")
         for k in keys:
             db.execute("delete from deckVars where key=:k", k=k)
         # copy other settings, ignoring deck order as there's a new default
         gc['new']['perDay'] = db.scalar("select newCardsPerDay from decks")
-        gc['new']['order'] = min(1, db.scalar("select newCardOrder from decks"))
+        gc['new']['order'] = min(
+            1, db.scalar("select newCardOrder from decks"))
         # these are collection level, and can't be imported on a per-deck basis
         # conf['newSpread'] = db.scalar("select newCardSpacing from decks")
         # conf['timeLim'] = db.scalar("select sessionTimeLimit from decks")
@@ -336,10 +342,10 @@ insert or replace into col select id, cast(created as int), :t,
     def _migrateModels(self):
         import anki.models
         db = self.db
-        times = {}
+        # times = {}
         mods = {}
         for row in db.all(
-            "select id, name from models"):
+                "select id, name from models"):
             # use only first 31 bits if not old anki id
             t = abs(row[0])
             if t > 4294967296:
@@ -497,9 +503,9 @@ order by ordinal""", mid)):
                 if t['bg'] != "white" and t['bg'].lower() != "#ffffff":
                     css = "background-color: %s;" % t['bg']
                 if t['align']:
-                    css += "text-align: %s" % ("left", "right")[t['align']-1]
+                    css += "text-align: %s" % ("left", "right")[t['align'] - 1]
                 if css:
-                    css = '\n.card%d { %s }' % (t['ord']+1, css)
+                    css = '\n.card%d { %s }' % (t['ord'] + 1, css)
                 m['css'] += css
                 # remove obsolete
                 del t['bg']
@@ -516,6 +522,7 @@ order by ordinal""", mid)):
 
     def _rewriteMediaRefs(self):
         col = self.col
+
         def rewriteRef(key):
             all, fname = match
             if all in state['mflds']:
@@ -550,14 +557,14 @@ order by ordinal""", mid)):
                 # loop through notes and write reference into new field
                 data = []
                 for id, flds in self.col.db.execute(
-                    "select id, flds from notes where id in "+
-                    ids2str(col.models.nids(m))):
+                        "select id, flds from notes where id in " +
+                        ids2str(col.models.nids(m))):
                     sflds = splitFields(flds)
-                    ref = all.replace(fname, pre+sflds[idx]+suf)
-                    data.append((flds+ref, id))
+                    ref = all.replace(fname, pre + sflds[idx] + suf)
+                    data.append((flds + ref, id))
                 # update notes
                 col.db.executemany("update notes set flds=? where id=?",
-                                    data)
+                                   data)
                 # note field for future
                 state['mflds'][fname] = fld
                 new = fld
@@ -606,8 +613,9 @@ and ord = ? limit 1""", m['id'], t['ord']):
 
     # Conditional templates
     ######################################################################
-    # For models that don't use a given template in all cards, we'll need to
-    # add a new field to notes to indicate if the card should be generated or not
+    # For models that don't use a given template in all cards, we'll
+    # need to add a new field to notes to indicate if the card should
+    # be generated or not
 
     def _addFlagFields(self):
         for m in self.col.models.all():
@@ -636,10 +644,10 @@ and ord = ? limit 1""", m['id'], t['ord']):
         self.col.models.addField(m, f)
         # find the notes that have that card
         haveNids = self.col.db.list(
-            "select nid from cards where id in "+ids2str(cids))
+            "select nid from cards where id in " + ids2str(cids))
         # add "y" to the appended field for those notes
         self.col.db.execute(
-            "update notes set flds = flds || 'y' where id in "+ids2str(
+            "update notes set flds = flds || 'y' where id in " + ids2str(
                 haveNids))
         # wrap the template in a conditional
         tmpl['qfmt'] = "{{#%s}}\n%s\n{{/%s}}" % (
@@ -668,7 +676,7 @@ and ord = ? limit 1""", m['id'], t['ord']):
         d -= datetime.timedelta(hours=4)
         d = datetime.datetime(d.year, d.month, d.day)
         d += datetime.timedelta(hours=4)
-        d -= datetime.timedelta(days=1+int((time.time()-col.crt)/86400))
+        d -= datetime.timedelta(days=1 + int((time.time() - col.crt) / 86400))
         col.crt = int(time.mktime(d.timetuple()))
         col.sched._updateCutoff()
         # update uniq cache
@@ -681,20 +689,23 @@ and ord = ? limit 1""", m['id'], t['ord']):
         # remove stats, as it's all in the revlog now
         col.db.execute("drop table if exists stats")
         # suspended cards don't use ranges anymore
-        col.db.execute("update cards set queue=-1 where queue between -3 and -1")
-        col.db.execute("update cards set queue=-2 where queue between 3 and 5")
-        col.db.execute("update cards set queue=type where queue between 6 and 8")
+        col.db.execute(
+            "update cards set queue=-1 where queue between -3 and -1")
+        col.db.execute(
+            "update cards set queue=-2 where queue between 3 and 5")
+        col.db.execute(
+            "update cards set queue=type where queue between 6 and 8")
         # remove old deleted tables
         for t in ("cards", "notes", "models", "media"):
             col.db.execute("drop table if exists %sDeleted" % t)
         # and failed cards
-        left = len(col.decks.confForDid(1)['lapse']['delays'])*1001
+        left = len(col.decks.confForDid(1)['lapse']['delays']) * 1001
         col.db.execute("""
 update cards set left=?,type=1,queue=1,ivl=1 where type=1 and ivl <= 1
 and queue>=0""", left)
         col.db.execute("""
 update cards set odue=?,left=?,type=2 where type=1 and ivl > 1 and queue>=0""",
-                       col.sched.today+1, left)
+                       col.sched.today + 1, left)
         # and due cards
         col.db.execute("""
 update cards set due = cast(

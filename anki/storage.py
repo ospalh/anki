@@ -2,14 +2,18 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import os, copy, re
-from anki.lang import _
-from anki.utils import intTime, json
-from anki.db import DB
+import copy
+import os
+import re
+
 from anki.collection import _Collection
-from anki.consts import *
-from anki.stdmodels import addBasicModel, addClozeModel, addForwardReverse, \
-    addForwardOptionalReverse
+from anki.consts import MODEL_CLOZE, MODEL_STD, SCHEMA_VERSION
+from anki.db import DB
+from anki.lang import _
+from anki.stdmodels import addBasicModel, addClozeModel, \
+    addForwardOptionalReverse, addForwardReverse
+from anki.utils import intTime, json
+
 
 def Collection(path, lock=True, server=False, sync=True):
     "Open a new or existing collection. Path must be unicode."
@@ -47,6 +51,7 @@ def Collection(path, lock=True, server=False, sync=True):
         col.lock()
     return col
 
+
 def _upgradeSchema(db):
     ver = db.scalar("select ver from col")
     if ver == SCHEMA_VERSION:
@@ -75,6 +80,7 @@ id, guid, mid, mod, usn, tags, flds, sfld, csum, flags, data from notes2""")
         db.execute("update col set ver = 3")
         _updateIndices(db)
     return ver
+
 
 def _upgrade(col, ver):
     if ver < 3:
@@ -108,7 +114,7 @@ def _upgrade(col, ver):
                     # ankidroid didn't bump version
                     continue
                 m['css'] += "\n" + t['css'].replace(
-                    ".card ", ".card%d "%(t['ord']+1))
+                    ".card ", ".card%d " % (t['ord'] + 1))
                 del t['css']
             col.models.save(m)
         col.db.execute("update col set ver = 6")
@@ -177,6 +183,7 @@ update cards set left = left + left*1000 where queue = 1""")
             col.models.save(m)
         col.db.execute("update col set ver = 11")
 
+
 def _upgradeClozeModel(col, m):
     m['type'] = MODEL_CLOZE
     # convert first template
@@ -198,6 +205,7 @@ def _upgradeClozeModel(col, m):
 # Creating a new collection
 ######################################################################
 
+
 def _createDB(db):
     db.execute("pragma page_size = 4096")
     db.execute("pragma legacy_file_format = 0")
@@ -206,6 +214,7 @@ def _createDB(db):
     _updateIndices(db)
     db.execute("analyze")
     return SCHEMA_VERSION
+
 
 def _addSchema(db, setColConf=True):
     db.executescript("""
@@ -280,9 +289,10 @@ create table if not exists graves (
 
 insert or ignore into col
 values(1,0,0,%(s)s,%(v)s,0,0,0,'','{}','','','{}');
-""" % ({'v':SCHEMA_VERSION, 's':intTime(1000)}))
+""" % ({'v': SCHEMA_VERSION, 's': intTime(1000)}))
     if setColConf:
         _addColVars(db, *_getColVars(db))
+
 
 def _getColVars(db):
     import anki.collection
@@ -296,12 +306,12 @@ def _getColVars(db):
     gc['id'] = 1
     return g, gc, anki.collection.defaultConf.copy()
 
+
 def _addColVars(db, g, gc, c):
     db.execute("""
 update col set conf = ?, decks = ?, dconf = ?""",
-                   json.dumps(c),
-                   json.dumps({'1': g}),
-                   json.dumps({'1': gc}))
+               json.dumps(c), json.dumps({'1': g}), json.dumps({'1': gc}))
+
 
 def _updateIndices(db):
     "Add indices to the DB."

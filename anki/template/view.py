@@ -1,6 +1,10 @@
-from anki.template import Template
+# -*- coding: utf-8 -*-
+
 import os.path
 import re
+
+from anki.template import Template
+
 
 class View(object):
     # Path where this view's template(s) live
@@ -62,8 +66,8 @@ class View(object):
             if os.path.exists(self.template_file):
                 return self._load_template()
 
-        raise IOError('"%s" not found in "%s"' % (name, ':'.join(self.template_path),))
-
+        raise IOError(
+            '"%s" not found in "%s"' % (name, ':'.join(self.template_path),))
 
     def _load_template(self):
         f = open(self.template_file, 'r')

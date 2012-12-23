@@ -10,6 +10,7 @@ models = []
 # Basic
 ##########################################################################
 
+
 def addBasicModel(col):
     mm = col.models
     m = mm.new(_("Basic"))
@@ -18,8 +19,8 @@ def addBasicModel(col):
     fm = mm.newField(_("Back"))
     mm.addField(m, fm)
     t = mm.newTemplate(_("Card 1"))
-    t['qfmt'] = "{{"+_("Front")+"}}"
-    t['afmt'] = "{{FrontSide}}\n\n<hr id=answer>\n\n"+"{{"+_("Back")+"}}"
+    t['qfmt'] = "{{" + _("Front") + "}}"
+    t['afmt'] = "{{FrontSide}}\n\n<hr id=answer>\n\n" + "{{" + _("Back") + "}}"
     mm.addTemplate(m, t)
     mm.add(m)
     return m
@@ -29,13 +30,15 @@ models.append((lambda: _("Basic"), addBasicModel))
 # Forward & Reverse
 ##########################################################################
 
+
 def addForwardReverse(col):
     mm = col.models
     m = addBasicModel(col)
     m['name'] = _("Basic (and reversed card)")
     t = mm.newTemplate(_("Card 2"))
-    t['qfmt'] = "{{"+_("Back")+"}}"
-    t['afmt'] = "{{FrontSide}}\n\n<hr id=answer>\n\n"+"{{"+_("Front")+"}}"
+    t['qfmt'] = "{{" + _("Back") + "}}"
+    t['afmt'] = "{{FrontSide}}\n\n<hr id=answer>\n\n" \
+        + "{{" + _("Front") + "}}"
     mm.addTemplate(m, t)
     return m
 
@@ -44,6 +47,7 @@ models.append((lambda: _("Forward & Reverse"), addForwardReverse))
 # Forward & Optional Reverse
 ##########################################################################
 
+
 def addForwardOptionalReverse(col):
     mm = col.models
     m = addBasicModel(col)
@@ -51,15 +55,18 @@ def addForwardOptionalReverse(col):
     fm = mm.newField(_("Add Reverse"))
     mm.addField(m, fm)
     t = mm.newTemplate(_("Card 2"))
-    t['qfmt'] = "{{#Add Reverse}}{{"+_("Back")+"}}{{/Add Reverse}}"
-    t['afmt'] = "{{FrontSide}}\n\n<hr id=answer>\n\n"+"{{"+_("Front")+"}}"
+    t['qfmt'] = "{{#Add Reverse}}{{" + _("Back") + "}}{{/Add Reverse}}"
+    t['afmt'] = "{{FrontSide}}\n\n<hr id=answer>\n\n" \
+        + "{{" + _("Front") + "}}"
     mm.addTemplate(m, t)
     return m
 
-models.append((lambda: _("Forward & Optional Reverse"), addForwardOptionalReverse))
+models.append(
+    (lambda: _("Forward & Optional Reverse"), addForwardOptionalReverse))
 
 # Cloze
 ##########################################################################
+
 
 def addClozeModel(col):
     mm = col.models
