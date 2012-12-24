@@ -2,15 +2,24 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import time, re, traceback
-from aqt.qt import *
+from PyQt4.QtCore import QThread, SIGNAL
+import time
+import re
+import traceback
+
+from anki.hooks import addHook, remHook
+from anki.lang import _
 from anki.sync import httpCon
 from aqt.utils import showWarning
-from anki.hooks import addHook, remHook
-import aqt.sync # monkey-patches httplib2
+import aqt.sync  # monkey-patches httplib2
+
 
 def download(mw, code):
-    "Download addon/deck from AnkiWeb. On success caller must stop progress diag."
+    """
+    Download addon/deck from AnkiWeb.
+
+    Download addon/deck from AnkiWeb. On success caller must stop
+    progress diag."""
     # check code is valid
     try:
         code = int(code)
@@ -19,8 +28,9 @@ def download(mw, code):
         return
     # create downloading thread
     thread = Downloader(code)
+
     def onRecv():
-        mw.progress.update(label="%dKB downloaded" % (thread.recvTotal/1024))
+        mw.progress.update(label="%dKB downloaded" % (thread.recvTotal / 1024))
     mw.connect(thread, SIGNAL("recv"), onRecv)
     thread.start()
     mw.progress.start(immediate=True)
@@ -34,6 +44,7 @@ def download(mw, code):
         mw.progress.finish()
         showWarning(_("Download failed: %s") % thread.error)
 
+
 class Downloader(QThread):
 
     def __init__(self, code):
@@ -45,16 +56,18 @@ class Downloader(QThread):
         # setup progress handler
         self.byteUpdate = time.time()
         self.recvTotal = 0
+
         def canPost():
             if (time.time() - self.byteUpdate) > 0.1:
                 self.byteUpdate = time.time()
                 return True
+
         def recvEvent(bytes):
             self.recvTotal += bytes
             if canPost():
                 self.emit(SIGNAL("recv"))
         addHook("httpRecv", recvEvent)
-        con =  httpCon()
+        con = httpCon()
         try:
             resp, cont = con.request(
                 aqt.appShared + "download/%d" % self.code)

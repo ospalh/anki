@@ -1,8 +1,21 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
-import   socket, time, traceback, gc
+from anki.hooks import runHook
+from cStringIO import StringIO
+import errno
+import gc
+import httplib
+import httplib2
+import socket
+import time
+import traceback
+
+from PyQt4.QtCore import QObject, QThread, SIGNAL
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QGridLayout, QLabel, \
+    QLineEdit, QVBoxLayout
+
+from anki.lang import _
 import aqt
 from anki import Collection
 from anki.sync import Syncer, RemoteServer, FullSyncer, MediaSyncer, \
@@ -12,6 +25,7 @@ from aqt.utils import tooltip, askUserDialog, showWarning, showText
 
 # Sync manager
 ######################################################################
+
 
 class SyncManager(QObject):
 
@@ -52,11 +66,11 @@ class SyncManager(QObject):
         self.mw.progress.update(label="%s\n%s" % (
             self.label,
             _("%(a)dkB up, %(b)dkB down") % dict(
-                a=self.sentBytes/1024,
-                b=self.recvBytes/1024)))
+                a=self.sentBytes / 1024,
+                b=self.recvBytes / 1024)))
 
     def onEvent(self, evt, *args):
-        pu = self.mw.progress.update
+        # pu = self.mw.progress.update
         if evt == "badAuth":
             tooltip(
                 _("AnkiWeb ID or password was incorrect; please try again."),
@@ -72,7 +86,8 @@ class SyncManager(QObject):
         elif evt == "offline":
             tooltip(_("Syncing failed; internet offline."))
         elif evt == "sync":
-            m = None; t = args[0]
+            m = None
+            t = args[0]
             if t == "login":
                 m = _("Syncing...")
             elif t == "upload":
@@ -90,8 +105,7 @@ Please visit AnkiWeb, upgrade your deck, then try again."""))
                 self.label = m
                 self._updateLabel()
         elif evt == "error":
-            showText(_("Syncing failed:\n%s")%
-                     self._rewriteError(args[0]))
+            showText(_("Syncing failed:\n%s") % self._rewriteError(args[0]))
         elif evt == "clockOff":
             self._clockOff()
         elif evt == "noChanges":
@@ -128,10 +142,12 @@ Please upgrade to the latest version of Anki.""")
             return _("""\
 AnkiWeb is too busy at the moment. Please try again in a few minutes.""")
         elif "409" in err:
-            return _("A previous sync failed; please try again in a few minutes.")
-        elif "10061" in err:
             return _(
-                "Antivirus or firewall software is preventing Anki from connecting to the internet.")
+                "A previous sync failed; please try again in a few minutes.")
+        elif "10061" in err:
+            return _("""\
+Antivirus or firewall software is preventing Anki from connecting \
+to the internet.""")
         elif "407" in err:
             return _("Proxy authentication required.")
         return err
@@ -161,7 +177,7 @@ enter your details below.""") %
         passwd.setEchoMode(QLineEdit.Password)
         g.addWidget(passwd, 1, 1)
         vbox.addLayout(g)
-        bb = QDialogButtonBox(QDialogButtonBox.Ok|QDialogButtonBox.Cancel)
+        bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         bb.button(QDialogButtonBox.Ok).setAutoDefault(True)
         self.connect(bb, SIGNAL("accepted()"), d.accept)
         self.connect(bb, SIGNAL("rejected()"), d.reject)
@@ -183,9 +199,9 @@ side with the decks from the other.
 
 Do you want to upload the decks from here, or download the decks \
 from AnkiWeb?"""),
-                [_("Upload to AnkiWeb"),
-                 _("Download from AnkiWeb"),
-                 _("Cancel")])
+                             [_("Upload to AnkiWeb"),
+                              _("Download from AnkiWeb"),
+                              _("Cancel")])
         diag.setDefault(2)
         ret = diag.run()
         if ret == _("Upload to AnkiWeb"):
@@ -201,11 +217,12 @@ Syncing requires the clock on your computer to be set correctly. Please \
 fix the clock and try again."""))
 
     def badUserPass(self):
-        aqt.preferences.Preferences(self, self.pm.profile).dialog.tabWidget.\
-                                         setCurrentIndex(1)
+        aqt.preferences.Preferences(
+            self, self.pm.profile).dialog.tabWidget.setCurrentIndex(1)
 
 # Sync thread
 ######################################################################
+
 
 class SyncThread(QThread):
 
@@ -228,16 +245,20 @@ class SyncThread(QThread):
         self.recvTotal = 0
         # throttle updates; qt doesn't handle lots of posted events well
         self.byteUpdate = time.time()
+
         def syncEvent(type):
             self.fireEvent("sync", type)
+
         def canPost():
             if (time.time() - self.byteUpdate) > 0.1:
                 self.byteUpdate = time.time()
                 return True
+
         def sendEvent(bytes):
             self.sentTotal += bytes
             if canPost():
                 self.fireEvent("send", self.sentTotal)
+
         def recvEvent(bytes):
             self.recvTotal += bytes
             if canPost():
@@ -346,11 +367,10 @@ class SyncThread(QThread):
 ######################################################################
 
 CHUNK_SIZE = 65536
-import httplib, httplib2, errno
-from cStringIO import StringIO
-from anki.hooks import runHook
 
 # sending in httplib
+
+
 def _incrementalSend(self, data):
     """Send `data' to the server."""
     if self.sock is None:
@@ -371,11 +391,13 @@ def _incrementalSend(self, data):
 httplib.HTTPConnection.send = _incrementalSend
 
 # receiving in httplib2
+
+
 def _conn_request(self, conn, request_uri, method, body, headers):
     for i in range(2):
         try:
             if conn.sock is None:
-              conn.connect()
+                conn.connect()
             conn.request(method, request_uri, body, headers)
         except socket.timeout:
             raise
@@ -392,11 +414,11 @@ def _conn_request(self, conn, request_uri, method, body, headers):
                 err = getattr(e, 'args')[0]
             else:
                 err = e.errno
-            if err == errno.ECONNREFUSED: # Connection refused
+            if err == errno.ECONNREFUSED:  # Connection refused
                 raise
         except httplib.HTTPException:
-            # Just because the server closed the connection doesn't apparently mean
-            # that the server didn't send a response.
+            # Just because the server closed the connection doesn't
+            # apparently mean that the server didn't send a response.
             if conn.sock is None:
                 if i == 0:
                     conn.close()

@@ -2,18 +2,28 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
-import re, os, urllib2, ctypes
-from anki.utils import stripHTML, isWin, isMac, namedtmp, json
-from anki.sound import play
-from anki.hooks import runHook, runFilter
-from aqt.sound import getAudio
-from aqt.webview import AnkiWebView
-from aqt.utils import shortcut, showInfo, showWarning, getBase, getFile, \
-    openHelp
-import aqt
-import anki.js
 from BeautifulSoup import BeautifulSoup
+from PyQt4.QtCore import QMimeData, Qt, SIGNAL
+from PyQt4.QtGui import QClipboard, QColor, QColorDialog, QCursor, QDialog, \
+    QDropEvent, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QIcon, QImage, \
+    QKeySequence, QLabel, QMenu, QPalette, QPushButton, QShortcut, \
+    QSizePolicy, QSpacerItem, QStyleFactory, QTextCursor, QVBoxLayout
+from PyQt4.QtWebKit import QWebPage, QWebView
+
+import ctypes
+import os
+import re
+import urllib2
+
+from anki.hooks import runHook, runFilter
+from anki.lang import _
+from anki.utils import stripHTML, isWin, isMac, namedtmp, json
+from aqt.sound import getAudio
+from aqt.utils import getBase, getFile, openHelp, shortcut, showInfo, \
+    showWarning
+from aqt.webview import AnkiWebView
+import anki.js
+import aqt
 
 # fixme: when tab order returns to the webview, the previously focused field
 # is focused, which is not good when the user is tabbing through the dialog
@@ -22,7 +32,7 @@ from BeautifulSoup import BeautifulSoup
 # fixme: commit from tag area causes error
 
 pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg")
-audio =  ("wav", "mp3", "ogg", "flac")
+audio = ("wav", "mp3", "ogg", "flac")
 
 _html = """
 <html><head>%s<style>
@@ -110,11 +120,11 @@ function onFocus(elem) {
     setTimeout(function () { caretToEnd() }, 1);
     // scroll if bottom of element off the screen
     function pos(obj) {
-    	var cur = 0;
+        var cur = 0;
         do {
           cur += obj.offsetTop;
          } while (obj = obj.offsetParent);
-    	return cur;
+        return cur;
     }
     var y = pos(elem);
     if ((window.pageYOffset+window.innerHeight) < (y+elem.offsetHeight) ||
@@ -192,8 +202,10 @@ function setFields(fields, focusTo) {
         if (!f) {
             f = "<br>";
         }
-        txt += "<tr><td class=fname>{0}</td></tr><tr><td width=100%%>".format(n);
-        txt += "<div id=f{0} onkeydown='onKey();' onmouseup='onKey();'".format(i);
+        txt +=
+            "<tr><td class=fname>{0}</td></tr><tr><td width=100%%>".format(n);
+        txt +=
+            "<div id=f{0} onkeydown='onKey();' onmouseup='onKey();'".format(i);
         txt += " onfocus='onFocus(this);' onblur='onBlur();' class=field ";
         txt += "ondragover='onDragOver(this);' ";
         txt += "contentEditable=true class=field>{0}</div>".format(f);
@@ -259,9 +271,11 @@ document.onclick = function (evt) {
 
 </script></head><body>
 <div id="fields"></div>
-<div id="dupes"><a href="#" onclick="py.run('dupes');return false;">%s</a></div>
+<div id="dupes"><a href="#" onclick="py.run('dupes');return false;">\
+%s</a></div>
 </body></html>
 """
+
 
 def _filterHTML(html):
     doc = BeautifulSoup(html)
@@ -310,6 +324,8 @@ def _filterHTML(html):
     return html
 
 # caller is responsible for resetting note on reset
+
+
 class Editor(object):
     def __init__(self, mw, widget, parentWindow, addMode=False):
         self.mw = mw
@@ -397,15 +413,16 @@ class Editor(object):
         b("fields", self.onFields, "",
           shortcut(_("Customize Fields")), size=False, text=_("Fields..."),
           native=True, canDisable=False)
-        self.iconsBox.addItem(QSpacerItem(6,1, QSizePolicy.Fixed))
+        self.iconsBox.addItem(QSpacerItem(6, 1, QSizePolicy.Fixed))
         b("layout", self.onCardLayout, _("Ctrl+L"),
           shortcut(_("Customize Cards (Ctrl+L)")),
           size=False, text=_("Cards..."), native=True, canDisable=False)
         # align to right
-        self.iconsBox.addItem(QSpacerItem(20,1, QSizePolicy.Expanding))
+        self.iconsBox.addItem(QSpacerItem(20, 1, QSizePolicy.Expanding))
         b("text_bold", self.toggleBold, _("Ctrl+B"), _("Bold text (Ctrl+B)"),
           check=True)
-        b("text_italic", self.toggleItalic, _("Ctrl+I"), _("Italic text (Ctrl+I)"),
+        b("text_italic", self.toggleItalic, _("Ctrl+I"),
+          _("Italic text (Ctrl+I)"),
           check=True)
         b("text_under", self.toggleUnderline, _("Ctrl+U"),
           _("Underline text (Ctrl+U)"), check=True)
@@ -419,7 +436,7 @@ class Editor(object):
         but.setToolTip(_("Set foreground colour (F7)"))
         self.setupForegroundButton(but)
         but = b("change_colour", self.onChangeCol, _("F8"),
-          _("Change colour (F8)"), text=u"▾")
+                _("Change colour (F8)"), text=u"▾")
         but.setFixedWidth(12)
         but = b("cloze", self.onCloze, _("Ctrl+Shift+C"),
                 _("Cloze deletion (Ctrl+Shift+C)"), text="[...]")
@@ -462,7 +479,7 @@ class Editor(object):
         else:
             ord = 0
         CardLayout(self.mw, self.note, ord=ord, parent=self.parentWindow,
-               addMode=self.addMode)
+                   addMode=self.addMode)
         self.loadNote()
 
     # JS->Python bridge
@@ -489,7 +506,7 @@ class Editor(object):
                 self.disableButtons()
                 # run any filters
                 if runFilter(
-                    "editFocusLost", False, self.note, self.currentField):
+                        "editFocusLost", False, self.note, self.currentField):
                     # something updated the note; schedule reload
                     def onUpdate():
                         self.loadNote()
@@ -630,7 +647,7 @@ class Editor(object):
         form = aqt.forms.edithtml.Ui_Dialog()
         form.setupUi(d)
         d.connect(form.buttonBox, SIGNAL("helpRequested()"),
-                 lambda: openHelp("editor"))
+                  lambda: openHelp("editor"))
         form.textEdit.setPlainText(self.note.fields[self.currentField])
         form.textEdit.moveCursor(QTextCursor.End)
         d.exec_()
@@ -777,12 +794,14 @@ to a cloze type first, via Edit>Change Note Type."""))
 
     def onAddMedia(self):
         key = (_("Media") +
-               " (*.jpg *.png *.gif *.tiff *.svg *.tif *.jpeg "+
+               " (*.jpg *.png *.gif *.tiff *.svg *.tif *.jpeg " +
                "*.mp3 *.ogg *.wav *.avi *.ogv *.mpg *.mpeg *.mov *.mp4 " +
                "*.mkv *.ogx *.ogv *.oga *.flv *.swf *.flac)")
+
         def accept(file):
             self.addMedia(file, canDelete=True)
-        file = getFile(self.widget, _("Add Media"), accept, key, key="media")
+        # file = getFile(self.widget, _("Add Media"), accept, key, key="media")
+        getFile(self.widget, _("Add Media"), accept, key, key="media")
         self.parentWindow.activateWindow()
 
     def addMedia(self, path, canDelete=False):
@@ -812,9 +831,9 @@ to a cloze type first, via Edit>Change Note Type."""))
         try:
             file = getAudio(self.widget)
         except Exception, e:
-            showWarning(_(
-                "Couldn't record audio. Have you installed lame and sox?") +
-                        "\n\n" + unicode(e))
+            showWarning(
+                _("Couldn't record audio. Have you installed lame and sox?") +
+                "\n\n" + unicode(e))
             return
         self.addMedia(file)
 
@@ -881,6 +900,7 @@ to a cloze type first, via Edit>Change Note Type."""))
 
 # Pasting, drag & drop, and keyboard layouts
 ######################################################################
+
 
 class EditorWebView(AnkiWebView):
 
@@ -1023,7 +1043,7 @@ class EditorWebView(AnkiWebView):
 
     def _localizedMediaLink(self, url):
         l = url.lower()
-        for suffix in pics+audio:
+        for suffix in pics + audio:
             if l.endswith(suffix):
                 return self._retrieveURL(url)
         # not a supported type; return link verbatim
@@ -1034,7 +1054,8 @@ class EditorWebView(AnkiWebView):
         l = txt.lower()
         html = None
         # if the user is pasting an image or sound link, convert it to local
-        if l.startswith("http://") or l.startswith("https://") or l.startswith("file://"):
+        if l.startswith("http://") or l.startswith("https://") \
+                or l.startswith("file://"):
             txt = txt.split("\r\n")[0]
             html = self._localizedMediaLink(txt)
             if html == txt:
@@ -1062,15 +1083,15 @@ class EditorWebView(AnkiWebView):
         uname = namedtmp("paste-%d" % im.cacheKey())
         if self.editor.mw.pm.profile.get("pastePNG", False):
             ext = ".png"
-            im.save(uname+ext, None, 50)
+            im.save(uname + ext, None, 50)
         else:
             ext = ".jpg"
-            im.save(uname+ext, None, 80)
+            im.save(uname + ext, None, 80)
         # invalid image?
-        if not os.path.exists(uname+ext):
+        if not os.path.exists(uname + ext):
             return QMimeData()
         mime = QMimeData()
-        mime.setHtml(self.editor._addMedia(uname+ext))
+        mime.setHtml(self.editor._addMedia(uname + ext))
         return mime
 
     def _retrieveURL(self, url):
@@ -1101,7 +1122,6 @@ class EditorWebView(AnkiWebView):
         mime = clip.mimeData()
         if not mime.hasHtml():
             return
-        html = mime.html()
         mime.setHtml("<!--anki-->" + mime.html())
 
     def contextMenuEvent(self, evt):

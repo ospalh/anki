@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
+from PyQt4.QtCore import Qt
+
+from anki.lang import _
+
 
 class Toolbar(object):
 
@@ -18,16 +21,13 @@ class Toolbar(object):
             "add": self._addLinkHandler,
             "browse": self._browseLinkHandler,
             "stats": self._studyLinkHandler,
-            "sync": self._syncLinkHandler,
-        }
+            "sync": self._syncLinkHandler}
 
     def draw(self):
-        self.web.stdHtml(self._body % (
-            # may want a context menu here in the future
-            '&nbsp;'*20,
-            self._centerLinks(),
-            self._rightIcons()),
-                         self._css)
+        # may want a context menu here in the future
+        self.web.stdHtml(
+            self._body % ('&nbsp;' * 20, self._centerLinks(),
+                          self._rightIcons()), self._css)
 
     # Available links
     ######################################################################
@@ -37,15 +37,13 @@ class Toolbar(object):
             ["stats", "qrc:/icons/view-statistics.png",
              _("Show statistics. Shortcut key: %s") % "Shift+S"],
             ["sync", "qrc:/icons/view-refresh.png",
-             _("Synchronize with AnkiWeb. Shortcut key: %s") % "Y"],
-        ]
+             _("Synchronize with AnkiWeb. Shortcut key: %s") % "Y"]]
 
     def _centerLinks(self):
         links = [
             ["decks", _("Decks"), _("Shortcut key: %s") % "D"],
             ["add", _("Add"), _("Shortcut key: %s") % "A"],
-            ["browse", _("Browse"), _("Shortcut key: %s") % "B"],
-        ]
+            ["browse", _("Browse"), _("Shortcut key: %s") % "B"]]
         return self._linkHTML(links)
 
     def _linkHTML(self, links):
@@ -53,13 +51,14 @@ class Toolbar(object):
         for ln, name, title in links:
             buf += '<a class=hitem title="%s" href="%s">%s</a>' % (
                 title, ln, name)
-            buf += "&nbsp;"*3
+            buf += "&nbsp;" * 3
         return buf
 
     def _rightIcons(self):
         buf = ""
         for ln, icon, title in self._rightIconsList():
-            buf += '<a class=hitem title="%s" href="%s"><img width="16px" height="16px" src="%s"></a>' % (
+            buf += '''<a class=hitem title="%s" href="%s">\
+<img width="16px" height="16px" src="%s"></a>''' % (
                 title, ln, icon)
         return buf
 
@@ -71,30 +70,30 @@ class Toolbar(object):
         # focus ring around the clicked item
         self.mw.web.setFocus()
         if link in self.link_handlers:
-          self.link_handlers[link]()
+            self.link_handlers[link]()
 
     def _deckLinkHandler(self):
-      self.mw.moveToState("deckBrowser")
+        self.mw.moveToState("deckBrowser")
 
     def _studyLinkHandler(self):
-      # if overview already shown, switch to review
-      if self.mw.state == "overview":
-          self.mw.col.startTimebox()
-          self.mw.moveToState("review")
-      else:
-          self.mw.onOverview()
+        # if overview already shown, switch to review
+        if self.mw.state == "overview":
+            self.mw.col.startTimebox()
+            self.mw.moveToState("review")
+        else:
+            self.mw.onOverview()
 
     def _addLinkHandler(self):
-      self.mw.onAddCard()
+        self.mw.onAddCard()
 
     def _browseLinkHandler(self):
-      self.mw.onBrowse()
+        self.mw.onBrowse()
 
     def _statsLinkHandler(self):
-      self.mw.onStats()
+        self.mw.onStats()
 
     def _syncLinkHandler(self):
-      self.mw.onSync()
+        self.mw.onSync()
 
     # HTML & CSS
     ######################################################################
@@ -134,6 +133,7 @@ color: #000;
 text-decoration: underline;
 }
 """
+
 
 class BottomBar(Toolbar):
 

@@ -2,9 +2,13 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
+from PyQt4.QtCore import Qt, SIGNAL
+from PyQt4.QtGui import QDialog, QDialogButtonBox
+
+from anki.lang import _
+from aqt.utils import askUser, openHelp, showWarning
 import aqt
-from aqt.utils import  showWarning, openHelp, askUser
+
 
 class DeckConf(QDialog):
     def __init__(self, mw, first=False, search="", deck=None):

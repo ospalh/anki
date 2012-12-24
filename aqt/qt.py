@@ -3,7 +3,8 @@
 
 # imports are all in this file to make moving to pyside easier in the future
 
-import sip, os
+import sip
+import os
 sip.setapi('QString', 2)
 sip.setapi('QVariant', 2)
 sip.setapi('QUrl', 2)
@@ -33,4 +34,3 @@ if os.environ.get("DEBUG"):
 qtconf = pyqtconfig.Configuration()
 qtmajor = (qtconf.qt_version & 0xff0000) >> 16
 qtminor = (qtconf.qt_version & 0x00ff00) >> 8
-

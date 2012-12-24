@@ -2,10 +2,13 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
-import aqt
+from PyQt4.QtCore import Qt, SIGNAL
+from PyQt4.QtGui import QDialog
+
+from anki.consts import DYN_DUE, DYN_OLDEST, DYN_RANDOM
+from anki.lang import _
 from aqt.utils import showInfo, showWarning
-from anki.consts import *
+import aqt
 
 RADIO_NEW = 1
 RADIO_REV = 2
@@ -14,6 +17,7 @@ RADIO_AHEAD = 4
 RADIO_RANDOM = 5
 RADIO_PREVIEW = 6
 RADIO_TAGS = 7
+
 
 class CustomStudy(QDialog):
     def __init__(self, mw):
@@ -28,7 +32,9 @@ class CustomStudy(QDialog):
         self.exec_()
 
     def setupSignals(self):
-        f = self.form; c = self.connect; s = SIGNAL("clicked()")
+        f = self.form
+        c = self.connect
+        s = SIGNAL("clicked()")
         c(f.radio1, s, lambda: self.onRadioChange(1))
         c(f.radio2, s, lambda: self.onRadioChange(2))
         c(f.radio3, s, lambda: self.onRadioChange(3))
@@ -38,15 +44,19 @@ class CustomStudy(QDialog):
         c(f.radio7, s, lambda: self.onRadioChange(7))
 
     def onRadioChange(self, idx):
-        f = self.form; sp = f.spin
-        smin = 1; smax = 9999; sval = 1
+        f = self.form
+        sp = f.spin
+        smin = 1
+        smax = 9999
+        sval = 1
         post = _("cards")
         tit = ""
         spShow = True
+
         def plus(num):
             if num == 1000:
                 num = "1000+"
-            return "<b>"+str(num)+"</b>"
+            return "<b>" + str(num) + "</b>"
         if idx == RADIO_NEW:
             new = self.mw.col.sched.totalNewForCurrentDeck()
             self.deck['newToday']
@@ -90,7 +100,9 @@ class CustomStudy(QDialog):
         self.radioIdx = idx
 
     def accept(self):
-        f = self.form; i = self.radioIdx; spin = f.spin.value()
+        f = self.form
+        i = self.radioIdx
+        spin = f.spin.value()
         if i == RADIO_NEW:
             self.deck['extendNew'] = spin
             self.mw.col.decks.save(self.deck)
@@ -137,17 +149,19 @@ class CustomStudy(QDialog):
             dyn['resched'] = True
         elif i == RADIO_PREVIEW:
             dyn['delays'] = None
-            dyn['terms'][0] = ['is:new added:%s'%spin, 9999, DYN_OLDEST]
+            dyn['terms'][0] = ['is:new added:%s' % spin, 9999, DYN_OLDEST]
             dyn['resched'] = False
         elif i == RADIO_TAGS:
             dyn['delays'] = None
-            dyn['terms'][0] = ["(is:new or is:due) "+tags, 9999, DYN_RANDOM]
+            dyn['terms'][0] = ["(is:new or is:due) " + tags, 9999, DYN_RANDOM]
             dyn['resched'] = True
         # add deck limit
-        dyn['terms'][0][0] = "deck:\"%s\" %s " % (self.deck['name'], dyn['terms'][0][0])
+        dyn['terms'][0][0] = "deck:\"%s\" %s " % (
+            self.deck['name'], dyn['terms'][0][0])
         # generate cards
         if not self.mw.col.sched.rebuildDyn():
-            return showWarning(_("No cards matched the criteria you provided."))
+            return showWarning(
+                _("No cards matched the criteria you provided."))
         self.mw.moveToState("overview")
         QDialog.accept(self)
 

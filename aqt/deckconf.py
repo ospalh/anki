@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
+from PyQt4.QtCore import Qt, SIGNAL
+from PyQt4.QtGui import QCursor, QDialog, QDialogButtonBox, QMenu
+
 import aqt
-from aqt.utils import showInfo, showWarning, openHelp, getOnlyText, askUser, \
+from anki.lang import _, ngettext
+from aqt.utils import askUser, getOnlyText, openHelp, showInfo, showWarning, \
     tooltip
 from operator import itemgetter
+
 
 class DeckConf(QDialog):
     def __init__(self, mw, deck):
@@ -26,9 +30,9 @@ class DeckConf(QDialog):
                      lambda: openHelp("deckoptions"))
         self.connect(self.form.confOpts, SIGNAL("clicked()"), self.confOpts)
         self.form.confOpts.setText(u"▾")
-        self.connect(self.form.buttonBox.button(QDialogButtonBox.RestoreDefaults),
-                     SIGNAL("clicked()"),
-                     self.onRestore)
+        self.connect(
+            self.form.buttonBox.button(QDialogButtonBox.RestoreDefaults),
+            SIGNAL("clicked()"), self.onRestore)
         self.setWindowTitle(_("Options for %s") % self.deck['name'])
         self.exec_()
 
@@ -91,8 +95,9 @@ class DeckConf(QDialog):
                 continue
             if d['conf'] == conf['id']:
                 cnt += 1
-        self.form.count.setText(ngettext("%d deck uses this options group", \
-                "%d decks use this options group", cnt) % cnt)
+        self.form.count.setText(
+            ngettext("%d deck uses this options group",
+                     "%d decks use this options group", cnt) % cnt)
 
     def addGroup(self):
         name = getOnlyText(_("New options group name:"))
@@ -125,15 +130,15 @@ class DeckConf(QDialog):
 
     def setChildren(self):
         if not askUser(
-            _("Set all decks below %s to this option group?") %
-            self.deck['name']):
+                _("Set all decks below %s to this option group?") %
+                self.deck['name']):
             return
         for did in self.childDids:
             deck = self.mw.col.decks.get(did)
             deck['conf'] = self.deck['conf']
             self.mw.col.decks.save(deck)
-        tooltip(ngettext("%d deck updated.", "%d decks updated.", \
-                        len(self.childDids)) % len(self.childDids))
+        tooltip(ngettext("%d deck updated.", "%d decks updated.",
+                         len(self.childDids)) % len(self.childDids))
 
     # Loading
     ##################################################
@@ -164,7 +169,7 @@ class DeckConf(QDialog):
         f.lrnGradInt.setValue(c['ints'][0])
         f.lrnEasyInt.setValue(c['ints'][1])
         f.lrnEasyInt.setValue(c['ints'][1])
-        f.lrnFactor.setValue(c['initialFactor']/10.0)
+        f.lrnFactor.setValue(c['initialFactor'] / 10.0)
         f.newOrder.setCurrentIndex(c['order'])
         f.newPerDay.setValue(c['perDay'])
         f.separate.setChecked(c['separate'])
@@ -172,16 +177,16 @@ class DeckConf(QDialog):
         # rev
         c = self.conf['rev']
         f.revPerDay.setValue(c['perDay'])
-        f.revSpace.setValue(c['fuzz']*100)
+        f.revSpace.setValue(c['fuzz'] * 100)
         f.revMinSpace.setValue(c['minSpace'])
-        f.easyBonus.setValue(c['ease4']*100)
-        f.fi1.setValue(c['ivlFct']*100)
+        f.easyBonus.setValue(c['ease4'] * 100)
+        f.fi1.setValue(c['ivlFct'] * 100)
         f.maxIvl.setValue(c['maxIvl'])
         f.revplim.setText(self.parentLimText('rev'))
         # lapse
         c = self.conf['lapse']
         f.lapSteps.setText(self.listToUser(c['delays']))
-        f.lapMult.setValue(c['mult']*100)
+        f.lapMult.setValue(c['mult'] * 100)
         f.lapMinInt.setValue(c['minInt'])
         f.leechThreshold.setValue(c['leechFails'])
         f.leechAction.setCurrentIndex(c['leechAction'])
@@ -243,22 +248,22 @@ class DeckConf(QDialog):
         self.updateList(c, 'delays', f.lrnSteps)
         c['ints'][0] = f.lrnGradInt.value()
         c['ints'][1] = f.lrnEasyInt.value()
-        c['initialFactor'] = f.lrnFactor.value()*10
+        c['initialFactor'] = f.lrnFactor.value() * 10
         c['order'] = f.newOrder.currentIndex()
         c['perDay'] = f.newPerDay.value()
         c['separate'] = f.separate.isChecked()
         # rev
         c = self.conf['rev']
         c['perDay'] = f.revPerDay.value()
-        c['fuzz'] = f.revSpace.value()/100.0
+        c['fuzz'] = f.revSpace.value() / 100.0
         c['minSpace'] = f.revMinSpace.value()
-        c['ease4'] = f.easyBonus.value()/100.0
-        c['ivlFct'] = f.fi1.value()/100.0
+        c['ease4'] = f.easyBonus.value() / 100.0
+        c['ivlFct'] = f.fi1.value() / 100.0
         c['maxIvl'] = f.maxIvl.value()
         # lapse
         c = self.conf['lapse']
         self.updateList(c, 'delays', f.lapSteps, minSize=0)
-        c['mult'] = f.lapMult.value()/100.0
+        c['mult'] = f.lapMult.value() / 100.0
         c['minInt'] = f.lapMinInt.value()
         c['leechFails'] = f.leechThreshold.value()
         c['leechAction'] = f.leechAction.currentIndex()

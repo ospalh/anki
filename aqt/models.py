@@ -1,12 +1,19 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
 from operator import itemgetter
+
+from PyQt4.QtCore import Qt, SIGNAL
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QKeySequence, \
+    QListWidgetItem, QShortcut
+
 from aqt.utils import showInfo, askUser, getText, maybeHideClose, openHelp
-import aqt.modelchooser, aqt.clayout
+import aqt.modelchooser
+import aqt.clayout
 from anki import stdmodels
 from aqt.utils import saveGeom, restoreGeom
+from anki.lang import _, ngettext
+
 
 class Models(QDialog):
     def __init__(self, mw, parent=None, fromMain=False):
@@ -30,7 +37,9 @@ class Models(QDialog):
 
     def setupModels(self):
         self.model = None
-        c = self.connect; f = self.form; box = f.buttonBox
+        c = self.connect
+        f = self.form
+        box = f.buttonBox
         s = SIGNAL("clicked()")
         t = QDialogButtonBox.ActionRole
         b = box.addButton(_("Add"), t)
@@ -125,7 +134,7 @@ class Models(QDialog):
         self.mm.setCurrent(self.model)
         n = self.col.newNote()
         for name in n.keys():
-            n[name] = "("+name+")"
+            n[name] = "(" + name + ")"
         if "{{cloze:Text}}" in self.model['tmpls'][0]['qfmt']:
             n['Text'] = _("This is a {{c1::sample}} cloze deletion.")
         return n
@@ -150,6 +159,7 @@ class Models(QDialog):
         self.mw.reset()
         saveGeom(self, "models")
         QDialog.reject(self)
+
 
 class AddModel(QDialog):
 
@@ -179,7 +189,8 @@ class AddModel(QDialog):
         s = QShortcut(QKeySequence("Return"), self)
         self.connect(s, SIGNAL("activated()"), self.accept)
         # help
-        self.connect(self.dialog.buttonBox, SIGNAL("helpRequested()"), self.onHelp)
+        self.connect(
+            self.dialog.buttonBox, SIGNAL("helpRequested()"), self.onHelp)
 
     def get(self):
         self.exec_()

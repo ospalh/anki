@@ -1,13 +1,25 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import os, re, traceback, zipfile, json
-from aqt.qt import *
-import anki.importing as importing
-from aqt.utils import getOnlyText, getFile, showText, showWarning, openHelp,\
-    askUser, tooltip
+from PyQt4.QtCore import Qt, SIGNAL
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QFrame, QGridLayout, \
+    QLabel, QListWidgetItem, QMessageBox, QPushButton, QVBoxLayout, QWidget
+
+import json
+import os
+import re
+import traceback
+import zipfile
+
 from anki.hooks import addHook, remHook
-import aqt.forms, aqt.modelchooser, aqt.deckchooser
+from anki.lang import _
+from aqt.utils import askUser, getFile, getOnlyText, openHelp, showText, \
+    showWarning, tooltip
+import anki.importing as importing
+import aqt.deckchooser
+import aqt.forms
+import aqt.modelchooser
+
 
 class ChangeMap(QDialog):
     def __init__(self, mw, model, current):
@@ -31,7 +43,7 @@ class ChangeMap(QDialog):
             if current == "_tags":
                 self.frm.fields.setCurrentRow(n)
             else:
-                self.frm.fields.setCurrentRow(n+1)
+                self.frm.fields.setCurrentRow(n + 1)
         self.field = None
 
     def getField(self):
@@ -51,6 +63,7 @@ class ChangeMap(QDialog):
     def reject(self):
         self.accept()
 
+
 class ImportDialog(QDialog):
 
     def __init__(self, mw, importer):
@@ -69,7 +82,8 @@ class ImportDialog(QDialog):
         self.connect(self.frm.autoDetect, SIGNAL("clicked()"),
                      self.onDelimiter)
         self.updateDelimiterButtonText()
-        self.frm.allowHTML.setChecked(self.mw.pm.profile.get('allowHTML', False))
+        self.frm.allowHTML.setChecked(
+            self.mw.pm.profile.get('allowHTML', False))
         self.exec_()
 
     def setupOptions(self):
@@ -98,10 +112,11 @@ class ImportDialog(QDialog):
 By default, Anki will detect the character between fields, such as
 a tab, comma, and so on. If Anki is detecting the character incorrectly,
 you can enter it here. Use \\t to represent tab."""),
-                self, help="importing") or "\t"
+                          self, help="importing") or "\t"
         str = str.replace("\\t", "\t")
         str = str.encode("ascii")
         self.hideMapping()
+
         def updateDelim():
             self.importer.delimiter = str
             self.importer.updateDelimiter()
@@ -126,7 +141,7 @@ you can enter it here. Use \\t to represent tab."""),
         elif d == ":":
             d = _("Colon")
         else:
-            d = `d`
+            d = repr(d)  # or str(d)
         txt = _("Fields separated by: %s") % d
         self.frm.autoDetect.setText(txt)
 
@@ -171,7 +186,7 @@ you can enter it here. Use \\t to represent tab."""),
         self.frame = QFrame(self.frm.mappingArea)
         self.frm.mappingArea.setWidget(self.frame)
         self.mapbox = QVBoxLayout(self.frame)
-        self.mapbox.setContentsMargins(0,0,0,0)
+        self.mapbox.setContentsMargins(0, 0, 0, 0)
         self.mapwidget = None
 
     def hideMapping(self):
@@ -194,7 +209,7 @@ you can enter it here. Use \\t to represent tab."""),
         self.mapwidget.setLayout(self.grid)
         self.grid.setMargin(3)
         self.grid.setSpacing(6)
-        fields = self.importer.fields()
+        # fields = self.importer.fields()
         for num in range(len(self.mapping)):
             text = _("Field <b>%d</b> of file is:") % (num + 1)
             self.grid.addWidget(QLabel(text), num, 0)
@@ -208,7 +223,7 @@ you can enter it here. Use \\t to represent tab."""),
             button = QPushButton(_("Change"))
             self.grid.addWidget(button, num, 2)
             self.connect(button, SIGNAL("clicked()"),
-                         lambda s=self,n=num: s.changeMappingNum(n))
+                         lambda s=self, n=num: s.changeMappingNum(n))
 
     def changeMappingNum(self, n):
         f = ChangeMap(self.mw, self.importer.model, self.mapping[n]).getField()
@@ -221,6 +236,7 @@ you can enter it here. Use \\t to represent tab."""),
         self.mapping[n] = f
         if getattr(self.importer, "delimiter", False):
             self.savedDelimiter = self.importer.delimiter
+
             def updateDelim():
                 self.importer.delimiter = self.savedDelimiter
             self.showMapping(hook=updateDelim, keepMapping=True)
@@ -235,6 +251,7 @@ you can enter it here. Use \\t to represent tab."""),
     def helpRequested(self):
         openHelp("FileImport")
 
+
 def onImport(mw):
     filt = ";;".join([x[0] for x in importing.Importers])
     file = getFile(mw, _("Import"), None, key="import",
@@ -243,6 +260,7 @@ def onImport(mw):
         return
     file = unicode(file)
     importFile(mw, file)
+
 
 def importFile(mw, file):
     ext = os.path.splitext(file)[1]
@@ -274,8 +292,8 @@ def importFile(mw, file):
             if msg == "unknownFormat":
                 if ext == ".anki2":
                     showWarning(_("""\
-.anki2 files are not designed for importing. If you're trying to restore from a \
-backup, please see the 'Backups' section of the user manual."""))
+.anki2 files are not designed for importing. If you're trying to restore \
+from a backup, please see the 'Backups' section of the user manual."""))
                 else:
                     showWarning(_("Unknown file format."))
             else:
@@ -285,7 +303,7 @@ backup, please see the 'Backups' section of the user manual."""))
             return
         finally:
             mw.progress.finish()
-        diag = ImportDialog(mw, importer)
+        # diag = ImportDialog(mw, importer)
     else:
         # if it's an apkg, we need to ask whether to import/replace
         if importer.__class__.__name__ == "AnkiPackageImporter":
@@ -298,8 +316,8 @@ backup, please see the 'Backups' section of the user manual."""))
             if "invalidFile" in unicode(e):
                 msg = _("""\
 Invalid file. Please run a DB check in Anki 1.2 and try again.""")
-                msg += _(""" \
-Even if the DB check reports 'no problems found', a subsequent import should work.""")
+                msg += _(""" Even if the DB check reports 'no problems \
+found', a subsequent import should work.""")
                 showWarning(msg)
             elif "readonly" in unicode(e):
                 showWarning(_("""\
@@ -318,6 +336,7 @@ Unable to import from a read-only file."""))
             mw.progress.finish()
         mw.reset()
 
+
 def setupApkgImport(mw, importer):
     base = os.path.basename(importer.file).lower()
     full = (base == "collection.apkg") or re.match("backup-.*\\.apkg", base)
@@ -333,7 +352,9 @@ the file you're importing. Are you sure?"""), msgfunc=QMessageBox.warning):
     # called as part of the startup routine
     mw.progress.start(immediate=True)
     mw.progress.timer(
-        100, lambda mw=mw, f=importer.file: replaceWithApkg(mw, f, backup), False)
+        100, lambda mw=mw, f=importer.file: replaceWithApkg(mw, f, backup),
+        False)
+
 
 def replaceWithApkg(mw, file, backup):
     # unload collection, which will also trigger a backup

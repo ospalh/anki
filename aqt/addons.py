@@ -2,24 +2,30 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import sys, os, traceback
+from PyQt4.QtCore import SIGNAL
+from PyQt4.QtGui import QAction, QDialog, QDialogButtonBox
 from cStringIO import StringIO
-from aqt.qt import *
-from aqt.utils import showInfo, openFolder, isWin, openLink, \
-    askUser
-from zipfile import ZipFile
-import aqt.forms
-import aqt
+import os
+import sys
+import traceback
+
+from anki.lang import _
 from aqt.downloader import download
+from aqt.utils import showInfo, openFolder, isWin, openLink, askUser
+from zipfile import ZipFile
+import aqt
+import aqt.forms
 
 # in the future, it would be nice to save the addon id and unzippped file list
 # to the config so that we can clear up all files and check for updates
+
 
 class AddonManager(object):
 
     def __init__(self, mw):
         self.mw = mw
-        f = self.mw.form; s = SIGNAL("triggered()")
+        f = self.mw.form
+        s = SIGNAL("triggered()")
         self.mw.connect(f.actionOpenPluginFolder, s, self.onOpenAddonFolder)
         self.mw.connect(f.actionDownloadSharedPlugin, s, self.onGetAddons)
         self._menus = []
@@ -129,6 +135,7 @@ class AddonManager(object):
                 continue
             # write
             z.extract(n, base)
+
 
 class GetAddons(QDialog):
 

@@ -1,11 +1,22 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
-import re, os, sys, urllib, subprocess
+import os
+import re
+import subprocess
+import sys
+import urllib
+
+from PyQt4.QtCore import Qt, QUrl, SIGNAL, SLOT
+from PyQt4.QtGui import QColor, QDesktopServices, QDialog, QDialogButtonBox, \
+    QFileDialog, QFrame, QLabel, QLineEdit, QListWidget, QKeySequence, \
+    QMessageBox, QPalette, QPoint, QShortcut, QTextEdit, QVBoxLayout
+
+from anki.lang import _
+from anki.sound import stripSounds
+from anki.utils import isMac, isWin
 import aqt
-from anki.sound import  stripSounds
-from anki.utils import  isWin, isMac
+
 
 def openHelp(section):
     link = aqt.appHelpSite
@@ -13,17 +24,21 @@ def openHelp(section):
         link += "#%s" % section
     openLink(link)
 
+
 def openLink(link):
     tooltip(_("Loading..."), period=1000)
     QDesktopServices.openUrl(QUrl(link))
+
 
 def showWarning(text, parent=None, help=""):
     "Show a small warning with an OK button."
     return showInfo(text, parent, help, "warning")
 
+
 def showCritical(text, parent=None, help=""):
     "Show a small critical error with an OK button."
     return showInfo(text, parent, help, "critical")
+
 
 def showInfo(text, parent=False, help="", type="info"):
     "Show a small info window with an OK button."
@@ -46,6 +61,7 @@ def showInfo(text, parent=False, help="", type="info"):
         b.connect(b, SIGNAL("clicked()"), lambda: openHelp(help))
         b.setAutoDefault(False)
     return mb.exec_()
+
 
 def showText(txt, parent=None, type="text", run=True):
     if not parent:
@@ -71,6 +87,7 @@ def showText(txt, parent=None, type="text", run=True):
     else:
         return diag, box
 
+
 def askUser(text, parent=None, help="", defaultno=False, msgfunc=None):
     "Show a yes/no question. Return true if yes."
     if not parent:
@@ -85,14 +102,14 @@ def askUser(text, parent=None, help="", defaultno=False, msgfunc=None):
             default = QMessageBox.No
         else:
             default = QMessageBox.Yes
-        r = msgfunc(parent, "Anki", text, sb,
-                                 default)
+        r = msgfunc(parent, "Anki", text, sb, default)
         if r == QMessageBox.Help:
 
             openHelp(help)
         else:
             break
     return r == QMessageBox.Yes
+
 
 class ButtonedDialog(QMessageBox):
 
@@ -126,11 +143,13 @@ class ButtonedDialog(QMessageBox):
     def setDefault(self, idx):
         self.setDefaultButton(self.buttons[idx])
 
+
 def askUserDialog(text, buttons, parent=None, help=""):
     if not parent:
         parent = aqt.mw
     diag = ButtonedDialog(text, buttons, parent, help)
     return diag
+
 
 class GetTextDialog(QDialog):
 
@@ -174,7 +193,9 @@ class GetTextDialog(QDialog):
     def helpRequested(self):
         openHelp(self.help)
 
-def getText(prompt, parent=None, help=None, edit=None, default=u"", title="Anki"):
+
+def getText(prompt, parent=None, help=None, edit=None, default=u"",
+            title="Anki"):
     if not parent:
         parent = aqt.mw.app.activeWindow() or aqt.mw
     d = GetTextDialog(parent, prompt, help=help, edit=edit,
@@ -182,6 +203,7 @@ def getText(prompt, parent=None, help=None, edit=None, default=u"", title="Anki"
     d.setWindowModality(Qt.WindowModal)
     ret = d.exec_()
     return (unicode(d.l.text()), ret)
+
 
 def getOnlyText(*args, **kwargs):
     (s, r) = getText(*args, **kwargs)
@@ -191,6 +213,8 @@ def getOnlyText(*args, **kwargs):
         return u""
 
 # fixme: these utilities could be combined into a single base class
+
+
 def chooseList(prompt, choices, startrow=0, parent=None):
     if not parent:
         parent = aqt.mw.app.activeWindow()
@@ -210,6 +234,7 @@ def chooseList(prompt, choices, startrow=0, parent=None):
     d.exec_()
     return c.currentRow()
 
+
 def getTag(parent, deck, question, tags="user", **kwargs):
     from aqt.tagedit import TagEdit
     te = TagEdit(parent)
@@ -221,11 +246,12 @@ def getTag(parent, deck, question, tags="user", **kwargs):
 # File handling
 ######################################################################
 
+
 def getFile(parent, title, cb, filter="*.*", dir=None, key=None):
     "Ask the user for a file."
     assert not dir or not key
     if not dir:
-        dirkey = key+"Directory"
+        dirkey = key + "Directory"
         dir = aqt.mw.pm.profile.get(dirkey, "")
     else:
         dirkey = None
@@ -238,6 +264,7 @@ def getFile(parent, title, cb, filter="*.*", dir=None, key=None):
     d.setWindowTitle(title)
     d.setNameFilter(filter)
     ret = []
+
     def accept():
         # work around an osx crash
         aqt.mw.app.processEvents()
@@ -252,9 +279,10 @@ def getFile(parent, title, cb, filter="*.*", dir=None, key=None):
     d.exec_()
     return ret and ret[0]
 
+
 def getSaveFile(parent, title, dir, key, ext):
     "Ask the user for a file to save. Use DIR as config variable."
-    dirkey = dir+"Directory"
+    dirkey = dir + "Directory"
     file = unicode(QFileDialog.getSaveFileName(
         parent, title, aqt.mw.pm.base, key,
         options=QFileDialog.DontConfirmOverwrite))
@@ -267,15 +295,16 @@ def getSaveFile(parent, title, dir, key, ext):
         aqt.mw.pm.profile[dirkey] = dir
         # check if it exists
         if os.path.exists(file):
-            if not askUser(
-                _("This file exists. Are you sure you want to overwrite it?"),
-                parent):
+            if not askUser(_("""\
+This file exists. Are you sure you want to overwrite it?"""), parent):
                 return None
     return file
+
 
 def saveGeom(widget, key):
     key += "Geom"
     aqt.mw.pm.profile[key] = widget.saveGeometry()
+
 
 def restoreGeom(widget, key, offset=None):
     key += "Geom"
@@ -287,34 +316,41 @@ def restoreGeom(widget, key, offset=None):
             if minor > 6:
                 # bug in osx toolkit
                 s = widget.size()
-                widget.resize(s.width(), s.height()+offset*2)
+                widget.resize(s.width(), s.height() + offset * 2)
+
 
 def saveState(widget, key):
     key += "State"
     aqt.mw.pm.profile[key] = widget.saveState()
+
 
 def restoreState(widget, key):
     key += "State"
     if aqt.mw.pm.profile.get(key):
         widget.restoreState(aqt.mw.pm.profile[key])
 
+
 def saveSplitter(widget, key):
     key += "Splitter"
     aqt.mw.pm.profile[key] = widget.saveState()
+
 
 def restoreSplitter(widget, key):
     key += "Splitter"
     if aqt.mw.pm.profile.get(key):
         widget.restoreState(aqt.mw.pm.profile[key])
 
+
 def saveHeader(widget, key):
     key += "Header"
     aqt.mw.pm.profile[key] = widget.saveState()
+
 
 def restoreHeader(widget, key):
     key += "Header"
     if aqt.mw.pm.profile.get(key):
         widget.restoreState(aqt.mw.pm.profile[key])
+
 
 def mungeQA(txt):
     txt = stripSounds(txt)
@@ -322,10 +358,12 @@ def mungeQA(txt):
     txt = re.sub("font-weight: *600", "font-weight:bold", txt)
     return txt
 
+
 def applyStyles(widget):
     p = os.path.join(aqt.mw.pm.base, "style.css")
     if os.path.exists(p):
         widget.setStyleSheet(open(p).read())
+
 
 def getBase(col):
     base = None
@@ -339,6 +377,7 @@ def getBase(col):
         "utf-8") + "/"
     return '<base href="%s">' % base
 
+
 def openFolder(path):
     if isWin:
         if isinstance(path, unicode):
@@ -347,16 +386,19 @@ def openFolder(path):
     else:
         QDesktopServices.openUrl(QUrl("file://" + path))
 
+
 def shortcut(key):
     if isMac:
         return re.sub("(?i)ctrl", "Command", key)
     return key
+
 
 def maybeHideClose(bbox):
     if isMac:
         b = bbox.button(QDialogButtonBox.Close)
         if b:
             bbox.removeButton(b)
+
 
 def addCloseShortcut(widg):
     if not isMac:
@@ -371,8 +413,10 @@ def addCloseShortcut(widg):
 _tooltipTimer = None
 _tooltipLabel = None
 
+
 def tooltip(msg, period=3000, parent=None):
     global _tooltipTimer, _tooltipLabel
+
     class CustomLabel(QLabel):
         def mousePressEvent(self, evt):
             evt.accept()
@@ -398,6 +442,7 @@ def tooltip(msg, period=3000, parent=None):
     _tooltipTimer = aqt.mw.progress.timer(
         period, closeTooltip, False)
     _tooltipLabel = lab
+
 
 def closeTooltip():
     global _tooltipLabel, _tooltipTimer

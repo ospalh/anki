@@ -1,13 +1,20 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
-import urllib, urllib2, time
-import aqt
 import platform
-from aqt.utils import openLink
+import time
+import urllib
+import urllib2
+
+from PyQt4.QtCore import QThread, SIGNAL
+from PyQt4.QtGui import QMessageBox, QPushButton
+
+from anki.lang import _
 from anki.utils import json, isWin, isMac
+from aqt.utils import openLink
 from aqt.utils import showText
+import aqt
+
 
 class LatestVersionFinder(QThread):
 
@@ -66,6 +73,7 @@ class LatestVersionFinder(QThread):
         if abs(diff) > 300:
             self.emit(SIGNAL("clockIsOff"))
 
+
 def askAndUpdate(mw, ver):
     baseStr = (
         _('''<h1>Anki Updated</h1>Anki %s has been released.<br><br>''') %
@@ -83,6 +91,7 @@ def askAndUpdate(mw, ver):
         mw.pm.meta['suppressUpdate'] = ver
     elif ret == QMessageBox.Yes:
         openLink(aqt.appWebsite)
+
 
 def showMessages(mw, data):
     showText(data['msg'], parent=mw, type="html")

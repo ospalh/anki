@@ -2,9 +2,14 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
+from PyQt4.QtCore import SIGNAL
+from PyQt4.QtGui import QHBoxLayout, QKeySequence, QLabel, QPushButton, \
+    QShortcut, QSizePolicy
+
 from anki.hooks import addHook, remHook
-from aqt.utils import  shortcut
+from anki.lang import _
+from aqt.utils import shortcut
+
 
 class DeckChooser(QHBoxLayout):
 

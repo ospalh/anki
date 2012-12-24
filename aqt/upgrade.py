@@ -2,13 +2,22 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import os, cPickle, ctypes, shutil
-from aqt.qt import *
-from anki.utils import isMac, isWin
+import cPickle
+import ctypes
+import os
+import shutil
+
+from PyQt4.QtCore import Qt, QThread, QTimer, QUrl, SIGNAL
+from PyQt4.QtGui import QDesktopServices, QLabel, QProgressBar, QScrollArea, \
+    QVBoxLayout, QWizard, QWizardPage
+
 from anki import Collection
 from anki.importing import Anki1Importer
+from anki.lang import _
+from anki.utils import isMac, isWin
 from aqt.utils import showWarning
 import aqt
+
 
 class Upgrader(object):
 
@@ -51,10 +60,10 @@ to import your decks from previous Anki versions."""))
 
     def _copySettings(self):
         p = self.mw.pm.profile
-        for k in (
-            "recentColours", "stripHTML", "editFontFamily", "editFontSize",
-            "editLineSize", "deleteMedia", "preserveKeyboard", "numBackups",
-            "proxyHost", "proxyPass", "proxyPort", "proxyUser"):
+        for k in ("recentColours", "stripHTML", "editFontFamily",
+                  "editFontSize", "editLineSize", "deleteMedia",
+                  "preserveKeyboard", "numBackups", "proxyHost", "proxyPass",
+                  "proxyPort", "proxyUser"):
             try:
                 p[k] = self.conf[k]
             except:
@@ -72,6 +81,7 @@ into Anki 2.0."""))
         if not self.conf['recentDeckPaths']:
             # if there are no decks to upgrade, don't show wizard
             return
+
         class Wizard(QWizard):
             def reject(self):
                 pass
@@ -145,9 +155,11 @@ carefully, as a lot has changed since the previous Anki version."""))
         decks = self.conf['recentDeckPaths']
         colpath = self.mw.pm.collectionPath()
         upgrader = self
+
         class UpgradePage(QWizardPage):
             def isComplete(self):
                 return False
+
             def initializePage(self):
                 # can't use openLink; gui not ready for tooltips
                 QDesktopServices.openUrl(QUrl(aqt.appChanges))
@@ -171,9 +183,11 @@ carefully, as a lot has changed since the previous Anki version."""))
                 self.thread.start()
                 # and periodically update the GUI
                 self.timer = QTimer(self)
-                self.timer.connect(self.timer, SIGNAL("timeout()"), self.onTimer)
+                self.timer.connect(
+                    self.timer, SIGNAL("timeout()"), self.onTimer)
                 self.timer.start(1000)
                 self.onTimer()
+
             def onTimer(self):
                 prog = self.thread.progress()
                 if not prog:
@@ -185,6 +199,7 @@ carefully, as a lot has changed since the previous Anki version."""))
 
     def _finishedPage(self):
         upgrader = self
+
         class FinishedPage(QWizardPage):
             def initializePage(self):
                 buf = ""
@@ -208,6 +223,7 @@ Below is a log of the update:
                 v.addWidget(a)
                 self.setLayout(v)
         return FinishedPage()
+
 
 class UpgradeThread(QThread):
 

@@ -1,9 +1,12 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
 
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QDialog, QIcon, QItemSelectionModel, QListWidgetItem
+
 import aqt
-from aqt.qt import *
 from aqt.utils import saveGeom, restoreGeom
+
 
 class TagLimit(QDialog):
 
@@ -61,7 +64,7 @@ class TagLimit(QDialog):
 
     def accept(self):
         self.hide()
-        n = 0
+        # n = 0
         # gather yes/no tags
         yes = []
         no = []

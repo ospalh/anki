@@ -2,13 +2,22 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
-import os, time
-from aqt.utils import saveGeom, restoreGeom, maybeHideClose, showInfo, addCloseShortcut
+
+import os
+import time
+
+from PyQt4.QtCore import Qt, SIGNAL
+from PyQt4.QtGui import QDesktopServices, QDialog, QDialogButtonBox, QImage, \
+    QPainter
+
+from anki.lang import _
+from aqt.utils import addCloseShortcut, maybeHideClose, restoreGeom, \
+    saveGeom, showInfo
 import aqt
 
 # Deck Stats
 ######################################################################
+
 
 class DeckStats(QDialog):
 
@@ -25,7 +34,7 @@ class DeckStats(QDialog):
         f.setupUi(self)
         restoreGeom(self, self.name)
         b = f.buttonBox.addButton(_("Save Image"),
-                                          QDialogButtonBox.ActionRole)
+                                  QDialogButtonBox.ActionRole)
         b.connect(b, SIGNAL("clicked()"), self.browser)
         b.setAutoDefault(False)
         c = self.connect
@@ -49,7 +58,7 @@ class DeckStats(QDialog):
     def browser(self):
         name = time.strftime("-%Y-%m-%d@%H-%M-%S.png",
                              time.localtime(time.time()))
-        name = "anki-"+_("stats")+name
+        name = "anki-" + _("stats") + name
         path = os.path.join(
             QDesktopServices.storageLocation(QDesktopServices.DesktopLocation),
             name)

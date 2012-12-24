@@ -6,13 +6,21 @@
 # - Saves in pickles rather than json to easily store Qt window state.
 # - Saves in sqlite rather than a flat file so the config can't be corrupted
 
-from aqt.qt import *
-import os, random, cPickle, shutil, locale, re
+import os
+import random
+import cPickle
+import shutil
+import locale
+import re
+
+from PyQt4.QtCore import SIGNAL
+from PyQt4.QtGui import QDialog, QMessageBox, QSettings
+
 from anki.db import DB
-from anki.utils import isMac, isWin, intTime, checksum
-from anki.lang import langs
-from aqt.utils import showWarning
+from anki.lang import _, langs
+from anki.utils import checksum, intTime, isMac, isWin
 from aqt import appHelpSite
+from aqt.utils import showWarning
 import aqt.forms
 
 metaConf = dict(
@@ -24,8 +32,7 @@ metaConf = dict(
     suppressUpdate=False,
     firstRun=True,
     defaultLang=None,
-    disabledAddons=[],
-)
+    disabledAddons=[])
 
 profileConf = dict(
     # profile
@@ -48,8 +55,8 @@ profileConf = dict(
     syncMedia=True,
     autoSync=True,
     # importing
-    allowHTML=False,
-)
+    allowHTML=False)
+
 
 class ProfileManager(object):
 
@@ -216,10 +223,10 @@ to make backups easy. To tell Anki to use a different location,
 please see:
 
 %s
-""") % (appHelpSite +  "#startupopts")).encode("utf8"))
+""") % (appHelpSite + "#startupopts")).encode("utf8"))
 
     def _pwhash(self, passwd):
-        return checksum(unicode(self.meta['id'])+unicode(passwd))
+        return checksum(unicode(self.meta['id']) + unicode(passwd))
 
     # Default language
     ######################################################################
@@ -231,6 +238,7 @@ please see:
         import __builtin__
         __builtin__.__dict__['_'] = lambda x: x
         # create dialog
+
         class NoCloseDiag(QDialog):
             def reject(self):
                 pass

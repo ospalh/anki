@@ -2,14 +2,21 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
-import aqt.forms
-from aqt.utils import saveGeom, restoreGeom, showWarning, askUser, shortcut, \
-    tooltip, openHelp, addCloseShortcut
-from anki.sound import clearAudioQueue
+from PyQt4.QtCore import QPoint, Qt, SIGNAL
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QKeySequence, QMenu, \
+    QPushButton
+
 from anki.hooks import addHook, remHook
+from anki.lang import _
+from anki.sound import clearAudioQueue
 from anki.utils import stripHTMLMedia
-import aqt.editor, aqt.modelchooser, aqt.deckchooser
+from aqt.utils import addCloseShortcut, askUser, openHelp, restoreGeom, \
+    saveGeom, shortcut, showWarning, tooltip
+import aqt.deckchooser
+import aqt.editor
+import aqt.forms
+import aqt.modelchooser
+
 
 class AddCards(QDialog):
 
@@ -58,17 +65,14 @@ class AddCards(QDialog):
         # close
         self.closeButton = QPushButton(_("Close"))
         self.closeButton.setAutoDefault(False)
-        bb.addButton(self.closeButton,
-                                        QDialogButtonBox.RejectRole)
+        bb.addButton(self.closeButton, QDialogButtonBox.RejectRole)
         # help
         self.helpButton = QPushButton(_("Help"))
         self.helpButton.setAutoDefault(False)
-        bb.addButton(self.helpButton,
-                                        QDialogButtonBox.HelpRole)
+        bb.addButton(self.helpButton, QDialogButtonBox.HelpRole)
         self.connect(self.helpButton, SIGNAL("clicked()"), self.helpRequested)
         # history
-        b = bb.addButton(
-            _("History")+ u" ▾", ar)
+        b = bb.addButton(_("History") + u" ▾", ar)
         self.connect(b, SIGNAL("clicked()"), self.onHistory)
         b.setEnabled(False)
         self.historyButton = b
@@ -116,7 +120,7 @@ class AddCards(QDialog):
             a = m.addAction(_("Edit %s") % txt)
             a.connect(a, SIGNAL("triggered()"),
                       lambda nid=nid: self.editHistory(nid))
-        m.exec_(self.historyButton.mapToGlobal(QPoint(0,0)))
+        m.exec_(self.historyButton.mapToGlobal(QPoint(0, 0)))
 
     def editHistory(self, nid):
         browser = aqt.dialogs.open("Browser", self.mw)
@@ -157,7 +161,7 @@ question on all cards."""), help="AddItems")
     def keyPressEvent(self, evt):
         "Show answer on RET or register answer."
         if (evt.key() in (Qt.Key_Enter, Qt.Key_Return)
-            and self.editor.tags.hasFocus()):
+                and self.editor.tags.hasFocus()):
             evt.accept()
             return
         return QDialog.keyPressEvent(self, evt)
@@ -179,6 +183,6 @@ question on all cards."""), help="AddItems")
 
     def canClose(self):
         if (self.forceClose or self.editor.fieldsAreBlank() or
-            askUser(_("Close and lose current input?"))):
+                askUser(_("Close and lose current input?"))):
             return True
         return False

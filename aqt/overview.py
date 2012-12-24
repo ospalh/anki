@@ -2,10 +2,12 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.utils import  openLink, shortcut
-from anki.utils import isMac
-import aqt
+from anki.lang import _
 from anki.sound import clearAudioQueue
+from anki.utils import isMac
+from aqt.utils import openLink, shortcut
+import aqt
+
 
 class Overview(object):
     "Deck overview."
@@ -51,7 +53,7 @@ class Overview(object):
         elif url == "decks":
             self.mw.moveToState("deckBrowser")
         elif url == "review":
-            openLink(aqt.appShared+"info/%s?v=%s"%(self.sid, self.sidVer))
+            openLink(aqt.appShared + "info/%s?v=%s" % (self.sid, self.sidVer))
         elif url == "studymore":
             self.onStudyMore()
         else:
@@ -75,20 +77,19 @@ class Overview(object):
     ############################################################
 
     def _renderPage(self):
-        but = self.mw.button
+        # but = self.mw.button
         deck = self.mw.col.decks.current()
         self.sid = deck.get("sharedFrom")
         if self.sid:
             self.sidVer = deck.get("ver", None)
-            shareLink = '<a class=smallLink href="review">Reviews and Updates</a>'
+            shareLink = \
+                '<a class=smallLink href="review">Reviews and Updates</a>'
         else:
             shareLink = ""
-        self.web.stdHtml(self._body % dict(
-            deck=deck['name'],
-            shareLink=shareLink,
-            desc=self._desc(deck),
-            table=self._table()
-            ), self.mw.sharedCSS + self._css)
+        self.web.stdHtml(
+            self._body % dict(deck=deck['name'], shareLink=shareLink,
+                              desc=self._desc(deck), table=self._table()),
+            self.mw.sharedCSS + self._css)
 
     def _desc(self, deck):
         if deck['dyn']:
@@ -114,9 +115,10 @@ to their original deck.""")
         else:
             return '''
 <div class="descfont description descmid" id=shortdesc>%s\
- <a class=smallLink href=# onclick="$('#shortdesc').hide();$('#fulldesc').show();">...More</a></div>
+ <a class=smallLink href=# onclick="$('#shortdesc').hide();\
+$('#fulldesc').show();">...More</a></div>
 <div class="descfont description descmid" id=fulldesc>%s</div>''' % (
-                 desc[:160], desc)
+                desc[:160], desc)
 
     def _table(self):
         counts = list(self.mw.col.sched.counts())
@@ -139,11 +141,8 @@ to their original deck.""")
 </table>
 </td><td align=center>
 %s</td></tr></table>''' % (
-    _("New"), counts[0],
-    _("Learning"), counts[1],
-    _("To Review"), counts[2],
-    but("study", _("Study Now"), id="study"))
-
+                _("New"), counts[0], _("Learning"), counts[1], _("To Review"),
+                counts[2], but("study", _("Study Now"), id="study"))
 
     _body = """
 <center>
@@ -200,7 +199,7 @@ text-align: center;
         if isMac:
             size = 28
         else:
-            size = 36 + self.mw.fontHeightDelta*3
+            size = 36 + self.mw.fontHeightDelta * 3
         self.bottom.web.setFixedHeight(size)
         self.bottom.web.setLinkHandler(self._linkHandler)
 

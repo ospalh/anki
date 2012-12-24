@@ -1,21 +1,32 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import os, sys, optparse, atexit, tempfile, __builtin__
-from aqt.qt import *
-import locale, gettext
-import anki.lang
+import __builtin__
+import atexit
+import gettext
+import locale
+import optparse
+import os
+import sys
+import tempfile
+from PyQt4.QtCore import QCoreApplication, QEvent, QIODevice, \
+    QSharedMemory, QTranslator, Qt, SIGNAL
+from PyQt4.QtGui import QApplication, QMessageBox
+from PyQt4.QtNetwork import QLocalServer, QLocalSocket
+
+from aqt.qt import qtmajor, qtminor
 from anki.consts import HELP_SITE
 from anki.lang import langDir
+import anki.lang
 
-appVersion="2.0.3+beta1"
-appWebsite="http://ankisrs.net/"
-appChanges="http://ankisrs.net/docs/changes.html"
-appDonate="http://ankisrs.net/support/"
-appShared="https://ankiweb.net/shared/"
-appUpdate="https://ankiweb.net/update/desktop"
-appHelpSite=HELP_SITE
-mw = None # set on init
+appVersion = "2.0.3+beta1"
+appWebsite = "http://ankisrs.net/"
+appChanges = "http://ankisrs.net/docs/changes.html"
+appDonate = "http://ankisrs.net/support/"
+appShared = "https://ankiweb.net/shared/"
+appUpdate = "https://ankiweb.net/update/desktop"
+appHelpSite = HELP_SITE
+mw = None  # set on init
 
 moduleDir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
 
@@ -29,6 +40,7 @@ except ImportError, e:
 
 # Dialog manager - manages modeless windows
 ##########################################################################
+
 
 class DialogManager(object):
 
@@ -72,6 +84,7 @@ dialogs = DialogManager()
 _gtrans = None
 _qtrans = None
 
+
 def setupLang(pm, app, force=None):
     global _gtrans, _qtrans
     try:
@@ -86,7 +99,7 @@ def setupLang(pm, app, force=None):
     __builtin__.__dict__['_'] = _gtrans.ugettext
     __builtin__.__dict__['ngettext'] = _gtrans.ungettext
     anki.lang.setLang(lang, local=False)
-    if lang in ("he","ar","fa"):
+    if lang in ("he", "ar", "fa"):
         app.setLayoutDirection(Qt.RightToLeft)
     else:
         app.setLayoutDirection(Qt.LeftToRight)
@@ -97,6 +110,7 @@ def setupLang(pm, app, force=None):
 
 # App initialisation
 ##########################################################################
+
 
 class AnkiApp(QApplication):
 
@@ -161,6 +175,7 @@ class AnkiApp(QApplication):
             return True
         return QApplication.event(self, evt)
 
+
 def parseArgs(argv):
     "Returns (opts, args)."
     parser = optparse.OptionParser()
@@ -170,9 +185,10 @@ def parseArgs(argv):
     parser.add_option("-l", "--lang", help="interface language (en, de, etc)")
     return parser.parse_args(argv[1:])
 
+
 def run():
     global mw
-    from anki.utils import  isMac
+    from anki.utils import isMac
 
     # on osx we'll need to add the qt plugins to the search path
     if isMac and getattr(sys, 'frozen', None):

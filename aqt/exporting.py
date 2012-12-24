@@ -2,10 +2,16 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import os
-from aqt.qt import *
-import  aqt
-from aqt.utils import getSaveFile, tooltip, showWarning, askUser
+from PyQt4.QtCore import Qt, SIGNAL
+from PyQt4.QtGui import QDesktopServices, QDialog, QDialogButtonBox, \
+    QPushButton
+
 from anki.exporting import exporters
+from anki.lang import _, ngettext
+from aqt.utils import getSaveFile, tooltip, showWarning, askUser
+import aqt
+import aqt.tagedit
+
 
 class ExportDialog(QDialog):
 
@@ -51,8 +57,8 @@ class ExportDialog(QDialog):
         else:
             name = self.decks[self.frm.deck.currentIndex()]
             self.exporter.did = self.col.decks.id(name)
-        if (self.isApkg and self.exporter.includeSched and not
-            self.exporter.did):
+        if self.isApkg and self.exporter.includeSched \
+                and not self.exporter.did:
             verbatim = True
             # it's a verbatim apkg export, so place on desktop instead of
             # choosing file
@@ -60,8 +66,8 @@ class ExportDialog(QDialog):
                 QDesktopServices.DesktopLocation), "collection.apkg")
             if os.path.exists(file):
                 if not askUser(
-                    _("%s already exists on your desktop. Overwrite it?")%
-                    "collection.apkg"):
+                        _("%s already exists on your desktop. Overwrite it?") %
+                        "collection.apkg"):
                     return
         else:
             verbatim = False
@@ -82,12 +88,13 @@ class ExportDialog(QDialog):
                 os.unlink(file)
                 self.exporter.exportInto(file)
                 if verbatim:
-                    msg = _("A file called collection.apkg was saved on your desktop.")
+                    msg = _("""\
+A file called collection.apkg was saved on your desktop.""")
                     period = 5000
                 else:
                     period = 3000
-                    msg = ngettext("%d card exported.", "%d cards exported.", \
-                                self.exporter.count) % self.exporter.count
+                    msg = ngettext("%d card exported.", "%d cards exported.",
+                                   self.exporter.count) % self.exporter.count
                 tooltip(msg, period=period)
             finally:
                 self.mw.progress.finish()

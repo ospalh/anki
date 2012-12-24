@@ -2,10 +2,16 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import datetime, time
-from aqt.qt import *
+import datetime
+import time
+
+from PyQt4.QtCore import Qt, SIGNAL
+from PyQt4.QtGui import QDialog
+
+from anki.lang import _
 from aqt.utils import openFolder, showWarning, getText, openHelp, showInfo
 import aqt
+
 
 class Preferences(QDialog):
 
@@ -47,8 +53,8 @@ class Preferences(QDialog):
         qc = self.mw.col.conf
         self.startDate = datetime.datetime.fromtimestamp(self.mw.col.crt)
         f.dayOffset.setValue(self.startDate.hour)
-        f.lrnCutoff.setValue(qc['collapseTime']/60.0)
-        f.timeLimit.setValue(qc['timeLim']/60.0)
+        f.lrnCutoff.setValue(qc['collapseTime'] / 60.0)
+        f.timeLimit.setValue(qc['timeLim'] / 60.0)
         f.showEstimates.setChecked(qc['estTimes'])
         f.showProgress.setChecked(qc['dueCounts'])
         f.newSpread.addItems(c.newCardSchedulingLabels().values())
@@ -62,8 +68,8 @@ class Preferences(QDialog):
         qc['dueCounts'] = f.showProgress.isChecked()
         qc['estTimes'] = f.showEstimates.isChecked()
         qc['newSpread'] = f.newSpread.currentIndex()
-        qc['timeLim'] = f.timeLimit.value()*60
-        qc['collapseTime'] = f.lrnCutoff.value()*60
+        qc['timeLim'] = f.timeLimit.value() * 60
+        qc['collapseTime'] = f.lrnCutoff.value() * 60
         qc['addToCur'] = not f.useCurrent.currentIndex()
         hrs = f.dayOffset.value()
         old = self.startDate
