@@ -13,8 +13,8 @@ import shutil
 import locale
 import re
 
-from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QDialog, QMessageBox, QSettings
+from PyQt4.QtCore import  QSettings, SIGNAL
+from PyQt4.QtGui import QDialog, QMessageBox
 
 from anki.db import DB
 from anki.lang import _, langs

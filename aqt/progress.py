@@ -4,9 +4,8 @@
 
 import time
 
-from PyQt4.QtCore import Qt, SIGNAL
-from PyQt4.QtGui import QApplication, QCursor, QEventLoop, QProgressDialog, \
-    QTimer
+from PyQt4.QtCore import QEventLoop, Qt, QTimer, SIGNAL
+from PyQt4.QtGui import QApplication, QCursor, QProgressDialog
 
 from anki.lang import _
 

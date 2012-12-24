@@ -1,6 +1,12 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+import sip
+sip.setapi('QString', 2)
+sip.setapi('QVariant', 2)
+sip.setapi('QUrl', 2)
+
+
 import __builtin__
 import atexit
 import gettext

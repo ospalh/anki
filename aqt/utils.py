@@ -7,10 +7,10 @@ import subprocess
 import sys
 import urllib
 
-from PyQt4.QtCore import Qt, QUrl, SIGNAL, SLOT
+from PyQt4.QtCore import QPoint, Qt, QUrl, SIGNAL, SLOT
 from PyQt4.QtGui import QColor, QDesktopServices, QDialog, QDialogButtonBox, \
     QFileDialog, QFrame, QLabel, QLineEdit, QListWidget, QKeySequence, \
-    QMessageBox, QPalette, QPoint, QShortcut, QTextEdit, QVBoxLayout
+    QMessageBox, QPalette, QShortcut, QTextEdit, QVBoxLayout
 
 from anki.lang import _
 from anki.sound import stripSounds

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from PyQt4.QtCore import Qt, SIGNAL
-from PyQt4.QtGui import QAbstractItemView, QEvent, QDialog, QDialogButtonBox, \
+from PyQt4.QtCore import QEvent, Qt, SIGNAL
+from PyQt4.QtGui import QAbstractItemView, QDialog, QDialogButtonBox, \
     QKeySequence, QPushButton
 
 from anki.lang import _
