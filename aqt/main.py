@@ -79,8 +79,9 @@ class AnkiQt(QMainWindow):
             showInfo(_("Error during startup:\n%s") % traceback.format_exc())
             sys.exit(1)
         # were we given a file to import?
-        if args and args[0]:
-            self.onAppMsg(unicode(args[0], "utf8", "ignore"))
+        if args:
+            for deck_to_load in args:
+                self.onAppMsg(unicode(deck_to_load, "utf8", "ignore"))
         # Load profile in a timer so we can let the window finish init and not
         # close on profile load error.
         self.progress.timer(10, self.setupProfile, False)
