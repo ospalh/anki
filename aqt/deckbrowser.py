@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from PyQt4.QtCore import QPoint, SIGNAL
+from PyQt4.QtCore import QPoint, Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QMenu
 
 from anki.errors import DeckRenameError
@@ -59,12 +59,49 @@ class DeckBrowser(object):
             self._collapse(arg)
 
     def _keyHandler(self, evt):
-        # currently does nothing
-        key = unicode(evt.text())
+        if evt.key() == Qt.Key_Up:
+            self._previousDeck()
+        if evt.key() == Qt.Key_Down:
+            self._nextDeck()
+        if evt.key() == Qt.Key_Return  or evt.key() == Qt.Key_Enter:
+            self._selDeck()
+        key_text = unicode(evt.text())
+        if key_text == "f":
+            self.mw.onCram()
 
-    def _selDeck(self, did):
+    def _selDeck(self, did=None):
+        if not did:
+            did = self.mw.col.conf['curDeck']
         self.mw.col.decks.select(did)
-        self.mw.onOverview()
+        # New, no overview
+        self.mw.col.reset()
+        self.mw.col.startTimebox()
+        self.mw.moveToState("review")
+        ## old, overview
+        # self.mw.onOverview()
+
+    def _previousDeck(self):
+        try:
+            previous_did = int(self.web.eval("previousDid()"))
+        except (ValueError, TypeError):
+            # Most likely reason: first deck. Then prevousDid() returns
+            # u''.
+            return
+        current_did = self.mw.col.conf['curDeck']
+        self.mw.col.decks.select(previous_did)
+        self.web.eval('moveCurrentClass({0}, {1})'.format(
+                current_did, previous_did))
+
+    def _nextDeck(self):
+        try:
+            next_did = int(self.web.eval("nextDid()"))
+        except (ValueError, TypeError):
+            # last deck
+            return
+        current_did = self.mw.col.conf['curDeck']
+        self.mw.col.decks.select(next_did)
+        self.web.eval("moveCurrentClass({0}, {1})".format(
+                current_did, next_did))
 
     # HTML generation
     ##########################################################################
@@ -86,7 +123,9 @@ body { margin: 1em; -webkit-user-select: none; }
 .collapse { color: #000; text-decoration:none; display:inline-block;
     width: 1em; }
 .filtered { color: #00a !important; }
-""" % dict(width=_dragIndicatorBorderWidth)
+%(qtip)s
+ """ % dict(width=_dragIndicatorBorderWidth, qtip=anki.js.qtip_css)
+
 
     _body = """
 <center>
@@ -122,11 +161,48 @@ body { margin: 1em; -webkit-user-select: none; }
         });
     }
 
+    function moveCurrentClass(from_id, to_id) {
+        $(document.getElementById(to_id)).addClass("current");
+        $(document.getElementById(from_id)).removeClass( "current");
+    }
+
+    function previousDid() {
+          return document.getElementsByClassName(
+              "current")[0].previousSibling.id;
+    }
+
+    function nextDid() {
+         return document.getElementsByClassName("current")[0].nextSibling.id;
+    }
+
     function handleDropEvent(event, ui) {
         var draggedDeckId = ui.draggable.attr('id');
         var ontoDeckId = $(this).attr('id');
 
         py.link("drag:" + draggedDeckId + "," + ontoDeckId);
+    }
+
+    function add_qtips(){
+        $('td.duelrn').qtip({
+            tip:true,
+            position:{
+                target: 'mouse',
+                my: 'right center',
+                at: 'top left',
+                adjust: {x: -10, y: -10}
+            },
+            content: {
+                text: function() {
+                    var dls = $(this).attr('title').split(" ");
+                    return   '<font color=#007700>' + dls[0]
+                             + '</font> + <font color=#990000> '
+                             + dls[1] + '</font>';
+                }
+            },
+            show: 'mouseover',
+            hide: 'mouseout'
+
+        })
     }
 </script>
 """
@@ -139,9 +215,11 @@ body { margin: 1em; -webkit-user-select: none; }
         stats = self._renderStats()
         op = self._oldPos()
         self.web.stdHtml(self._body % dict(tree=tree, stats=stats), css=css,
-                         js=anki.js.jquery + anki.js.ui, loadCB=lambda ok:
+                         js=anki.js.jquery + anki.js.ui + anki.js.qtip_js,
+                         loadCB=lambda ok:
                              self.web.page().mainFrame().setScrollPosition(op))
         self.web.key = "deckBrowser"
+        self.web.eval("add_qtips()")
         self._drawButtons()
 
     def _oldPos(self):
@@ -193,7 +271,8 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         prefix = "-"
         if self.mw.col.decks.get(did)['collapsed']:
             prefix = "+"
-        due += lrn
+        # Don't add those. We show both in the qtip
+        # due += lrn
 
         def indent():
             return "&nbsp;" * 6 * depth
@@ -222,11 +301,18 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         def nonzeroColour(cnt, colour):
             if not cnt:
                 colour = "#e0e0e0"
-            if cnt >= 1000:
-                cnt = "1000+"
-            return "<font color='%s'>%s</font>" % (colour, cnt)
-        buf += "<td align=right>%s</td><td align=right>%s</td>" % (
-            nonzeroColour(due, "#007700"),
+            # Show even large numbers
+            # if cnt >= 1000:
+            #     cnt = "1000+"
+            # Also, use span with a sytle, not font.
+            return '<span style="color: %s;">%s</span>' % (colour, cnt)
+        # New style, put due and lrn in qtip, sum in left column as
+        # before.
+        buf += """\
+<td align=right class="duelrn" title="%d %d">%s</td>\
+<td align=right>%s</td>"""  % (
+            due, lrn,
+            nonzeroColour(due + lrn, "#007700"),
             nonzeroColour(new, "#000099"))
         # options
         buf += "<td align=right class=opts>%s</td></tr>" % self.mw.button(
@@ -272,7 +358,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
             return
         try:
             self.mw.col.decks.rename(deck, newName)
-        except DeckRenameError, e:
+        except DeckRenameError as e:
             return showWarning(e.description)
         self.show()
 
@@ -289,7 +375,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
     def _dragDeckOnto(self, draggedDeckDid, ontoDeckDid):
         try:
             self.mw.col.decks.renameForDragAndDrop(draggedDeckDid, ontoDeckDid)
-        except DeckRenameError, e:
+        except DeckRenameError as e:
             return showWarning(e.description)
 
         self.show()
@@ -313,7 +399,12 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
                 (_("Are you sure you wish to delete %s?") % deck['name']) +
                 extra):
             self.mw.progress.start(immediate=True)
+            try:
+                parent_did = self.mw.col.decks.parents(did)[-1]['id']
+            except:
+                parent_did = 1
             self.mw.col.decks.rem(did, True)
+            self.mw.col.decks.select(parent_did)
             self.mw.progress.finish()
             self.show()
 

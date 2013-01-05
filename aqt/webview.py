@@ -147,7 +147,7 @@ button {
         self._bridge.setBridge(bridge)
 
     def eval(self, js):
-        self.page().mainFrame().evaluateJavaScript(js)
+        return self.page().mainFrame().evaluateJavaScript(js)
 
     def _openLinksExternally(self, url):
         openLink(url)
