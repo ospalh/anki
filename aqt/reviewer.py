@@ -92,7 +92,11 @@ class Reviewer(object):
         self.card = c
         clearAudioQueue()
         if not c:
-            self.mw.moveToState("overview")
+            # self.mw.moveToState("overview")
+            # Do what going to overview and then to deck browser did
+            # by hand, skipping the display of the overview.
+            self.mw.col.reset()
+            self.mw.moveToState("deckBrowser")
             return
         if self._reps is None or self._reps % 100 == 0:
             # we recycle the webview periodically so webkit can free memory
@@ -404,7 +408,7 @@ Please run Tools>Maintenance>Empty Cards""")
             # can't pass a string in directly, and can't use re.escape as it
             # escapes too much
             return """
-<span style="font-family: '%s'; font-size: %spx">%s</span>""" % (
+<span  id=coran style="font-family: '%s'; font-size: %spx">%s</span>""" % (
                 self.typeFont, self.typeSize, res)
         return re.sub(self.typeAnsPat, repl, buf)
 
