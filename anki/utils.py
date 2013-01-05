@@ -3,6 +3,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from hashlib import sha1
+import atexit
 import htmlentitydefs
 import locale
 import math
@@ -18,10 +19,7 @@ import time
 
 from anki.lang import _, ngettext
 
-if sys.version_info[1] < 5:
-    def format_string(a, b):
-        return a % b
-    locale.format_string = format_string
+# We require python >=2.6 elsewhere. Remove check for Python x.4.
 
 try:
     import simplejson as json
@@ -61,12 +59,12 @@ afterTimeTable = {
 
 def shortTimeFmt(type):
     return {
-        "years": _("%sy"),
-        "months": _("%smo"),
-        "days": _("%sd"),
-        "hours": _("%sh"),
-        "minutes": _("%sm"),
-        "seconds": _("%ss")}[type]
+        "years": _("%s&#8239;a"),
+        "months": _("%s&#8239;mo"),
+        "days": _("%s&#8239;d"),
+        "hours": _("%s&#8239;h"),
+        "minutes": _("%s&#8239;m"),
+        "seconds": _("%s&#8239;s")}[type]
 
 
 def fmtTimeSpan(time, pad=0, point=0, short=False, after=False, unit=99):
@@ -300,12 +298,9 @@ def tmpdir():
     if not _tmpdir:
         def cleanup():
             shutil.rmtree(_tmpdir)
-        import atexit
         atexit.register(cleanup)
-        _tmpdir = unicode(os.path.join(tempfile.gettempdir(), "anki_temp"),
-                          sys.getfilesystemencoding())
-        if not os.path.exists(_tmpdir):
-            os.mkdir(_tmpdir)
+        # No-hassle tmp dir creation. RAS 2012-11-08, 2013-01-05
+        _tmpdir = tempfile.mkdtemp(prefix='anki_', suffix='_temp')
     return _tmpdir
 
 
