@@ -5,6 +5,7 @@
 
 
 import os
+from distutils.version import StrictVersion
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -31,4 +32,6 @@ if os.environ.get("DEBUG"):
 
 qtconf = pyqtconfig.Configuration()
 qtmajor = (qtconf.qt_version & 0xff0000) >> 16
-qtminor = (qtconf.qt_version & 0x00ff00) >> 8
+qtminor = (qtconf.qt_version & 0xff00) >> 8
+qtpatch = qtconf.qt_version & 0xff
+qt_version = StrictVersion('{0}.{1}.{2}'.format(qtmajor, qtminor, qtpatch))
