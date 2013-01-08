@@ -243,9 +243,9 @@ crt=?, mod=?, scm=?, dty=?, usn=?, ls=?, conf=?""",
     def noteCount(self):
         return self.db.scalar("select count() from notes")
 
-    def newNote(self):
+    def newNote(self, forDeck=True):
         "Return a new note with the current model."
-        return anki.notes.Note(self, self.models.current())
+        return anki.notes.Note(self, self.models.current(forDeck))
 
     def addNote(self, note):
         "Add a note to the collection. Return number of new cards."
@@ -514,9 +514,13 @@ where c.nid = n.id and c.id in %s group by nid""" % ids2str(cids)):
             if type == "q":
                 format = format.replace("{{cloze:", "{{cq:%d:" % (
                     data[4] + 1))
+                format = format.replace("<%cloze:", "<%%cq:%d:" % (
+                    data[4]+1))
             else:
                 format = format.replace("{{cloze:", "{{ca:%d:" % (
                     data[4] + 1))
+                format = format.replace("<%cloze:", "<%%ca:%d:" % (
+                    data[4]+1))
                 fields['FrontSide'] = stripSounds(d['q'])
             fields = runFilter("mungeFields", fields, model, data, self)
             html = anki.template.render(format, fields)
@@ -720,8 +724,8 @@ and queue = 0""", intTime(), self.usn())
         ok = not problems
         problems.append(txt)
         # if any problems were found, force a full sync
-        if problems:
-            self.modSchema()
+        if not ok:
+            self.modSchema(check=False)
         self.save()
         return ("\n".join(problems), ok)
 

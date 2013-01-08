@@ -64,7 +64,7 @@ class Models(QDialog):
 
     def onRename(self):
         txt = getText(_("New name:"), default=self.model['name'])
-        if txt[0]:
+        if txt[1] and txt[0]:
             self.model['name'] = txt[0]
             self.mm.save(self.model)
         self.updateModelsList()
@@ -132,7 +132,7 @@ class Models(QDialog):
 
     def _tmpNote(self):
         self.mm.setCurrent(self.model)
-        n = self.col.newNote()
+        n = self.col.newNote(forDeck=False)
         for name in n.keys():
             n[name] = "(" + name + ")"
         if "{{cloze:Text}}" in self.model['tmpls'][0]['qfmt']:
@@ -180,7 +180,7 @@ class AddModel(QDialog):
             self.dialog.models.addItem(item)
             self.models.append((True, func))
         # add copies
-        for m in self.col.models.all():
+        for m in sorted(self.col.models.all(), key=itemgetter("name")):
             item = QListWidgetItem(_("Clone: %s") % m['name'])
             self.dialog.models.addItem(item)
             self.models.append((False, m))

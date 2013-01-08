@@ -20,7 +20,7 @@ class Toolbar(object):
             "study": self._studyLinkHandler,
             "add": self._addLinkHandler,
             "browse": self._browseLinkHandler,
-            "stats": self._studyLinkHandler,
+            "stats": self._statsLinkHandler,
             "sync": self._syncLinkHandler}
 
     def draw(self):

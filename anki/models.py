@@ -103,10 +103,10 @@ class ModelManager(object):
     # Retrieving and creating models
     #############################################################
 
-    def current(self):
+    def current(self, forDeck=True):
         "Get current model."
         m = self.get(self.col.decks.current().get('mid'))
-        if not m:
+        if not forDeck or not m:
             m = self.get(self.col.conf['curModel'])
         return m or self.models.values()[0]
 
@@ -557,7 +557,9 @@ update notes set flds=:flds,mid=:mid,mod=:m,usn=:u where id = :nid""", d)
         sflds = splitFields(flds)
         map = self.fieldMap(m)
         ords = set()
-        for fname in re.findall("{{cloze:(.+?)}}", m['tmpls'][0]['qfmt']):
+        matches = re.findall("{{cloze:(.+?)}}", m['tmpls'][0]['qfmt'])
+        matches += re.findall("<%cloze:(.+?)%>", m['tmpls'][0]['qfmt'])
+        for fname in matches:
             if fname not in map:
                 continue
             ord = map[fname][0]
