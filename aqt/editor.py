@@ -553,6 +553,7 @@ class Editor(object):
         "Make NOTE the current note."
         self.note = note
         self.currentField = 0
+        self.disableButtons()
         # change timer
         if self.note:
             self.web.setHtml(_html % (

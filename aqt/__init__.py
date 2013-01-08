@@ -25,7 +25,7 @@ from anki.consts import HELP_SITE
 from anki.lang import langDir
 import anki.lang
 
-appVersion = "2.0.3+beta1"
+appVersion = "2.0.4"
 appWebsite = "http://ankisrs.net/"
 appChanges = "http://ankisrs.net/docs/changes.html"
 appDonate = "http://ankisrs.net/support/"

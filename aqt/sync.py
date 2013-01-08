@@ -155,6 +155,7 @@ to the internet.""")
     def _getUserPass(self):
         d = QDialog(self.mw)
         d.setWindowTitle("Anki")
+        d.setWindowModality(Qt.WindowModal)
         vbox = QVBoxLayout()
         l = QLabel(_("""\
 <h1>Account Required</h1>
