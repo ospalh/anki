@@ -719,6 +719,9 @@ function showAnswer(txt) {
         # window
         if self.mw.state != "review" or not self.card:
             return
+        if not askUser('Delete note?', defaultno=True):
+            # Always asks before deleting notes here.
+            return
         self.mw.checkpoint(_("Delete"))
         cnt = len(self.card.note().cards())
         self.mw.col.remNotes([self.card.note().id])

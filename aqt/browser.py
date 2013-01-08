@@ -960,6 +960,9 @@ where id in %s""" % ids2str(sf))
         nids = self.selectedNotes()
         if not nids:
             return
+        if not askUser('Delete selected notes?', defaultno=True):
+            # Always asks before deleting notes here.
+            return
         self.mw.checkpoint(_("Delete Notes"))
         self.model.beginReset()
         oldRow = self.form.tableView.selectionModel().currentIndex().row()
