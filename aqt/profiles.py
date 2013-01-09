@@ -68,6 +68,7 @@ class ProfileManager(object):
         # this.
         self.name = None
         self.base = base
+        self.new_base_asked = False
         self.ensureLocalFS()
         self.ensureBaseExists()
         # load metadata
@@ -92,6 +93,15 @@ information.""")
             raise Exception("unc")
 
     def ensureBaseExists(self):
+        if self.base != default_base() and not os.path.exists(self.base):
+            new_base_button = QMessageBox.question(
+                None, "New base?",
+                "Create new base folder at {0}?".format(self.base),
+                QMessageBox.Yes | QMessageBox.No)
+            if QMessageBox.Yes == new_base_button:
+                self.new_base_asked = True
+            else:
+                raise Exception("User canceled profile creation.")
         try:
             self._ensureExists(self.base)
         except:
@@ -188,6 +198,13 @@ documentation for information on using a flash drive.""")
     def _loadMeta(self):
         path = os.path.join(self.base, "prefs.db")
         new = not os.path.exists(path)
+        if new and self.base != default_base() and not self.new_base_asked:
+            new_db_button = QMessageBox.question(
+                None, "New db?",
+                "Create new Anki2 database {0}?".format(path),
+                QMessageBox.Yes | QMessageBox.No)
+            if not QMessageBox.Yes == new_db_button:
+                raise Exception("User canceled database creation.")
         self.db = DB(path, text=str)
         self.db.execute("""
 create table if not exists profiles
