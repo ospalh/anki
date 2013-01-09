@@ -5,6 +5,7 @@
 from anki.utils import fieldChecksum, intTime, \
     joinFields, splitFields, stripHTMLMedia, timestampID, guid64
 
+
 class Note(object):
 
     def __init__(self, col, model=None, id=None):
@@ -47,7 +48,8 @@ from notes where id = ?""", self.id)
         self._preFlush()
         self.mod = mod if mod else intTime()
         self.usn = self.col.usn()
-        sfld = stripHTMLMedia(self.fields[self.col.models.sortIdx(self._model)])
+        sfld = stripHTMLMedia(
+            self.fields[self.col.models.sortIdx(self._model)])
         tags = self.stringTags()
         csum = fieldChecksum(self.fields[0])
         # res = self.col.db.execute("""
@@ -136,7 +138,7 @@ insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)""",
 select flds from notes where csum = ? and id != ? and mid = ?""",
                                      csum, self.id or 0, self.mid):
             if stripHTMLMedia(
-                splitFields(flds)[0]) == stripHTMLMedia(self.fields[0]):
+                    splitFields(flds)[0]) == stripHTMLMedia(self.fields[0]):
                 return 2
         return False
 
