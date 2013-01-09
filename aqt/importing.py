@@ -84,7 +84,8 @@ class ImportDialog(QDialog):
         self.updateDelimiterButtonText()
         self.frm.allowHTML.setChecked(
             self.mw.pm.profile.get('allowHTML', False))
-        self.frm.importMode.setCurrentIndex(self.mw.pm.profile.get('importMode', 0))
+        self.frm.importMode.setCurrentIndex(
+            self.mw.pm.profile.get('importMode', 0))
         self.exec_()
 
     def setupOptions(self):

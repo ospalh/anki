@@ -13,7 +13,7 @@ import shutil
 import locale
 import re
 
-from PyQt4.QtCore import  QSettings, SIGNAL
+from PyQt4.QtCore import QSettings, SIGNAL
 from PyQt4.QtGui import QDialog, QMessageBox
 
 from anki.db import DB
@@ -56,8 +56,8 @@ profileConf = dict(
     autoSync=True,
     # importing
     allowHTML=False,
-    importMode=0,
-)
+    importMode=0)
+
 
 class ProfileManager(object):
 

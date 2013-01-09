@@ -11,7 +11,7 @@ import socket
 import time
 import traceback
 
-from PyQt4.QtCore import QObject, QThread, SIGNAL
+from PyQt4.QtCore import QObject, Qt, QThread, SIGNAL
 from PyQt4.QtGui import QDialog, QDialogButtonBox, QGridLayout, QLabel, \
     QLineEdit, QVBoxLayout
 

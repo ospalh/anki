@@ -12,14 +12,17 @@ from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 from PyQt4 import pyqtconfig
 
+
 def debug():
-  from PyQt4.QtCore import pyqtRemoveInputHook
-  from pdb import set_trace
-  pyqtRemoveInputHook()
-  set_trace()
+    from PyQt4.QtCore import pyqtRemoveInputHook
+    from pdb import set_trace
+    pyqtRemoveInputHook()
+    set_trace()
 
 if os.environ.get("DEBUG"):
-    import sys, traceback
+    import sys
+    import traceback
+
     def info(type, value, tb):
         from PyQt4.QtCore import pyqtRemoveInputHook
         for line in traceback.format_exception(type, value, tb):

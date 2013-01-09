@@ -1,15 +1,18 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt.qt import *
-from anki.consts import *
+from PyQt4.QtCore import SIGNAL
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QFont
+
 import aqt
 from aqt.utils import showWarning, openHelp, getOnlyText, askUser
+from anki.lang import _, ngettext
+
 
 class FieldDialog(QDialog):
 
     def __init__(self, mw, note, ord=0, parent=None):
-        QDialog.__init__(self, parent or mw) #, Qt.Window)
+        QDialog.__init__(self, parent or mw)  # , Qt.Window)
         self.mw = aqt.mw
         self.parent = parent or mw
         self.note = note
@@ -21,7 +24,8 @@ class FieldDialog(QDialog):
         self.form.setupUi(self)
         self.setWindowTitle(_("Fields for %s") % self.model['name'])
         self.form.buttonBox.button(QDialogButtonBox.Help).setAutoDefault(False)
-        self.form.buttonBox.button(QDialogButtonBox.Close).setAutoDefault(False)
+        self.form.buttonBox.button(
+            QDialogButtonBox.Close).setAutoDefault(False)
         self.currentIdx = None
         self.oldSortField = self.model['sortf']
         self.fillFields()
@@ -88,7 +92,7 @@ class FieldDialog(QDialog):
         self.mm.addField(self.model, f)
         self.mw.progress.finish()
         self.fillFields()
-        self.form.fieldList.setCurrentRow(len(self.model['flds'])-1)
+        self.form.fieldList.setCurrentRow(len(self.model['flds']) - 1)
 
     def onDelete(self):
         if len(self.model['flds']) < 2:
@@ -107,7 +111,8 @@ class FieldDialog(QDialog):
     def onPosition(self, delta=-1):
         idx = self.currentIdx
         l = len(self.model['flds'])
-        txt = getOnlyText(_("New position (1...%d):") % l, default=str(idx+1))
+        txt = getOnlyText(
+            _("New position (1...%d):") % l, default=str(idx + 1))
         if not txt:
             return
         try:
@@ -119,10 +124,10 @@ class FieldDialog(QDialog):
         self.saveField()
         f = self.model['flds'][self.currentIdx]
         self.mw.progress.start()
-        self.mm.moveField(self.model, f, pos-1)
+        self.mm.moveField(self.model, f, pos - 1)
         self.mw.progress.finish()
         self.fillFields()
-        self.form.fieldList.setCurrentRow(pos-1)
+        self.form.fieldList.setCurrentRow(pos - 1)
 
     def onSortField(self):
         # don't allow user to disable; it makes no sense
