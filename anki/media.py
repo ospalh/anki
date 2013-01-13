@@ -165,7 +165,8 @@ If the same name exists, compare checksums."""
         normrefs = {}
 
         def norm(s):
-            if isinstance(s, unicode):
+            # Skip the normalization on Linux. See issue #500
+            if isinstance(s, unicode) and (isWin or isMac):
                 return unicodedata.normalize('NFD', s)
             return s
         for f in self.allMedia():
