@@ -155,8 +155,8 @@ If the same name exists, compare checksums."""
         # generate card q/a and look through all references
         normrefs = {}
         def norm(s):
-            # Skip the normalization on Linux. See issue #500
-            if isinstance(s, unicode) and (isWin or isMac):
+            # Do the noramlization only on Macs. See issue #500.
+            if isinstance(s, unicode) and isMac:
                 return unicodedata.normalize('NFD', s)
             return s
         for f in self.allMedia():
