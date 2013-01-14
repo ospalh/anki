@@ -4,7 +4,6 @@
 
 from PyQt4.QtGui import QDialog
 
-#from aqt.qt import *
 import aqt.forms
 from aqt import appVersion
 from anki.lang import _
