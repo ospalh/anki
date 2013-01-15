@@ -512,15 +512,15 @@ where c.nid = n.id and c.id in %s group by nid""" % ids2str(cids)):
         afmt = (afmt or template['afmt']).replace("}}\n", "}}<br>")
         for (type, format) in (("q", qfmt), ("a", afmt)):
             if type == "q":
-                format = format.replace("{{cloze:", "{{cq:%d:" % (
-                    data[4] + 1))
-                format = format.replace("<%cloze:", "<%%cq:%d:" % (
-                    data[4]+1))
+                format = format.replace(
+                    "{{cloze:", "{{cq:%d:" % (data[4] + 1))
+                format = format.replace(
+                    "<%cloze:", "<%%cq:%d:" % (data[4] + 1))
             else:
-                format = format.replace("{{cloze:", "{{ca:%d:" % (
-                    data[4] + 1))
-                format = format.replace("<%cloze:", "<%%ca:%d:" % (
-                    data[4]+1))
+                format = format.replace(
+                    "{{cloze:", "{{ca:%d:" % (data[4] + 1))
+                format = format.replace(
+                    "<%cloze:", "<%%ca:%d:" % (data[4] + 1))
                 fields['FrontSide'] = stripSounds(d['q'])
             fields = runFilter("mungeFields", fields, model, data, self)
             html = anki.template.render(format, fields)
@@ -529,9 +529,9 @@ where c.nid = n.id and c.id in %s group by nid""" % ids2str(cids)):
             # empty cloze?
             if type == 'q' and model['type'] == MODEL_CLOZE:
                 if not self.models._availClozeOrds(model, data[6], False):
-                    d['q'] += ("<p>" + _(
-                "Please edit this note and add some cloze deletions. (%s)") % (
-                "<a href=%s#cloze>%s</a>" % (HELP_SITE, _("help"))))
+                    d['q'] += (
+                        "<p>" + _("Please edit this note and add some cloze \
+deletions. (%s)") % ("<a href=%s#cloze>%s</a>" % (HELP_SITE, _("help"))))
         return d
 
     def _qaData(self, where=""):
