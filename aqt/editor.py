@@ -622,7 +622,7 @@ class Editor(object):
         self.web.eval("setBackgrounds(%s);" % json.dumps(cols))
 
     def showDupes(self):
-        contents = self.note.fields[0]
+        contents = stripHTMLMedia(self.note.fields[0])
         browser = aqt.dialogs.open("Browser", self.mw)
         browser.form.searchEdit.lineEdit().setText(
             "'note:%s' '%s:%s'" % (
