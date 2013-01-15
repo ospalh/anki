@@ -17,7 +17,7 @@ import urllib2
 
 from anki.hooks import runHook, runFilter
 from anki.lang import _
-from anki.utils import stripHTML, isWin, isMac, namedtmp, json
+from anki.utils import isMac, isWin, json, namedtmp, stripHTML, stripHTMLMedia
 from aqt.sound import getAudio
 from aqt.utils import getBase, getFile, openHelp, shortcut, showInfo, \
     showWarning
