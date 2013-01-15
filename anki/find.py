@@ -166,6 +166,8 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """ + preds
                     add(self._findTemplate(val))
                 elif cmd == "note":
                     add(self._findModel(val))
+                elif cmd == "mid":
+                    add(self._findMid(val))
                 elif cmd == "deck":
                     add(self._findDeck(val))
                 elif cmd == "prop":
@@ -333,6 +335,11 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """ + preds
         if re.search("[^0-9,]", val):
             return
         return "n.id in (%s)" % val
+
+    def _findMid(self, val):
+        if re.search("[^0-9]", val):
+            return
+        return "n.mid = %s" % val
 
     def _findModel(self, val):
         ids = []
