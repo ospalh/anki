@@ -293,13 +293,77 @@ If the same name exists, compare checksums."""
         cur = self.db.execute(
             "select fname from log where type = ?", MEDIA_ADD)
         fnames = []
+        problem_files = None
+
+        def build_problem_file_dict():
+            """
+            Build a dict of all problem files in the collection.
+
+            Go through the media in the collection, and for each file
+            where the file name is different on a Mac, add the file
+            name in the collection to a dict with the Mac file name as
+            a key, so we can look it up later.
+
+            (I see no way around going through the collection in one
+            way or another, as there is basically no other way to see
+            if any given normalized Unicode string has been changed
+            from an unnormalized form. Think of re-arranged combining
+            marks. See http://unicode.org/reports/tr15/,  for a cabinet
+            of normalization horrors. (Version Unicode 6.2.0))
+            """
+            # Create an empty dict.
+            print('debug, start building nfd dict')
+            import time
+            st = time.clock()
+            problem_files = dict()
+            fn_in_collection = self.allMedia()
+            print('checking {} files'.format(len(fn_in_collection)))
+            for fic in fn_in_collection:
+                fic_n = unicodedata.normalize('NFD', fic)
+                if fic_n != fic:
+                    problem_files['fic_n'] = fic
+            print('debug, finished building nfd dict. Took {0}'.format(
+                    time.clock() - st))
+
+        def unnormalize(fn):
+            """Return the file name we should send during sync."""
+            # On Macs we have, or may have, a problem. The file names
+            # we get in this function have been Unicode-normalized
+            # (into NFD form). While we stay on a Mac, there is no
+            # problem, but when we sync, have to fix this. The name of
+            # the file on disk is not necessarily the same as what is
+            # used in the collection, so try to find what is used in
+            # the collection.
+            if not isMac:
+                return fn
+            if isinstance(fn, str):
+                return fn
+            # A second quick test. If there is no comibining character
+            # in the file name, it has not been decomposed.
+            for c in fn:
+                if unicodedata.combining(c) > 0:
+                    break
+            else:
+                # No break, no combinig class, no need to build the dict
+                return fn
+            if problem_files is None:
+                # N.B.: We check for None instead of "if not
+                # problem_files:" so we don't rebuild an empty dict
+                # over and over again.
+                build_problem_file_dict()
+            try:
+                print('debug: mapped {0} to {1}'.format(fn, problem_files[fn]))
+                return problem_files[fn]
+            except KeyError:
+                return fn
+
         while 1:
             fname = cur.fetchone()
             if not fname:
                 # add a flag so the server knows it can clean up
                 z.writestr("_finished", "")
                 break
-            fname = fname[0]
+            fname = unnormalize(fname[0])
             fnames.append([fname])
             z.write(fname, str(cnt))
             files[str(cnt)] = fname
