@@ -293,7 +293,9 @@ If the same name exists, compare checksums."""
         cur = self.db.execute(
             "select fname from log where type = ?", MEDIA_ADD)
         fnames = []
-        problem_files = None
+        # Not the nicest-looking codew, adding class-wide variables at
+        # this time. Hmmm.
+        self.problem_files = None
 
         def build_problem_file_dict():
             """
@@ -315,13 +317,14 @@ If the same name exists, compare checksums."""
             print('debug, start building nfd dict')
             import time
             st = time.clock()
-            problem_files = dict()
+            self.problem_files = dict()
             fn_in_collection = self.allMedia()
-            print('checking {} files'.format(len(fn_in_collection)))
+            print ('checking {} files'.format(len(fn_in_collection)))
             for fic in fn_in_collection:
                 fic_n = unicodedata.normalize('NFD', fic)
                 if fic_n != fic:
-                    problem_files[fic_n] = fic
+                    print(u'{0} is not {1}'.format(fic_n, fic).encode('utf-8'))
+                    self.problem_files[fic_n] = fic
             print('debug, finished building nfd dict. Took {0}'.format(
                     time.clock() - st))
 
@@ -346,17 +349,16 @@ If the same name exists, compare checksums."""
             else:
                 # No break, no combinig class, no need to build the dict
                 return fn
-            if problem_files is None:
+            if self.problem_files is None:
                 # N.B.: We check for None instead of "if not
                 # problem_files:" so we don't rebuild an empty dict
                 # over and over again.
                 build_problem_file_dict()
             try:
-                print('fn {0}'.format(fn))
-                print('pf {0}'.format(problem_files))
-                print('pf fn {0}'.format(problem_files[fn]))
-                print('debug: mapped {0} to {1}'.format(fn, problem_files[fn]))
-                return problem_files[fn]
+                print(u'fn {0}'.format(fn).encode('utf-8'))
+                print(u'pf {0}'.format(self.problem_files).encode('utf-8'))
+                print(u'pf[fn] {0}'.format(self.problem_files[fn]).encode('utf-8'))
+                return self.problem_files[fn]
             except KeyError:
                 return fn
 
@@ -366,10 +368,11 @@ If the same name exists, compare checksums."""
                 # add a flag so the server knows it can clean up
                 z.writestr("_finished", "")
                 break
-            fname = unnormalize(fname[0])
+            fname = fname[0]
+            ufname = unnormalize(fname)
             fnames.append([fname])
             z.write(fname, str(cnt))
-            files[str(cnt)] = fname
+            files[str(cnt)] = ufname
             sz += os.path.getsize(fname)
             if sz > SYNC_ZIP_SIZE:
                 break
