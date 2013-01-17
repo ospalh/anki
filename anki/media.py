@@ -34,6 +34,9 @@ class MediaManager(object):
             # cwd doesn't exist
             self._oldcwd = None
         os.chdir(self._dir)
+        # Two variables that are used during syncs on Macs.
+        self._problem_files = None
+        self._all_media_files = None
         # change database
         self.connect()
 
@@ -293,9 +296,9 @@ If the same name exists, compare checksums."""
         cur = self.db.execute(
             "select fname from log where type = ?", MEDIA_ADD)
         fnames = []
-        # Not the nicest-looking codew, adding class-wide variables at
-        # this time. Hmmm.
-        self.problem_files = None
+        # Clear the list from a possible last sync.
+        self._problem_files = None
+        self._all_media_files = None
 
         def build_problem_file_dict():
             """
@@ -317,14 +320,13 @@ If the same name exists, compare checksums."""
             print('debug, start building nfd dict')
             import time
             st = time.clock()
-            self.problem_files = dict()
-            fn_in_collection = self.allMedia()
+            self._problem_files = dict()
             print ('checking {} files'.format(len(fn_in_collection)))
-            for fic in fn_in_collection:
+            for fic in self._all_media_files:
                 fic_n = unicodedata.normalize('NFD', fic)
                 if fic_n != fic:
                     print(u'{0} is not {1}'.format(fic_n, fic).encode('utf-8'))
-                    self.problem_files[fic_n] = fic
+                    self._problem_files[fic_n] = fic
             print('debug, finished building nfd dict. Took {0}'.format(
                     time.clock() - st))
 
@@ -337,28 +339,46 @@ If the same name exists, compare checksums."""
             # the file on disk is not necessarily the same as what is
             # used in the collection, so try to find what is used in
             # the collection.
+
+            # Two quick checks:
             if not isMac:
+                # No problem, we stored file name is the file name to
+                # use.
                 return fn
             if isinstance(fn, str):
+                # No problem, the file name is the normalized file
+                # name for sure.
                 return fn
-            # A second quick test. If there is no comibining character
-            # in the file name, it has not been decomposed.
-            for c in fn:
-                if unicodedata.combining(c) > 0:
-                    break
-            else:
-                # No break, no combinig class, no need to build the dict
+            # Still here, we have to look in the collection.
+            if self._all_media_files is None:
+                self._all_media_files = self._allMedia()
+            # There are two rather quck ways:
+            if fn in self._all_media_files:
+                # The file is used decomposed in the
+                # collection. Typical case if the user added it
+                # through a file dialog (i think).
                 return fn
-            if self.problem_files is None:
+            fn_nfc = unicodedata.normalization('NFC', fn)
+            if fn_nfc in self._all_media_files:
+                # The file is in the collection normalized. This may
+                # happen quite often when the user typed in the file
+                # name. It may also happen when some other bit of
+                # software did't care about Unicode equivalence. (NFC
+                # normalized strings are nicer. The text may also look
+                # nicer. Never mind the dictionary meaning of
+                # equivalence, it is often rendered differently.') (See
+                # my (ospalh's) audio downloader add-on.)
+                return fn_nfc
+            if self._problem_files is None:
                 # N.B.: We check for None instead of "if not
                 # problem_files:" so we don't rebuild an empty dict
                 # over and over again.
                 build_problem_file_dict()
             try:
                 print(u'fn {0}'.format(fn).encode('utf-8'))
-                print(u'pf {0}'.format(self.problem_files).encode('utf-8'))
-                print(u'pf[fn] {0}'.format(self.problem_files[fn]).encode('utf-8'))
-                return self.problem_files[fn]
+                print(u'pf {0}'.format(self._problem_files).encode('utf-8'))
+                print(u'pf[fn] {0}'.format(self._problem_files[fn]).encode('utf-8'))
+                return self._problem_files[fn]
             except KeyError:
                 return fn
 
