@@ -321,7 +321,7 @@ If the same name exists, compare checksums."""
             for fic in fn_in_collection:
                 fic_n = unicodedata.normalize('NFD', fic)
                 if fic_n != fic:
-                    problem_files['fic_n'] = fic
+                    problem_files[fic_n] = fic
             print('debug, finished building nfd dict. Took {0}'.format(
                     time.clock() - st))
 
@@ -352,6 +352,9 @@ If the same name exists, compare checksums."""
                 # over and over again.
                 build_problem_file_dict()
             try:
+                print('fn {0}'.format(fn))
+                print('pf {0}'.format(problem_files))
+                print('pf fn {0}'.format(problem_files[fn]))
                 print('debug: mapped {0} to {1}'.format(fn, problem_files[fn]))
                 return problem_files[fn]
             except KeyError:
