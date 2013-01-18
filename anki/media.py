@@ -386,12 +386,12 @@ If the same name exists, compare checksums."""
         if fn_nfc in self._all_media_files:
             # The file is in the collection normalized. This may
             # happen quite often when the user typed in the file
-            # name. It may also happen when some other bit of
-            # software did't care about Unicode equivalence. (NFC
+            # name. It may also happen when some other bit of software
+            # did't care about Unicode equivalence. (See my (ospalh's)
+            # audio downloader add-on for an example of that..) (NFC
             # normalized strings are nicer. The text may also look
-            # nicer. Never mind the dictionary meaning of
-            # equivalence, it is often rendered differently.') (See
-            # my (ospalh's) audio downloader add-on.)
+            # nicer. Never mind the dictionary meaning of equivalence,
+            # it is often rendered differently.)
             return fn_nfc
         # Yikes! Looks like we really have to normalize the whole
         # collection.
