@@ -345,7 +345,7 @@ If the same name exists, compare checksums."""
         import time
         st = time.clock()
         self._problem_files = dict()
-        print ('checking {} files'.format(len(fn_in_collection)))
+        print ('checking {} files'.format(len(self._all_media_files)))
         for fic in self._all_media_files:
             fic_n = unicodedata.normalize('NFD', fic)
             if fic_n != fic:
@@ -365,6 +365,7 @@ If the same name exists, compare checksums."""
         # the collection.
         # Two quick checks:
         if not isMac:
+        # if False:  # Testing. Obiously.
             # No problem, we stored file name is the file name to
             # use.
             return fn
@@ -374,14 +375,14 @@ If the same name exists, compare checksums."""
             return fn
         # Still here, we have to look in the collection.
         if self._all_media_files is None:
-            self._all_media_files = self._allMedia()
+            self._all_media_files = self.allMedia()
         # There are two rather quck ways:
         if fn in self._all_media_files:
             # The file is used decomposed in the
             # collection. Typical case if the user added it
             # through a file dialog (i think).
             return fn
-        fn_nfc = unicodedata.normalization('NFC', fn)
+        fn_nfc = unicodedata.normalize('NFC', fn)
         if fn_nfc in self._all_media_files:
             # The file is in the collection normalized. This may
             # happen quite often when the user typed in the file
