@@ -152,8 +152,8 @@ to the internet.""")
             return _("Proxy authentication required.")
         elif "sanity check failed" in err:
             return _("After syncing, the collection was in an inconsistent \
-state. To fix this problem, Anki will force a full sync. Please sync again, and \
-choose which side you would like to keep.")
+state. To fix this problem, Anki will force a full sync. Please sync again, \
+and choose which side you would like to keep.")
         return err
 
     def _getUserPass(self):
