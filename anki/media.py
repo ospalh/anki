@@ -20,8 +20,9 @@ from anki.utils import checksum, isWin, isMac, json
 class MediaManager(object):
 
     # other code depends on this order, so don't reorder
-    regexps = ("(?i)(\[sound:([^]]+)\])",
-               "(?i)(<img[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>)")
+    regexps = (u"(?i)(\[sound:([^]]+)\])",
+               u"(?i)(<img[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>)",
+               u"(?i)(<embed[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>)")
 
     def __init__(self, col, server):
         self.col = col
@@ -29,7 +30,8 @@ class MediaManager(object):
             self._dir = None
             return
         # media directory
-        self._dir = re.sub("(?i)\.(anki2)$", ".media", self.col.path)
+        self._dir = re.sub(
+            u"(?i)\.(anki2)$", ".media", self.col.path, flags=re.UNICODE)
         # convert dir to unicode if it's not already
         if isinstance(self._dir, str):
             self._dir = unicode(self._dir, sys.getfilesystemencoding())
@@ -98,10 +100,10 @@ If the same name exists, compare checksums."""
             if not os.path.exists(path):
                 break
             reg = " \((\d+)\)$"
-            if not re.search(reg, root):
+            if not re.search(reg, root, flags=re.UNICODE):
                 root = root + " (1)"
             else:
-                root = re.sub(reg, repl, root)
+                root = re.sub(reg, repl, root, flags=re.UNICODE)
         # copy and return
         shutil.copyfile(opath, path)
         return os.path.basename(os.path.basename(path))
@@ -121,20 +123,21 @@ If the same name exists, compare checksums."""
         string = mungeQA(string, None, None, model, None, self.col)
         # extract filenames
         for reg in self.regexps:
-            for (full, fname) in re.findall(reg, string):
-                isLocal = not re.match("(https?|ftp)://", fname.lower())
+            for (full, fname) in re.findall(reg, string, flags=re.UNICODE):
+                isLocal = not re.match(
+                    "(https?|ftp)://", fname.lower(), flags=re.UNICODE)
                 if isLocal or includeRemote:
                     l.append(fname)
         return l
 
     def transformNames(self, txt, func):
         for reg in self.regexps:
-            txt = re.sub(reg, func, txt)
+            txt = re.sub(reg, func, txt, flags=re.UNICODE)
         return txt
 
     def strip(self, txt):
         for reg in self.regexps:
-            txt = re.sub(reg, "", txt)
+            txt = re.sub(reg, "", txt, flags=re.UNICODE)
         return txt
 
     def escapeImages(self, string):
@@ -149,11 +152,11 @@ If the same name exists, compare checksums."""
         def repl(match):
             tag = match.group(1)
             fname = match.group(2)
-            if re.match("(https?|ftp)://", fname):
+            if re.match("(https?|ftp)://", fname, flags=re.UNICODE):
                 return tag
             return tag.replace(
                 fname, urllib.quote(fname.encode("utf-8")))
-        return re.sub(self.regexps[1], repl, string)
+        return re.sub(self.regexps[1], repl, string, flags=re.UNICODE)
 
     # Rebuilding DB
     ##########################################################################
