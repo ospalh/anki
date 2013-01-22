@@ -67,14 +67,36 @@ class MediaManager(object):
     ##########################################################################
 
     def addFile(self, opath):
-        """Copy PATH to MEDIADIR, and return new filename.
-If the same name exists, compare checksums."""
+        """
+        Return name of a file in the media dir with the content of opath.
+
+        Copy opath to the media dir, and return the new filename.
+        If the same name exists, compare checksums and just return the
+        name when they match.
+        This function avoids new names that differ only in
+        capitalization or are Unicode quivalents of existing media
+        files.
+        """
         mdir = self.dir()
         # remove any dangerous characters
         base = re.sub(r"[][<>:/\\&?\"\|]", "", os.path.basename(opath))
+        # There aren't any ready-to-use functions (that i could find)
+        # that take into account the differences between
+        # case-sensitive (Linux &c.)  and case-preserving (Windows,
+        # Mac) file systems, so we have to check ourselves. Avoid
+        # problems with Unicode equivalence at the same time. (The 'K'
+        # in the normalization form should reduce confusion when users
+        # have files with exotic characters like u'Ω', which isn't an
+        # u'Ω' or u'Ⅰ', which isn't an u'I')
+        normalized_base = unicodedata.normalize('NFKD', base).lower()
         dst = os.path.join(mdir, base)
-        # if it doesn't exist, copy it directly
-        if not os.path.exists(dst):
+        # I see no way around getting a list of all files and looking
+        # through that. That makes this function slower than the older
+        # version.
+        normalized_media_files = [unicodedata.normalize('NFKD', base).lower(
+                ) for fn in os.listdir(mdir)]
+        #  if it doesn't exist, copy it directly
+        if not normalized_base in normalized_media_files:
             shutil.copyfile(opath, dst)
             return base
         # if it's identical, reuse
@@ -87,7 +109,9 @@ If the same name exists, compare checksums."""
             return " (%d)" % (n+1)
         while True:
             path = os.path.join(mdir, root + ext)
-            if not os.path.exists(path):
+            normalized_base = unicodedata.normalize(
+                'NFKD', root + ext).lower()
+            if not normalized_base in normalized_media_files:
                 break
             reg = " \((\d+)\)$"
             if not re.search(reg, root):
@@ -100,8 +124,14 @@ If the same name exists, compare checksums."""
 
     def filesIdentical(self, path1, path2):
         "True if files are the same."
-        return (checksum(open(path1, "rb").read()) ==
-                checksum(open(path2, "rb").read()))
+        try:
+            # As the extant file's name may now be only similar to path2, ...
+            return (checksum(open(path1, "rb").read()) ==
+                    checksum(open(path2, "rb").read()))
+        except IOError:
+            # ... this may now raise an IOError. Finding the real file
+            # with name similar to path2 isn't easy, so just use another name.
+            return False
 
     # String manipulation
     ##########################################################################
