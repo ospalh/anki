@@ -76,14 +76,27 @@ class MediaManager(object):
     ##########################################################################
 
     def addFile(self, opath):
-        """Copy PATH to MEDIADIR, and return new filename.
-If the same name exists, compare checksums."""
+        """
+        Return name of a file in the media dir with the content of opath.
+
+        Copy opath to the media dir, and return the new filename.
+        If the same name exists, compare checksums and just return the
+        name when they match.
+        This function avoids new names that differ only in
+        capitalization or are Unicode quivalents of existing media
+        files.
+        """
         mdir = self.dir()
         # remove any dangerous characters
         base = re.sub(r"[][<>:/\\&?\"\|]", "", os.path.basename(opath))
+        # Check against normalized, lowercase versions to avoid
+        # problems with name clasches.
+        normalized_base = unicodedata.normalize('NFKD', base).lower()
         dst = os.path.join(mdir, base)
-        # if it doesn't exist, copy it directly
-        if not os.path.exists(dst):
+        normalized_media_files = [unicodedata.normalize('NFKD', base).lower(
+                ) for fn in os.listdir(mdir)]
+        #  if it doesn't exist, copy it directly
+        if not normalized_base in normalized_media_files:
             shutil.copyfile(opath, dst)
             return base
         # if it's identical, reuse
@@ -97,7 +110,9 @@ If the same name exists, compare checksums."""
             return " (%d)" % (n + 1)
         while True:
             path = os.path.join(mdir, root + ext)
-            if not os.path.exists(path):
+            normalized_base = unicodedata.normalize(
+                'NFKD', root + ext).lower()
+            if not normalized_base in normalized_media_files:
                 break
             reg = " \((\d+)\)$"
             if not re.search(reg, root, flags=re.UNICODE):
@@ -110,8 +125,13 @@ If the same name exists, compare checksums."""
 
     def filesIdentical(self, path1, path2):
         "True if files are the same."
-        return (checksum(open(path1, "rb").read()) ==
-                checksum(open(path2, "rb").read()))
+        try:
+            # The try is needed now as the real file name may be an
+            # uppercase version of path2.
+            return (checksum(open(path1, "rb").read()) ==
+                    checksum(open(path2, "rb").read()))
+        except IOError:
+            return False
 
     # String manipulation
     ##########################################################################
