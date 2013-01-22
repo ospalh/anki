@@ -80,19 +80,10 @@ class MediaManager(object):
         mdir = self.dir()
         # remove any dangerous characters
         base = re.sub(r"[][<>:/\\&?\"\|]", "", os.path.basename(opath))
-        # There aren't any ready-to-use functions (that i could find)
-        # that take into account the differences between
-        # case-sensitive (Linux &c.)  and case-preserving (Windows,
-        # Mac) file systems, so we have to check ourselves. Avoid
-        # problems with Unicode equivalence at the same time. (The 'K'
-        # in the normalization form should reduce confusion when users
-        # have files with exotic characters like u'Ω', which isn't an
-        # u'Ω' or u'Ⅰ', which isn't an u'I')
+        # Check against normalized, lowercase versions to avoid
+        # problems with name clasches.
         normalized_base = unicodedata.normalize('NFKD', base).lower()
         dst = os.path.join(mdir, base)
-        # I see no way around getting a list of all files and looking
-        # through that. That makes this function slower than the older
-        # version.
         normalized_media_files = [unicodedata.normalize('NFKD', base).lower(
                 ) for fn in os.listdir(mdir)]
         #  if it doesn't exist, copy it directly
@@ -125,12 +116,11 @@ class MediaManager(object):
     def filesIdentical(self, path1, path2):
         "True if files are the same."
         try:
-            # As the extant file's name may now be only similar to path2, ...
+            # The try is needed now as the real file name may be an
+            # uppercase version of path2.
             return (checksum(open(path1, "rb").read()) ==
                     checksum(open(path2, "rb").read()))
         except IOError:
-            # ... this may now raise an IOError. Finding the real file
-            # with name similar to path2 isn't easy, so just use another name.
             return False
 
     # String manipulation
