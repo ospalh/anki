@@ -21,8 +21,8 @@ class MediaManager(object):
 
     # other code depends on this order, so don't reorder
     regexps = (u"(?i)(\[sound:([^]]+)\])",
-               u"(?i)(<img[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>)",
-               u"(?i)(<embed[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>)")
+               u"(?i)(<(?:img|embed)[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>)",
+               u"(?i)(<object[^>]+data=[\"']?([^\"'>]+)[\"']?[^>]*>)")
 
     def __init__(self, col, server):
         self.col = col
