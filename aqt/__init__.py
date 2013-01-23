@@ -28,7 +28,7 @@ from anki.lang import langDir
 from anki.utils import isMac, isWin
 import anki.lang
 
-appVersion = "2.0.5"
+appVersion = "2.0.6"
 appWebsite = "http://ankisrs.net/"
 appChanges = "http://ankisrs.net/docs/changes.html"
 appDonate = "http://ankisrs.net/support/"
