@@ -188,7 +188,6 @@ class MediaManager(object):
         normrefs = {}
 
         def norm(s):
-            # Do the noramlization only on Macs. See issue #500.
             if isinstance(s, unicode) and isMac:
                 return unicodedata.normalize('NFD', s)
             return s
