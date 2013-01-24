@@ -289,7 +289,8 @@ def _filterHTML(html):
                 continue
             if k.strip() == "color" and not v.strip() == "rgb(0, 0, 0)":
                 preserve += "color:%s;" % v
-            if k.strip() in ("font-weight", "font-style"):
+            if k.strip() in ("font-weight", "font-style") \
+                    and not v.strip() == "normal":
                 preserve += item + ";"
         if preserve:
             # preserve colour attribute, delete implicit class
