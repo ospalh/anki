@@ -1003,13 +1003,19 @@ will be lost. Continue?"""))
         except:
             self._output += traceback.format_exc()
         self._captureOutput(False)
-        buf = ""
+        buf = u""
         for c, line in enumerate(text.strip().split("\n")):
             if c == 0:
-                buf += ">>> %s\n" % line
+                buf += u">>> %s\n" % line
             else:
-                buf += "... %s\n" % line
-        frm.log.appendPlainText(buf + (self._output or "<no output>"))
+                buf += u"... %s\n" % line
+        print self._output
+        try:
+            frm.log.appendPlainText(buf + (self._output.encode('utf-8') or "<no output>"))
+        except:
+            print 'crap'
+            print buf
+            return
         frm.log.ensureCursorVisible()
 
     # System specific code
