@@ -25,7 +25,7 @@ from anki.consts import HELP_SITE
 from anki.lang import langDir
 import anki.lang
 
-appVersion = "2.0.6"
+appVersion = "2.0.7"
 appWebsite = "http://ankisrs.net/"
 appChanges = "http://ankisrs.net/docs/changes.html"
 appDonate = "http://ankisrs.net/support/"
@@ -220,9 +220,10 @@ environment points to a valid, writable folder.""")
 
     # qt version must be up to date
     if qtmajor <= 4 and qtminor <= 6:
-        QMessageBox.critical(
-            None, "Error", "Anki requires Qt4.7 or later.")
-        return
+        QMessageBox.warning(
+            None, "Error", "Your Qt version is known to be buggy. Until you "
+          "upgrade to a newer Qt, you may experience issues such as images "
+          "failing to show up during review.")
 
     # parse args
     opts, args = parseArgs(sys.argv)

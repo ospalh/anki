@@ -123,12 +123,9 @@ class CardLayout(QDialog):
         pform.backWeb = AnkiWebView()
         pform.backPrevBox.addWidget(pform.backWeb)
 
-        def linkClicked(url):
-            openLink(url)
         for wig in pform.frontWeb, pform.backWeb:
             wig.page().setLinkDelegationPolicy(
                 QWebPage.DelegateExternalLinks)
-            c(wig, SIGNAL("linkClicked(QUrl)"), linkClicked)
         l.addWidget(right, 5)
         w.setLayout(l)
         self.forms.append({'tform': tform, 'pform': pform})
