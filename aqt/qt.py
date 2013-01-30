@@ -13,6 +13,7 @@ from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 from PyQt4 import pyqtconfig
 
+import anki.template.furigana
 
 def debug():
     from PyQt4.QtCore import pyqtRemoveInputHook
@@ -38,3 +39,6 @@ qtmajor = (qtconf.qt_version & 0xff0000) >> 16
 qtminor = (qtconf.qt_version & 0xff00) >> 8
 qtpatch = qtconf.qt_version & 0xff
 qt_version = StrictVersion('{0}.{1}.{2}'.format(qtmajor, qtminor, qtpatch))
+
+# This is my private version. I don't have ancient Qt versions lying
+# around. Take out the patch for those.

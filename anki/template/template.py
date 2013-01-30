@@ -5,7 +5,7 @@ import re
 from anki.hooks import runFilter
 from anki.template import furigana
 from anki.template import hint
-from anki.utils import stripHTML
+from anki.utils import stripHTML, stripHTMLMedia
 
 furigana.install()
 hint.install()
@@ -107,6 +107,8 @@ class Template(object):
             replacer = ''
             # if it and isinstance(it, collections.Callable):
             #     replacer = it(inner)
+            if isinstance(it, basestring):
+                it = stripHTMLMedia(it).strip()
             if it and not hasattr(it, '__iter__'):
                 if section[2] != '^':
                     replacer = inner
