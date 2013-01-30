@@ -86,7 +86,7 @@ class MediaManager(object):
         If the same name exists, compare checksums and just return the
         name when they match.
         This function avoids new names that differ only in
-        capitalization or are Unicode quivalents of existing media
+        capitalization or are Unicode equivalents of existing media
         files.
         """
         mdir = self.dir()
