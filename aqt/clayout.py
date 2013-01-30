@@ -13,7 +13,7 @@ from anki.lang import _
 from anki.sound import playFromText, clearAudioQueue
 from anki.utils import joinFields
 from aqt.utils import askUser, getBase, getOnlyText, isMac, isWin, mungeQA, \
-    openHelp, openLink, restoreGeom, saveGeom, showInfo, showWarning
+    openHelp, restoreGeom, saveGeom, showInfo, showWarning
 from aqt.webview import AnkiWebView
 import anki.js
 import aqt

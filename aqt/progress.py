@@ -56,8 +56,8 @@ Your pysqlite2 is too old. Anki will appear frozen during long operations."""
         self.inDB = True
         # handle GUI events
         if not self.blockUpdates:
-          self._maybeShow()
-          self.app.processEvents(QEventLoop.ExcludeUserInputEvents)
+            self._maybeShow()
+            self.app.processEvents(QEventLoop.ExcludeUserInputEvents)
         self.inDB = False
 
     # DB-safe timers
