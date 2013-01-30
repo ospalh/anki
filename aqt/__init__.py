@@ -258,10 +258,16 @@ environment points to a valid, writable folder.""")
     # surprises.
     if qt_version < StrictVersion('4.7'):
         QMessageBox.warning(
+<<<<<<< HEAD
             None, "Error",
             """Your Qt version is known to be buggy. Until you upgrade
 to a newer Qt, you may experience issues such as images failing to
 show up during review.""")
+=======
+            None, "Error", "Your Qt version is known to be buggy. Until you "
+          "upgrade to a newer Qt, you may experience issues such as images "
+          "failing to show up during review.")
+>>>>>>> ospalh-special
 
     # This is done above now. Do not re-activate a second parse
     # here. (Especially when merging patches.)
