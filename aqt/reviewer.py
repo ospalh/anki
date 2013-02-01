@@ -16,7 +16,7 @@ from anki.lang import _, ngettext
 from anki.sound import playFromText, clearAudioQueue, play
 from anki.utils import stripHTML, isMac, json
 from aqt.sound import getAudio
-from aqt.utils import mungeQA, getBase, openLink, tooltip
+from aqt.utils import askUser, mungeQA, getBase, openLink, tooltip
 import aqt
 
 
