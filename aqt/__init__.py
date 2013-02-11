@@ -28,7 +28,7 @@ from anki.lang import langDir
 from anki.utils import isMac, isWin
 import anki.lang
 
-appVersion = "2.0.7"
+appVersion = "2.0.8"
 appWebsite = "http://ankisrs.net/"
 appChanges = "http://ankisrs.net/docs/changes.html"
 appDonate = "http://ankisrs.net/support/"
@@ -258,9 +258,9 @@ environment points to a valid, writable folder.""")
     # surprises.
     if qt_version < StrictVersion('4.7'):
         QMessageBox.warning(
-            None, "Error", "Your Qt version is known to be buggy. Until you "
-          "upgrade to a newer Qt, you may experience issues such as images "
-          "failing to show up during review.")
+            None, "Error", """\
+Your Qt version is known to be buggy. Until you upgrade to a newer Qt, you \
+may experience issues such as images failing to show up during review.""")
 
     # This is done above now. Do not re-activate a second parse
     # here. (Especially when merging patches.)

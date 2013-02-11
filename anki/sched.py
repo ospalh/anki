@@ -541,7 +541,7 @@ did = ? and queue = 3 and due <= ? limit ?""", did, self.today,
                 resched = self._resched(card)
                 if 'mult' in conf and resched:
                     # review that's lapsed
-                    card.ivl = max(1, conf['minInt'], card.ivl*conf['mult'])
+                    card.ivl = max(1, conf['minInt'], card.ivl * conf['mult'])
                 else:
                     # new card; no ivl adjustment
                     pass
@@ -1206,7 +1206,7 @@ below."""))
         "Return the next interval for CARD as a string."
         ivl = self.nextIvl(card, ease)
         if not ivl:
-            return ""
+            return _("(end)")
         s = fmtTimeSpan(ivl, short=short)
         if ivl < self.col.conf['collapseTime']:
             s = "<" + s
