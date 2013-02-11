@@ -112,7 +112,7 @@ class DeckManager(object):
 
     def id(self, name, create=True, type=defaultDeck):
         "Add a deck with NAME. Reuse deck if already exists. Return id as int."
-        name = name.replace("'", "").replace('"', '')
+        name = name.replace('"', '')
         for id, g in self.decks.items():
             if g['name'].lower() == name.lower():
                 return int(id)
@@ -251,8 +251,9 @@ class DeckManager(object):
             draggedDeck = self.get(draggedDeckDid)
             draggedDeckName = draggedDeck['name']
             ontoDeckName = self.get(ontoDeckDid)['name']
-            self.rename(draggedDeck, ontoDeckName + "::" + self._basename(
-                    draggedDeckName))
+            self.rename(
+                draggedDeck, "::".join(
+                    ontoDeckName, self._basename(draggedDeckName)))
 
     def _canDragAndDrop(self, draggedDeckName, ontoDeckName):
         return draggedDeckName != ontoDeckName \

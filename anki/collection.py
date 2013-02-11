@@ -497,7 +497,7 @@ where c.nid = n.id and c.id in %s group by nid""" % ids2str(cids)):
         model = self.models.get(data[2])
         for (name, (idx, conf)) in self.models.fieldMap(model).items():
             fields[name] = flist[idx]
-        fields['Tags'] = data[5]
+        fields['Tags'] = data[5].strip()
         fields['Type'] = model['name']
         fields['Deck'] = self.decks.name(data[3])
         if model['type'] == MODEL_STD:
@@ -659,9 +659,10 @@ where c.nid == f.id
 select id from notes where mid not in """ + ids2str(self.models.ids()))
         if ids:
             problems.append(
-                ngettext("Deleted %d note with missing note type.",
-                         "Deleted %d notes with missing note type.", len(ids))
-                         % len(ids))
+                ngettext(
+                    "Deleted %d note with missing note type.",
+                    "Deleted %d notes with missing note type.", len(ids))
+                % len(ids))
             self.remNotes(ids)
         # cards with invalid ordinal
         for m in self.models.all():
