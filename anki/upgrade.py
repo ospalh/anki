@@ -58,7 +58,7 @@ class Upgrader(object):
         # ensure we have indices for checks below
         db.executescript("""
 create index if not exists ix_cards_factId on cards (factId);
-create index if not exists ix_fields_factId on fieldModels (factId);
+create index if not exists ix_fields_factId on fields (factId);
 analyze;""")
         # fields missing a field model?
         if db.list("""
@@ -208,8 +208,9 @@ select id, id, modelId, cast(created*1000 as int), cast(modified as int),
             map[oldid] = row[0]
             # convert old 64bit id into a string, discarding sign bit
             row[1] = base91(abs(row[1]))
-            row.append(minimizeHTML("\x1f".join(
-                        [x[1] for x in sorted(fields[oldid])])))
+            row.append(
+                minimizeHTML("\x1f".join([x[1] for
+                                          x in sorted(fields[oldid])])))
             data.append(row)
         # and put the facts into the new table
         db.execute("drop table facts")
