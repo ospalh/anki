@@ -198,7 +198,7 @@ class AnkiApp(QApplication):
 
 def parseArgs(argv):
     "Returns (opts, args)."
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser(version="%prog " + appVersion)
     parser.usage = "%prog [OPTIONS] [file to import]"
     parser.add_option("-b", "--base", help="path to base folder")
     parser.add_option("-p", "--profile", help="profile name to load")
@@ -209,16 +209,9 @@ def parseArgs(argv):
 def run():
     global mw
 
-    # on osx we'll need to add the qt plugins to the search path
-    if isMac and getattr(sys, 'frozen', None):
-        rd = os.path.abspath(moduleDir + "/../../..")
-        QCoreApplication.setLibraryPaths([rd])
-
     # parse args
-    # Move this before the creation of the app. Like that we can use
-    # the base dir as the key to the shared memory. Intended as a fix
-    # to issue #12 (originally issue #3210).
     opts, args = parseArgs(sys.argv)
+
     # Use abspath to avoid any disambiguation when we use this as the
     # key for signaling/remote import. Also, set the default here
     # already to make the key consistent.
@@ -233,6 +226,13 @@ def run():
         pass
     opts.base = os.path.abspath(opts.base)
     opts.profile = unicode(opts.profile or "", sys.getfilesystemencoding())
+
+
+    # on osx we'll need to add the qt plugins to the search path
+    if isMac and getattr(sys, 'frozen', None):
+        rd = os.path.abspath(moduleDir + "/../../..")
+        QCoreApplication.setLibraryPaths([rd])
+
 
     # create the app
     # The opts.base is only used to attach to the shared memory at
@@ -261,13 +261,6 @@ environment points to a valid, writable folder.""")
             None, "Error", """\
 Your Qt version is known to be buggy. Until you upgrade to a newer Qt, you \
 may experience issues such as images failing to show up during review.""")
-
-    # This is done above now. Do not re-activate a second parse
-    # here. (Especially when merging patches.)
-    # # parse args
-    # opts, args = parseArgs(sys.argv)
-    # opts.base = unicode(opts.base or "", sys.getfilesystemencoding())
-    # opts.profile = unicode(opts.profile or "", sys.getfilesystemencoding())
 
     # profile manager
     from aqt.profiles import ProfileManager
