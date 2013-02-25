@@ -208,31 +208,25 @@ def parseArgs(argv):
 
 def run():
     global mw
-
     # parse args
     opts, args = parseArgs(sys.argv)
-
     # Use abspath to avoid any disambiguation when we use this as the
     # key for signaling/remote import. Also, set the default here
-    # already to make the key consistent.
-    # Unroll. Looks like it is already unicode on Windows but not on Linux.
+    # already to make the key consistent.  Unroll. Looks like it is
+    # already unicode on Windows but not on Linux.
     if not opts.base:
         opts.base = default_base()
     try:
-        opts.base = unicode(opts.base or default_base(),
-                            sys.getfilesystemencoding())
+        opts.base = unicode(opts.base, sys.getfilesystemencoding())
     except TypeError:
         # Already unicode.
         pass
     opts.base = os.path.abspath(opts.base)
     opts.profile = unicode(opts.profile or "", sys.getfilesystemencoding())
-
-
     # on osx we'll need to add the qt plugins to the search path
     if isMac and getattr(sys, 'frozen', None):
         rd = os.path.abspath(moduleDir + "/../../..")
         QCoreApplication.setLibraryPaths([rd])
-
 
     # create the app
     # The opts.base is only used to attach to the shared memory at
