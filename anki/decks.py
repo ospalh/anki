@@ -257,8 +257,8 @@ class DeckManager(object):
 
     def _canDragAndDrop(self, draggedDeckName, ontoDeckName):
         return draggedDeckName != ontoDeckName \
-                and not self._isParent(ontoDeckName, draggedDeckName) \
-                and not self._isAncestor(draggedDeckName, ontoDeckName)
+            and not self._isParent(ontoDeckName, draggedDeckName) \
+            and not self._isAncestor(draggedDeckName, ontoDeckName)
 
     def _isParent(self, parentDeckName, childDeckName):
         return self._path(childDeckName) == self._path(parentDeckName) + [
