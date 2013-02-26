@@ -269,14 +269,13 @@ def onImport(mw):
 
 
 def importFile(mw, file):
-    ext = os.path.splitext(file)[1]
     importer = None
     done = False
     for i in importing.Importers:
         if done:
             break
         for mext in re.findall("[( ]?\*\.(.+?)[) ]", i[0]):
-            if ext == "." + mext:
+            if file.endswith("." + mext):
                 importer = i[1]
                 done = True
                 break

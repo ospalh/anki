@@ -8,6 +8,7 @@ from anki.importing.anki2 import Anki2Importer
 from anki.importing.anki1 import Anki1Importer
 from anki.importing.supermemo_xml import SupermemoXmlImporter
 from anki.importing.mnemo import MnemosyneImporter
+from anki.importing.pauker import PaukerImporter
 from anki.lang import _
 
 Importers = (
@@ -15,4 +16,5 @@ Importers = (
     (_("Packaged Anki Deck (*.apkg)"), AnkiPackageImporter),
     (_("Anki 1.2 Deck (*.anki)"), Anki1Importer),
     (_("Mnemosyne 2.0 Deck (*.db)"), MnemosyneImporter),
-    (_("Supermemo XML export (*.xml)"), SupermemoXmlImporter))
+    (_("Supermemo XML export (*.xml)"), SupermemoXmlImporter),
+    (_("Pauker 1.8 Lesson (*.pau.gz)"), PaukerImporter))
