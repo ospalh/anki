@@ -269,6 +269,7 @@ def onImport(mw):
 
 
 def importFile(mw, file):
+    ext = os.path.splitext(file)[1]
     importer = None
     done = False
     for i in importing.Importers:
