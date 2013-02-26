@@ -546,10 +546,11 @@ class Browser(QMainWindow):
         selected = len(self.form.tableView.selectionModel().selectedRows())
         cur = len(self.model.cards)
         self.setWindowTitle(
-            ngettext("Browser (%(cur)d card shown; %(sel)s)",
-                     "Browser (%(cur)d cards shown; %(sel)s)", cur) % {
-                "cur": cur, "sel": ngettext("%d selected", "%d selected",
-                                            selected) % selected})
+            ngettext(
+                "Browser (%(cur)d card shown; %(sel)s)",
+                "Browser (%(cur)d cards shown; %(sel)s)",
+                cur) % {"cur": cur, "sel": ngettext(
+                    "%d selected", "%d selected", selected) % selected})
         return selected
 
     def onReset(self):
@@ -799,7 +800,8 @@ by clicking on one on the left."""))
     def _modelTree(self, root):
         for m in sorted(self.col.models.all(), key=itemgetter("name")):
             mitem = self.CallbackItem(
-                root, m['name'], lambda m=m: self.setFilter("mid", str(m['id'])))
+                root, m['name'],
+                lambda m=m: self.setFilter("mid", str(m['id'])))
             mitem.setIcon(0, QIcon(":/icons/product_design.png"))
             # for t in m['tmpls']:
             #     titem = self.CallbackItem(
