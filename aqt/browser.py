@@ -546,10 +546,11 @@ class Browser(QMainWindow):
         selected = len(self.form.tableView.selectionModel().selectedRows())
         cur = len(self.model.cards)
         self.setWindowTitle(
-            ngettext("Browser (%(cur)d card shown; %(sel)s)",
-                     "Browser (%(cur)d cards shown; %(sel)s)", cur) % {
-                "cur": cur, "sel": ngettext("%d selected", "%d selected",
-                                            selected) % selected})
+            ngettext(
+                "Browser (%(cur)d card shown; %(sel)s)",
+                "Browser (%(cur)d cards shown; %(sel)s)",
+                cur) % {"cur": cur, "sel": ngettext(
+                    "%d selected", "%d selected", selected) % selected})
         return selected
 
     def onReset(self):
@@ -702,8 +703,8 @@ by clicking on one on the left."""))
     ######################################################################
 
     class CallbackItem(QTreeWidgetItem):
-        def __init__(self, name, onclick):
-            QTreeWidgetItem.__init__(self, [name])
+        def __init__(self, root, name, onclick):
+            QTreeWidgetItem.__init__(self, root, [name])
             self.onclick = onclick
 
     def setupTree(self):
@@ -717,7 +718,7 @@ by clicking on one on the left."""))
 
     def buildTree(self):
         self.form.tree.clear()
-        root = self.form.tree.invisibleRootItem()
+        root = self.form.tree
         self._systemTagTree(root)
         self._decksTree(root)
         self._modelTree(root)
@@ -771,9 +772,8 @@ by clicking on one on the left."""))
             (_("Leech"), "emblem-important.png", "tag:leech"))
         for name, icon, cmd in tags:
             item = self.CallbackItem(
-                name, lambda c=cmd: self.setFilter(c))
+                root, name, lambda c=cmd: self.setFilter(c))
             item.setIcon(0, QIcon(":/icons/" + icon))
-            root.addChild(item)
         return root
 
     def _userTagTree(self, root):
@@ -781,9 +781,8 @@ by clicking on one on the left."""))
             if t.lower() == "marked" or t.lower() == "leech":
                 continue
             item = self.CallbackItem(
-                t, lambda t=t: self.setFilter("tag", t))
+                root, t, lambda t=t: self.setFilter("tag", t))
             item.setIcon(0, QIcon(":/icons/anki-tag.png"))
-            root.addChild(item)
 
     def _decksTree(self, root):
         grps = self.col.sched.deckDueTree()
@@ -791,9 +790,9 @@ by clicking on one on the left."""))
         def fillGroups(root, grps, head=""):
             for g in grps:
                 item = self.CallbackItem(
-                    g[0], lambda g=g: self.setFilter("deck", head + g[0]))
+                    root, g[0], lambda g=g: self.setFilter(
+                        "deck", head + g[0]))
                 item.setIcon(0, QIcon(":/icons/deck16.png"))
-                root.addChild(item)
                 newhead = head + g[0] + "::"
                 fillGroups(item, g[5], newhead)
         fillGroups(root, grps)
@@ -801,9 +800,9 @@ by clicking on one on the left."""))
     def _modelTree(self, root):
         for m in sorted(self.col.models.all(), key=itemgetter("name")):
             mitem = self.CallbackItem(
-                m['name'], lambda m=m: self.setFilter("mid", str(m['id'])))
+                root, m['name'],
+                lambda m=m: self.setFilter("mid", str(m['id'])))
             mitem.setIcon(0, QIcon(":/icons/product_design.png"))
-            root.addChild(mitem)
             # for t in m['tmpls']:
             #     titem = self.CallbackItem(
             #     t['name'], lambda m=m, t=t: self.setFilter(

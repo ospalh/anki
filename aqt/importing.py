@@ -276,7 +276,7 @@ def importFile(mw, file):
         if done:
             break
         for mext in re.findall("[( ]?\*\.(.+?)[) ]", i[0]):
-            if ext == "." + mext:
+            if file.endswith("." + mext):
                 importer = i[1]
                 done = True
                 break
