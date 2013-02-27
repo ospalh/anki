@@ -14,7 +14,7 @@ from PyQt4.QtGui import QColor, QDesktopServices, QDialog, QDialogButtonBox, \
 
 from anki.lang import _
 from anki.sound import stripSounds
-from anki.utils import isMac, isWin
+from anki.utils import isMac, isWin, invalidFilename
 import aqt
 
 
@@ -456,3 +456,13 @@ def closeTooltip():
     if _tooltipTimer:
         _tooltipTimer.stop()
         _tooltipTimer = None
+
+
+# true if invalid; print warning
+def checkInvalidFilename(str, dirsep=True):
+    bad = invalidFilename(str, dirsep)
+    if bad:
+        showWarning(_("The following character can not be used: %s") %
+                    bad)
+        return True
+    return False

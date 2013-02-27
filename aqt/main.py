@@ -19,7 +19,6 @@ from PyQt4.QtWebKit import QWebSettings
 from anki import Collection
 from anki.hooks import runHook, addHook
 from anki.lang import _, ngettext
-from anki.utils import invalidFilename, invalidFilenameChars
 from anki.utils import isWin, isMac, intTime
 from aqt.deckbrowser import DeckBrowser
 from aqt.overview import Overview
@@ -27,8 +26,9 @@ from aqt.reviewer import Reviewer
 from aqt.studydeck import StudyDeck
 from aqt.sync import SyncManager
 from aqt.upgrade import Upgrader
-from aqt.utils import applyStyles, askUser, getOnlyText, openHelp, openLink, \
-    restoreGeom, restoreState, showInfo, showText, showWarning, tooltip
+from aqt.utils import applyStyles, askUser, checkInvalidFilename, \
+    getOnlyText, openHelp, openLink, restoreGeom, restoreState, showInfo, \
+    showText, showWarning, tooltip
 import aqt
 import aqt.about
 import aqt.addons
@@ -186,12 +186,7 @@ class AnkiQt(QMainWindow):
         return True
 
     def profileNameOk(self, str):
-        if invalidFilename(str):
-            showWarning(
-                _("A profile name cannot contain these characters: %s") %
-                " ".join(invalidFilenameChars))
-            return
-        return True
+        return not checkInvalidFilename(str)
 
     def onAddProfile(self):
         name = getOnlyText(_("Name:"))
@@ -635,12 +630,12 @@ upload, overwriting any changes either here or on AnkiWeb. Proceed?""")):
     def closeEvent(self, event):
         "User hit the X button, etc."
         event.accept()
-        self.onClose()
+        self.onClose(force=True)
 
-    def onClose(self):
+    def onClose(self, force=False):
         "Called from a shortcut key. Close current active window."
         aw = self.app.activeWindow()
-        if not aw or aw == self:
+        if not aw or aw == self or force:
             self.unloadProfile(browser=False)
             self.app.closeAllWindows()
         else:
@@ -801,7 +796,7 @@ and check the statistics for a home deck instead."""))
         self.autoUpdate.start()
 
     def newVerAvail(self, ver):
-        if self.pm.meta['suppressUpdate'] != ver:
+        if self.pm.meta.get('suppressUpdate', None) != ver:
             aqt.update.askAndUpdate(self, ver)
 
     def newMsg(self, data):
@@ -917,7 +912,8 @@ will be lost. Continue?"""))
         diag.close()
 
     def onStudyDeck(self):
-        ret = StudyDeck(self, dyn=True)
+        ret = StudyDeck(
+            self, dyn=True, current=self.col.decks.current()['name'])
         if ret.name:
             self.col.decks.select(self.col.decks.id(ret.name))
             self.moveToState("overview")

@@ -269,7 +269,6 @@ def onImport(mw):
 
 
 def importFile(mw, file):
-    ext = os.path.splitext(file)[1]
     importer = None
     done = False
     for i in importing.Importers:
@@ -296,7 +295,7 @@ def importFile(mw, file):
         except Exception, e:
             msg = unicode(e)
             if msg == "unknownFormat":
-                if ext == ".anki2":
+                if file.endswith(".anki2"):
                     showWarning(_("""\
 .anki2 files are not designed for importing. If you're trying to restore \
 from a backup, please see the 'Backups' section of the user manual."""))

@@ -8,7 +8,8 @@ from PyQt4.QtGui import QDesktopServices, QDialog, QDialogButtonBox, \
 
 from anki.exporting import exporters
 from anki.lang import _, ngettext
-from aqt.utils import getSaveFile, tooltip, showWarning, askUser
+from aqt.utils import getSaveFile, tooltip, showWarning, askUser, \
+    checkInvalidFilename
 import aqt
 import aqt.tagedit
 
@@ -71,11 +72,15 @@ class ExportDialog(QDialog):
                     return
         else:
             verbatim = False
-            file = getSaveFile(
-                self, _("Export"), "export",
-                self.exporter.key, self.exporter.ext)
-            if not file:
-                return
+            while 1:
+                file = getSaveFile(
+                    self, _("Export"), "export",
+                    self.exporter.key, self.exporter.ext)
+                if not file:
+                    return
+                if checkInvalidFilename(file, dirsep=False):
+                    continue
+                break
         self.hide()
         if file:
             self.mw.progress.start(immediate=True)
