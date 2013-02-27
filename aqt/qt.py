@@ -1,6 +1,8 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
-# License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
+#
+# License: GNU AGPL, version 3 or later;
+# http://www.gnu.org/licenses/agpl.html
+#
 # imports are all in this file to make moving to pyside easier in the future
 
 

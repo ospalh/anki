@@ -986,7 +986,7 @@ where id in %s""" % ids2str(sf))
             return
         did = self.mw.col.db.scalar(
             "select did from cards where id = ?", cids[0])
-        current=self.mw.col.decks.get(did)['name']
+        current = self.mw.col.decks.get(did)['name']
         ret = StudyDeck(
             self.mw, current=current, accept=_("Move Cards"),
             title=_("Change Deck"), help="browse", parent=self)

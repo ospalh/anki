@@ -159,8 +159,9 @@ AnkiWeb is too busy at the moment. Please try again in a few minutes.""")
 from connecting to the internet.""")
         elif "Unable to find the server":
             return _(
-                "Server not found. Either your connection is down, or antivirus/firewall "
-                "software is blocking Anki from connecting to the internet.")
+                "Server not found. Either your connection is down, or "
+                "antivirus/firewall software is blocking Anki from "
+                "connecting to the internet.")
         elif "407" in err:
             return _("Proxy authentication required.")
         elif "collection sanity check failed" in err:

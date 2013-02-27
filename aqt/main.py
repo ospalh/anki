@@ -19,7 +19,6 @@ from PyQt4.QtWebKit import QWebSettings
 from anki import Collection
 from anki.hooks import runHook, addHook
 from anki.lang import _, ngettext
-from anki.utils import invalidFilename, invalidFilenameChars
 from anki.utils import isWin, isMac, intTime
 from aqt.deckbrowser import DeckBrowser
 from aqt.overview import Overview
@@ -27,8 +26,9 @@ from aqt.reviewer import Reviewer
 from aqt.studydeck import StudyDeck
 from aqt.sync import SyncManager
 from aqt.upgrade import Upgrader
-from aqt.utils import applyStyles, askUser, getOnlyText, openHelp, openLink, \
-    restoreGeom, restoreState, showInfo, showText, showWarning, tooltip
+from aqt.utils import applyStyles, askUser, checkInvalidFilename, \
+    getOnlyText, openHelp, openLink, restoreGeom, restoreState, showInfo, \
+    showText, showWarning, tooltip
 import aqt
 import aqt.about
 import aqt.addons

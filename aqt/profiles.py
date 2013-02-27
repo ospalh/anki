@@ -209,12 +209,13 @@ create table if not exists profiles
                 return
             except:
                 # if we can't load profile, start with a new one
-                os.rename(path, path+".broken")
+                os.rename(path, path + ".broken")
                 return self._loadMeta()
         # create a default global profile
         self.meta = metaConf.copy()
-        self.db.execute("insert or replace into profiles values ('_global', ?)",
-                        cPickle.dumps(metaConf))
+        self.db.execute(
+            "insert or replace into profiles values ('_global', ?)",
+            cPickle.dumps(metaConf))
         self._setDefaultLang()
         return True
 

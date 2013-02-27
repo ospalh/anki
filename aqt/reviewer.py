@@ -470,7 +470,8 @@ Please run Tools>Maintenance>Empty Cards""")
             if tag == "equal":
                 lastEqual = b[i1:i2]
             elif tag == "replace":
-                ret += self.applyStyle(b[i1], lastEqual,
+                ret += self.applyStyle(
+                    b[i1], lastEqual,
                     b[i1:i2] + ("-" * ((j2 - j1) - (i2 - i1))))
                 lastEqual = ""
             elif tag == "delete":

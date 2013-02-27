@@ -457,6 +457,7 @@ def closeTooltip():
         _tooltipTimer.stop()
         _tooltipTimer = None
 
+
 # true if invalid; print warning
 def checkInvalidFilename(str, dirsep=True):
     bad = invalidFilename(str, dirsep)
