@@ -1299,6 +1299,7 @@ below."""))
             r = random.randint(imin, imax)
             d.append(dict(id=id, due=r + t, ivl=max(1, r), mod=mod,
                           usn=self.col.usn(), fact=2500))
+        self.removeLrn(ids)
         self.col.db.executemany("""
 update cards set type=2,queue=2,ivl=:ivl,due=:due,
 usn=:usn, mod=:mod, factor=:fact where id=:id and odid=0""", d)

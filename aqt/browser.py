@@ -472,8 +472,8 @@ class Browser(QMainWindow):
 
     def setupColumns(self):
         self.columns = [
-            ('question', _("Front")),
-            ('answer', _("Back")),
+            ('question', _("Question")),
+            ('answer', _("Answer")),
             ('template', _("Card")),
             ('deck', _("Deck")),
             ('noteFld', _("Sort Field")),
@@ -743,7 +743,7 @@ by clicking on one on the left."""))
                 else:
                     txt += a
                     if " " in txt or "(" in txt or ")" in txt:
-                        txt = "'%s'" % txt
+                        txt = '"%s"' % txt
                     items.append(txt)
                     txt = ""
             txt = " ".join(items)
@@ -981,8 +981,14 @@ where id in %s""" % ids2str(sf))
 
     def setDeck(self):
         from aqt.studydeck import StudyDeck
+        cids = self.selectedCards()
+        if not cids:
+            return
+        did = self.mw.col.db.scalar(
+            "select did from cards where id = ?", cids[0])
+        current=self.mw.col.decks.get(did)['name']
         ret = StudyDeck(
-            self.mw, current=None, accept=_("Move Cards"),
+            self.mw, current=current, accept=_("Move Cards"),
             title=_("Change Deck"), help="browse", parent=self)
         if not ret.name:
             return
@@ -997,7 +1003,6 @@ where id in %s""" % ids2str(sf))
         mod = intTime()
         usn = self.col.usn()
         # normal cards
-        cids = self.selectedCards()
         scids = ids2str(cids)
         # remove any cards from filtered deck first
         self.col.sched.remFromDyn(cids)

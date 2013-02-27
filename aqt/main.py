@@ -185,12 +185,7 @@ class AnkiQt(QMainWindow):
         return True
 
     def profileNameOk(self, str):
-        if invalidFilename(str):
-            showWarning(
-                _("A profile name cannot contain these characters: %s") %
-                " ".join(invalidFilenameChars))
-            return
-        return True
+        return not checkInvalidFilename(str)
 
     def onAddProfile(self):
         name = getOnlyText(_("Name:"))
@@ -634,12 +629,12 @@ upload, overwriting any changes either here or on AnkiWeb. Proceed?""")):
     def closeEvent(self, event):
         "User hit the X button, etc."
         event.accept()
-        self.onClose()
+        self.onClose(force=True)
 
-    def onClose(self):
+    def onClose(self, force=False):
         "Called from a shortcut key. Close current active window."
         aw = self.app.activeWindow()
-        if not aw or aw == self:
+        if not aw or aw == self or force:
             self.unloadProfile(browser=False)
             self.app.closeAllWindows()
         else:
@@ -800,7 +795,7 @@ and check the statistics for a home deck instead."""))
         self.autoUpdate.start()
 
     def newVerAvail(self, ver):
-        if self.pm.meta['suppressUpdate'] != ver:
+        if self.pm.meta.get('suppressUpdate', None) != ver:
             aqt.update.askAndUpdate(self, ver)
 
     def newMsg(self, data):
@@ -916,7 +911,8 @@ will be lost. Continue?"""))
         diag.close()
 
     def onStudyDeck(self):
-        ret = StudyDeck(self, dyn=True)
+        ret = StudyDeck(
+            self, dyn=True, current=self.col.decks.current()['name'])
         if ret.name:
             self.col.decks.select(self.col.decks.id(ret.name))
             self.moveToState("overview")
