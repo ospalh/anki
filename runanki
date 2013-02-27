@@ -2,5 +2,15 @@
 
 import sys
 sys.path.insert(0, "/usr/share/anki")
+
+# Set the procname, if possible.
+try:
+    import procname
+except ImportError:
+    pass
+else:
+    import os
+    procname.setprocname(os.path.basename(sys.argv[0]))
+
 import aqt
 aqt.run()
