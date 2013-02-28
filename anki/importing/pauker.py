@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 from anki.importing.noteimp import NoteImporter, ForeignNote, ForeignCard
 from anki.stdmodels import addForwardReverse
 
-ONE_DAY = 60 * 60 * 24
+ONE_DAY = 86400
 
 
 class PaukerImporter(NoteImporter):
