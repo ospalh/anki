@@ -423,7 +423,7 @@ Please run Tools>Maintenance>Empty Cards""")
             if "::" in txt:
                 return txt.split("::")[0]
             return txt
-        matches = [noHint(txt) for txt in matches]
+        matches = [noHint(m_txt) for m_txt in matches]
         if len(matches) > 1:
             txt = ", ".join(matches)
         else:

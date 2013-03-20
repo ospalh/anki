@@ -1,7 +1,7 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from anki.hooks import runHook
+
 from cStringIO import StringIO
 import errno
 import gc
@@ -11,17 +11,18 @@ import socket
 import time
 import traceback
 
+
 from PyQt4.QtCore import QObject, Qt, QThread, SIGNAL
 from PyQt4.QtGui import QDialog, QDialogButtonBox, QGridLayout, QLabel, \
     QLineEdit, QVBoxLayout
 
-from anki.lang import _
-import aqt
 from anki import Collection
-from anki.sync import Syncer, RemoteServer, FullSyncer, MediaSyncer, \
-    RemoteMediaServer
-from anki.hooks import addHook, remHook
-from aqt.utils import tooltip, askUserDialog, showWarning, showText
+from anki.hooks import addHook, remHook, runHook
+from anki.lang import _
+from anki.sync import FullSyncer, MediaSyncer, RemoteMediaServer, \
+    RemoteServer, Syncer
+from aqt.utils import askUserDialog, showText, showWarning, tooltip
+import aqt
 
 # Sync manager
 ######################################################################
@@ -75,8 +76,8 @@ automatically."""))
         self.mw.progress.update(label="%s\n%s" % (
             self.label,
             _("%(a)dkB up, %(b)dkB down") % dict(
-                a=self.sentBytes / 1024,
-                b=self.recvBytes / 1024)))
+                a=self.sentBytes/1024,
+                b=self.recvBytes/1024)))
 
     def onEvent(self, evt, *args):
         # pu = self.mw.progress.update
@@ -115,7 +116,8 @@ Please visit AnkiWeb, upgrade your deck, then try again."""))
                 self.label = m
                 self._updateLabel()
         elif evt == "error":
-            showText(_("Syncing failed:\n%s") % self._rewriteError(args[0]))
+            showText(_("Syncing failed:\n%s") %
+                     self._rewriteError(args[0]))
         elif evt == "clockOff":
             self._clockOff()
         elif evt == "noChanges":
@@ -155,19 +157,21 @@ AnkiWeb is too busy at the moment. Please try again in a few minutes.""")
             return _(
                 "A previous sync failed; please try again in a few minutes.")
         elif "10061" in err or "10013" in err:
-            return _("""Antivirus or firewall software is preventing Anki \
-from connecting to the internet.""")
+            return _("""\
+Antivirus or firewall software is preventing Anki from connecting to \
+the internet. """)
         elif "Unable to find the server":
-            return _(
-                "Server not found. Either your connection is down, or "
-                "antivirus/firewall software is blocking Anki from "
-                "connecting to the internet.")
+            return _("""\
+Server not found. Either your connection is down, or \
+antivirus/firewall software is blocking Anki from connecting to the \
+internet.""")
         elif "407" in err:
             return _("Proxy authentication required.")
         elif "collection sanity check failed" in err:
-            return _("After syncing, the collection was in an inconsistent \
-state. To fix this problem, Anki will force a full sync. Please sync again, \
-and choose which side you would like to keep.")
+            return _("""\
+After syncing, the collection was in an inconsistent state. To fix \
+this problem, Anki will force a full sync. Please sync again, and \
+choose which side you would like to keep.""")
         return err
 
     def _getUserPass(self):
@@ -397,9 +401,8 @@ class SyncThread(QThread):
 
 CHUNK_SIZE = 65536
 
+
 # sending in httplib
-
-
 def _incrementalSend(self, data):
     """Send `data' to the server."""
     if self.sock is None:
@@ -419,9 +422,8 @@ def _incrementalSend(self, data):
 
 httplib.HTTPConnection.send = _incrementalSend
 
+
 # receiving in httplib2
-
-
 def _conn_request(self, conn, request_uri, method, body, headers):
     for i in range(2):
         try:
