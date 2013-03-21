@@ -466,7 +466,7 @@ Please run Tools>Maintenance>Empty Cards""")
     def correct(self, ret, a, b, crd):
         "Diff-corrects the typed-in answer."
         if b == "":
-            return ret;
+            return ret
         if ret:
             # Someone else has already done some correcting.
             return ret
