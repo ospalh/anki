@@ -39,6 +39,7 @@ class Reviewer(object):
         self.delShortcut.setAutoRepeat(False)
         self.mw.connect(self.delShortcut, SIGNAL("activated()"), self.onDelete)
         addHook("leech", self.onLeech)
+        addHook("filterTypedAnswer", self.correct)
 
     def show(self):
         self.mw.col.reset()
@@ -399,7 +400,7 @@ Please run Tools>Maintenance>Empty Cards""")
         cor = parser.unescape(cor)
         given = self.typedAnswer
         # compare with typed answer
-        res = self.correct(cor, given)
+        res = runFilter("filterTypedAnswer", u'', cor, given, self.card)
         if cor != given:
             # Wrap the extra text in an id-ed span.
             res += u"<span id=rightanswer><br> {0} <br> {1} </span>".format(
@@ -462,10 +463,13 @@ Please run Tools>Maintenance>Empty Cards""")
             return self.ok(head(correct)) + self.bad(tail(correct) + wrong)
         return self.ok(correct) + self.bad(wrong)
 
-    def correct(self, a, b):
+    def correct(self, ret, a, b, crd):
         "Diff-corrects the typed-in answer."
         if b == "":
-            return ""
+            return ret;
+        if ret:
+            # Someone else has already done some correcting.
+            return ret
         self.calculateOkBadStyle()
         ret = ""
         lastEqual = ""
