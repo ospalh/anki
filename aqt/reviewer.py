@@ -410,9 +410,7 @@ Please run Tools>Maintenance>Empty Cards""")
         def repl(match):
             # can't pass a string in directly, and can't use re.escape as it
             # escapes too much
-            return """
-<span  id=coran style="font-family: '%s'; font-size: %spx">%s</span>""" % (
-                self.typeFont, self.typeSize, res)
+            return u""" <span  id="corrected">{0}</span>""".format(res)
         return re.sub(self.typeAnsPat, repl, buf)
 
     def _contentForCloze(self, txt, idx):
