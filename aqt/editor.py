@@ -5,8 +5,8 @@
 from BeautifulSoup import BeautifulSoup
 from PyQt4.QtCore import QMimeData, Qt, SIGNAL
 from PyQt4.QtGui import QClipboard, QColor, QColorDialog, QCursor, QDialog, \
-    QDropEvent, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QIcon, QImage, \
-    QKeySequence, QLabel, QMenu, QPalette, QPushButton, QShortcut, \
+    QDropEvent, QFont, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QIcon, \
+    QImage, QKeySequence, QLabel, QMenu, QPalette, QPushButton, QShortcut, \
     QSizePolicy, QSpacerItem, QStyleFactory, QTextCursor, QVBoxLayout
 from PyQt4.QtWebKit import QWebPage, QWebView
 
@@ -654,6 +654,10 @@ class Editor(object):
                   lambda: openHelp("editor"))
         form.textEdit.setPlainText(self.note.fields[self.currentField])
         form.textEdit.moveCursor(QTextCursor.End)
+        edit_font = QFont('Souvenir Monospaced ITC LT')
+        edit_font.setStyleHint(QFont.TypeWriter)
+        edit_font.setPixelSize(15)
+        form.textEdit.setFont(edit_font)
         d.exec_()
         html = form.textEdit.toPlainText()
         # filter html through beautifulsoup so we can strip out things like a
