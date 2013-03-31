@@ -37,10 +37,9 @@ if os.environ.get("DEBUG"):
     sys.excepthook = info
 
 qtconf = pyqtconfig.Configuration()
-qtmajor = (qtconf.qt_version & 0xff0000) >> 16
-qtminor = (qtconf.qt_version & 0xff00) >> 8
-qtpatch = qtconf.qt_version & 0xff
-qt_version = StrictVersion('{0}.{1}.{2}'.format(qtmajor, qtminor, qtpatch))
+# Don't muck around with bit shifts. RAS 2013-03-31
+qtmajor, qtminor, qtpatch = QT_VERSION_STR.split('.')
+qt_version = StrictVersion(QT_VERSION_STR)
 
 # This is my private version. I don't have ancient Qt versions lying
 # around. Take out the patch for those.
