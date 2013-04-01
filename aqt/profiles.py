@@ -311,4 +311,4 @@ def default_base():
     elif isMac:
         return os.path.expanduser("~/Documents/Anki")
     else:
-        return os.path.expanduser("~/Anki")
+        return os.path.expanduser("~/anki")
