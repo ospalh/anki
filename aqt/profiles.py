@@ -231,7 +231,12 @@ create table if not exists profiles
     def ensureProfile(self):
         "Create a new profile if none exists."
         if self.firstRun:
-            self.create(_("User 1"))
+            try:
+                import getpass
+            except ImportError:
+                self.create(_("User 1"))
+            else:
+                self.create(getpass.getuser())
             p = os.path.join(self.base, "README.txt")
             open(p, "w").write((_("""\
 This folder stores all of your Anki data in a single location,
