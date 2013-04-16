@@ -461,6 +461,9 @@ class Browser(QMainWindow):
         self.mw.maybeReset()
         evt.accept()
 
+    def canClose(self):
+        return True
+
     def keyPressEvent(self, evt):
         "Show answer on RET or register answer."
         if evt.key() == Qt.Key_Escape:
@@ -753,6 +756,10 @@ by clicking on one on the left."""))
             cur = unicode(self.form.searchEdit.lineEdit().text())
             if cur:
                 txt = cur + " " + txt
+        elif self.mw.app.keyboardModifiers() & Qt.ShiftModifier:
+            cur = unicode(self.form.searchEdit.lineEdit().text())
+            if cur:
+                txt = cur + " or " + txt
         self.form.searchEdit.lineEdit().setText(txt)
         self.onSearch()
 
@@ -1156,7 +1163,7 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
     def teardownHooks(self):
         remHook("reset", self.onReset)
         remHook("editTimer", self.refreshCurrentCard)
-        remHook("editFocusLost", self.refreshCurrentCard)
+        remHook("editFocusLost", self.refreshCurrentCardFilter)
         remHook("undoState", self.onUndoState)
         for t in "newTag", "newModel", "newDeck":
             remHook(t, self.buildTree)

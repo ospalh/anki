@@ -116,16 +116,42 @@ If the same name exists, compare checksums."""
 
     def filesInStr(self, mid, string, includeRemote=False):
         l = []
-        # convert latex first
         model = self.col.models.get(mid)
-        string = mungeQA(string, None, None, model, None, self.col)
-        # extract filenames
-        for reg in self.regexps:
-            for (full, fname) in re.findall(reg, string):
-                isLocal = not re.match("(https?|ftp)://", fname.lower())
-                if isLocal or includeRemote:
-                    l.append(fname)
+        strings = []
+        if model['type'] == MODEL_CLOZE and "{{c" in string:
+            # if the field has clozes in it, we'll need to expand the
+            # possibilities so we can render latex
+            strings = self._expandClozes(string)
+        else:
+            strings = [string]
+        for string in strings:
+            # handle latex
+            string = mungeQA(string, None, None, model, None, self.col)
+            # extract filenames
+            for reg in self.regexps:
+                for (full, fname) in re.findall(reg, string):
+                    isLocal = not re.match("(https?|ftp)://", fname.lower())
+                    if isLocal or includeRemote:
+                        l.append(fname)
         return l
+
+    def _expandClozes(self, string):
+        ords = set(re.findall("{{c(\d+)::.+?}}", string))
+        strings = []
+        from anki.template.template import clozeReg
+        def qrepl(m):
+            if m.group(3):
+                return "[%s]" % m.group(3)
+            else:
+                return "[...]"
+        def arepl(m):
+            return m.group(1)
+        for ord in ords:
+            s = re.sub(clozeReg%ord, qrepl, string)
+            s = re.sub(clozeReg%".+?", "\\1", s)
+            strings.append(s)
+        strings.append(re.sub(clozeReg%".+?", arepl, string))
+        return strings
 
     def transformNames(self, txt, func):
         for reg in self.regexps:
@@ -295,7 +321,7 @@ If the same name exists, compare checksums."""
     # and place a json file in the zip with the necessary information.
 
     def zipAdded(self):
-        "Add files to a zip until over SYNC_ZIP_SIZE. Return zip data."
+        "Add files to a zip until over SYNC_ZIP_SIZE/COUNT. Return zip data."
         f = StringIO()
         z = zipfile.ZipFile(f, "w", compression=zipfile.ZIP_DEFLATED)
         sz = 0
@@ -315,7 +341,7 @@ If the same name exists, compare checksums."""
             z.write(fname, str(cnt))
             files[str(cnt)] = fname
             sz += os.path.getsize(fname)
-            if sz > SYNC_ZIP_SIZE:
+            if sz > SYNC_ZIP_SIZE or cnt > SYNC_ZIP_COUNT:
                 break
             cnt += 1
         z.writestr("_meta", json.dumps(files))

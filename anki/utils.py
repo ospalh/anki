@@ -74,7 +74,7 @@ def fmtTimeSpan(time, pad=0, point=0, short=False, after=False, unit=99):
     (type, point) = optimalPeriod(time, point, unit)
     time = convertSecondsTo(time, type)
     if not point:
-        time = math.floor(time)
+        time = round(time)
     if short:
         fmt = shortTimeFmt(type)
     else:
@@ -155,7 +155,7 @@ def stripHTML(s):
 
 def stripHTMLMedia(s):
     "Strip HTML but keep media filenames"
-    s = re.sub("<img src=[\"']?([^\"'>]+)[\"']? ?/?>", " \\1 ", s)
+    s = re.sub("<img[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>", " \\1 ", s)
     return stripHTML(s)
 
 

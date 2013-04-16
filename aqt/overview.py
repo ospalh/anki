@@ -5,7 +5,7 @@
 from anki.lang import _
 from anki.sound import clearAudioQueue
 from anki.utils import isMac
-from aqt.utils import openLink, shortcut
+from aqt.utils import openLink, shortcut, tooltip
 import aqt
 
 
@@ -37,6 +37,8 @@ class Overview(object):
         if url == "study":
             self.mw.col.startTimebox()
             self.mw.moveToState("review")
+            if self.mw.state == "overview":
+                tooltip(_("No cards are due yet."))
         elif url == "anki":
             print "anki menu"
         elif url == "opts":
