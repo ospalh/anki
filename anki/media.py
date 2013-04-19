@@ -11,7 +11,8 @@ import urllib
 import zipfile
 from cStringIO import StringIO
 
-from anki.consts import MEDIA_ADD, MEDIA_REM, SYNC_ZIP_SIZE
+from anki.consts import MEDIA_ADD, MEDIA_REM, MODEL_CLOZE, SYNC_ZIP_COUNT, \
+    SYNC_ZIP_SIZE
 from anki.db import DB
 from anki.latex import mungeQA
 from anki.utils import checksum, isWin, isMac, json
@@ -139,18 +140,20 @@ If the same name exists, compare checksums."""
         ords = set(re.findall("{{c(\d+)::.+?}}", string))
         strings = []
         from anki.template.template import clozeReg
+
         def qrepl(m):
             if m.group(3):
                 return "[%s]" % m.group(3)
             else:
                 return "[...]"
+
         def arepl(m):
             return m.group(1)
         for ord in ords:
-            s = re.sub(clozeReg%ord, qrepl, string)
-            s = re.sub(clozeReg%".+?", "\\1", s)
+            s = re.sub(clozeReg % ord, qrepl, string)
+            s = re.sub(clozeReg % ".+?", "\\1", s)
             strings.append(s)
-        strings.append(re.sub(clozeReg%".+?", arepl, string))
+        strings.append(re.sub(clozeReg % ".+?", arepl, string))
         return strings
 
     def transformNames(self, txt, func):
