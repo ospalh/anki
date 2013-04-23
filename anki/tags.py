@@ -60,9 +60,8 @@ class TagManager(object):
             lim = ""
             self.tags = {}
             self.changed = True
-        self.register(
-            set(self.split(" ".join(self.col.db.list(
-                            "select distinct tags from notes" + lim)))))
+        self.register(set(self.split(" ".join(self.col.db.list(
+            "select distinct tags from notes" + lim)))))
 
     def allItems(self):
         return self.tags.items()

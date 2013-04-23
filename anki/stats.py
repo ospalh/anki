@@ -623,11 +623,13 @@ order by thetype, ease""" % lim)
             data=[dict(data=shifted, color=colCum, label=_("% Correct")),
                   dict(data=counts, color=colHour, label=_("Answers"), yaxis=2,
                        bars=dict(barWidth=0.2), stack=False)],
-            conf=dict(xaxis=dict(
-                    ticks=[[0, _("4AM")], [6, _("10AM")], [12, _("4PM")],
-                           [18, _("10PM")], [23, _("3AM")]]),
-                      yaxes=[dict(max=peak),
-                             dict(position="right", max=mcount)]),
+            conf=dict(
+                xaxis=dict(
+                    ticks=[
+                        [0, _("4AM")], [6, _("10AM")], [12, _("4PM")],
+                        [18, _("10PM")], [23, _("3AM")]]),
+                yaxes=[
+                    dict(max=peak), dict(position="right", max=mcount)]),
             ylabel=_("% Correct"), ylabel2=_("Reviews"))
         txt += _("Hours with less than 30 reviews are not shown.")
         return txt
@@ -690,9 +692,10 @@ when you answer "good" on a review.''')
     def _line(self, i, a, b, bold=True):
         colon = _(":")
         if bold:
-            i.append(("""\
-<tr><td width=200 align=right>%s%s</td><td><b>%s</b></td></tr>""") % (
-                    a, colon, b))
+            i.append(
+                ("""\
+<tr><td width=200 align=right>%s%s</td><td><b>%s</b></td></tr>""")
+                % (a, colon, b))
         else:
             i.append(("""\
 <tr><td width=200 align=right>%s%s</td><td>%s</td></tr>""") % (a, colon, b))
@@ -731,8 +734,8 @@ from cards where did in %s""" % self._limit())
             deck = self.col.decks.current()['name']
         b += _("Scope: %s") % deck
         b += "<br>"
-        b += _("Period: %s") % [_("1 month"), _("1 year"), _(
-                "deck life")][self.type]
+        b += _("Period: %s") % [
+            _("1 month"), _("1 year"), _("deck life")][self.type]
         return b
 
     # Tools

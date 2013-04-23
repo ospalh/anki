@@ -52,8 +52,8 @@ from notes where id = ?""", self.id)
         tags = self.stringTags()
         fields = self.joinedFields()
         if not mod and self.col.db.scalar(
-            "select 1 from notes where id = ? and tags = ? and flds = ?",
-            self.id, tags, fields):
+                "select 1 from notes where id = ? and tags = ? and flds = ?",
+                self.id, tags, fields):
             return
         csum = fieldChecksum(self.fields[0])
         self.mod = mod if mod else intTime()
