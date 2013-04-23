@@ -17,6 +17,7 @@ from PyQt4 import pyqtconfig
 
 import anki.template.furigana
 
+
 def debug():
     from PyQt4.QtCore import pyqtRemoveInputHook
     from pdb import set_trace

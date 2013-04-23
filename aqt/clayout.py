@@ -9,7 +9,7 @@ from PyQt4.QtGui import QDialog, QDialogButtonBox, QFont, QHBoxLayout, \
 from PyQt4.QtWebKit import QWebPage
 
 from anki.consts import MODEL_CLOZE
-from anki.lang import _
+from anki.lang import _, ngettext
 from anki.sound import playFromText, clearAudioQueue
 from anki.utils import joinFields
 from aqt.utils import askUser, getBase, getOnlyText, isMac, isWin, mungeQA, \
@@ -57,12 +57,16 @@ class CardLayout(QDialog):
         self.redrawing = True
         self.updateTabs()
         self.redrawing = False
-        self.selectCard(self.ord)
+        idx = self.ord
+        if idx >= len(self.cards):
+            idx = len(self.cards) - 1
+        self.selectCard(idx)
 
     def setupTabs(self):
         c = self.connect
         cloze = self.model['type'] == MODEL_CLOZE
         self.tabs = QTabWidget()
+        self.tabs.setTabsClosable(not cloze)
         self.tabs.setUsesScrollButtons(True)
         if not cloze:
             add = QPushButton("+")
@@ -70,7 +74,8 @@ class CardLayout(QDialog):
             add.setToolTip(_("Add new card"))
             c(add, SIGNAL("clicked()"), self.onAddCard)
             self.tabs.setCornerWidget(add)
-        c(self.tabs, SIGNAL("currentChanged(int)"), self.selectCard)
+        c(self.tabs, SIGNAL("currentChanged(int)"), self.onCardSelected)
+        c(self.tabs, SIGNAL("tabCloseRequested(int)"), self.onRemoveTab)
 
     def updateTabs(self):
         self.forms = []
@@ -133,8 +138,12 @@ class CardLayout(QDialog):
 
     def onRemoveTab(self, idx):
         if len(self.model['tmpls']) < 2:
-            return showInfo(_("At least one card is required."))
-        if not askUser(_("Remove all cards of this type?")):
+            return showInfo(_("At least one card type is required."))
+        cards = self.mm.tmplUseCount(self.model, idx)
+        cards = ngettext("%d card", "%d cards", cards) % cards
+        msg = _("Delete the '%s' card type, and its %s?" %
+                (self.model['tmpls'][idx]['name'], cards))
+        if not askUser(msg):
             return
         if not self.mm.remTemplate(self.model, self.cards[idx].template()):
             return showWarning(_("""\
@@ -176,11 +185,15 @@ Please create a new card type first."""))
     ##########################################################################
 
     def selectCard(self, idx):
+        if self.tabs.currentIndex() == idx:
+            # trigger a re-read
+            self.onCardSelected(idx)
+        else:
+            self.tabs.setCurrentIndex(idx)
+
+    def onCardSelected(self, idx):
         if self.redrawing:
             return
-        self.ord = idx
-        if idx >= len(self.cards):
-            idx = len(self.cards) - 1
         self.card = self.cards[idx]
         self.tab = self.forms[idx]
         self.tabs.setCurrentIndex(idx)
@@ -287,8 +300,8 @@ Please create a new card type first."""))
         t['qfmt'] = "%s<br>\n%s" % (_("Edit to customize"), old['qfmt'])
         t['afmt'] = old['afmt']
         self.mm.addTemplate(self.model, t)
+        self.ord = len(self.cards)
         self.redraw()
-        self.selectCard(t['ord'])
 
     def onFlip(self):
         old = self.card.template()
@@ -326,10 +339,6 @@ adjust the template manually to switch the question and answer."""))
         a = m.addAction(_("Browser Appearance"))
         a.connect(a, SIGNAL("triggered()"),
                   self.onBrowserDisplay)
-        if self.model['type'] != MODEL_CLOZE:
-            a = m.addAction(_("Delete"))
-            a.connect(a, SIGNAL("triggered()"),
-                      lambda: self.onRemoveTab(self.tabs.currentIndex()))
         m.exec_(button.mapToGlobal(QPoint(0, 0)))
 
     def onBrowserDisplay(self):

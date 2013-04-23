@@ -48,7 +48,7 @@ class DeckBrowser(object):
         elif cmd == "import":
             self.mw.onImport()
         elif cmd == "create":
-            deck = getOnlyText(_("New deck name:"))
+            deck = getOnlyText(_("Name for deck:"))
             if deck:
                 self.mw.col.decks.id(deck)
                 self.refresh()
@@ -63,7 +63,7 @@ class DeckBrowser(object):
             self._previousDeck()
         if evt.key() == Qt.Key_Down:
             self._nextDeck()
-        if evt.key() == Qt.Key_Return  or evt.key() == Qt.Key_Enter:
+        if evt.key() == Qt.Key_Return or evt.key() == Qt.Key_Enter:
             self._selDeck()
         key_text = unicode(evt.text())
         if key_text == "f":
@@ -89,8 +89,8 @@ class DeckBrowser(object):
             return
         current_did = self.mw.col.conf['curDeck']
         self.mw.col.decks.select(previous_did)
-        self.web.eval('moveCurrentClass({0}, {1})'.format(
-                current_did, previous_did))
+        self.web.eval(
+            'moveCurrentClass({0}, {1})'.format(current_did, previous_did))
 
     def _nextDeck(self):
         try:
@@ -100,8 +100,8 @@ class DeckBrowser(object):
             return
         current_did = self.mw.col.conf['curDeck']
         self.mw.col.decks.select(next_did)
-        self.web.eval("moveCurrentClass({0}, {1})".format(
-                current_did, next_did))
+        self.web.eval(
+            "moveCurrentClass({0}, {1})".format(current_did, next_did))
 
     # HTML generation
     ##########################################################################
@@ -125,7 +125,6 @@ body { margin: 1em; -webkit-user-select: none; }
 .filtered { color: #00a !important; }
 %(qtip)s
  """ % dict(width=_dragIndicatorBorderWidth, qtip=anki.js.qtip_css)
-
 
     _body = """
 <center>
@@ -311,7 +310,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         # before.
         buf += """\
 <td align=right class="duelrn" title="%d %d">%s</td>\
-<td align=right>%s</td>"""  % (
+<td align=right>%s</td>""" % (
             due, lrn,
             nonzeroColour(due + lrn, "#007700"),
             nonzeroColour(new, "#000099"))

@@ -11,7 +11,8 @@ import urllib
 import zipfile
 from cStringIO import StringIO
 
-from anki.consts import MEDIA_ADD, MEDIA_REM, SYNC_ZIP_SIZE
+from anki.consts import MEDIA_ADD, MEDIA_REM, MODEL_CLOZE, SYNC_ZIP_COUNT, \
+    SYNC_ZIP_SIZE
 from anki.db import DB
 from anki.latex import mungeQA
 from anki.utils import checksum, isWin, isMac, json
@@ -96,8 +97,8 @@ class MediaManager(object):
         # problems with name clasches.
         normalized_base = unicodedata.normalize('NFKD', base).lower()
         dst = os.path.join(mdir, base)
-        normalized_media_files = [unicodedata.normalize('NFKD', base).lower(
-                ) for fn in os.listdir(mdir)]
+        normalized_media_files = [unicodedata.normalize('NFKD', base).lower()
+                                  for fn in os.listdir(mdir)]
         #  if it doesn't exist, copy it directly
         if not normalized_base in normalized_media_files:
             shutil.copyfile(opath, dst)
@@ -141,17 +142,45 @@ class MediaManager(object):
 
     def filesInStr(self, mid, string, includeRemote=False):
         l = []
-        # convert latex first
         model = self.col.models.get(mid)
-        string = mungeQA(string, None, None, model, None, self.col)
-        # extract filenames
-        for reg in self.regexps:
-            for (full, fname) in re.findall(reg, string, flags=re.UNICODE):
-                isLocal = not re.match(
-                    "(https?|ftp)://", fname.lower(), flags=re.UNICODE)
-                if isLocal or includeRemote:
-                    l.append(fname)
+        strings = []
+        if model['type'] == MODEL_CLOZE and "{{c" in string:
+            # if the field has clozes in it, we'll need to expand the
+            # possibilities so we can render latex
+            strings = self._expandClozes(string)
+        else:
+            strings = [string]
+        for string in strings:
+            # handle latex
+            string = mungeQA(string, None, None, model, None, self.col)
+            # extract filenames
+            for reg in self.regexps:
+                for (full, fname) in re.findall(reg, string, flags=re.UNICODE):
+                    isLocal = not re.match(
+                        "(https?|ftp)://", fname.lower(), flags=re.UNICODE)
+                    if isLocal or includeRemote:
+                        l.append(fname)
         return l
+
+    def _expandClozes(self, string):
+        ords = set(re.findall("{{c(\d+)::.+?}}", string))
+        strings = []
+        from anki.template.template import clozeReg
+
+        def qrepl(m):
+            if m.group(3):
+                return "[%s]" % m.group(3)
+            else:
+                return "[...]"
+
+        def arepl(m):
+            return m.group(1)
+        for ord in ords:
+            s = re.sub(clozeReg % ord, qrepl, string)
+            s = re.sub(clozeReg % ".+?", "\\1", s)
+            strings.append(s)
+        strings.append(re.sub(clozeReg % ".+?", arepl, string))
+        return strings
 
     def transformNames(self, txt, func):
         for reg in self.regexps:
@@ -320,7 +349,7 @@ class MediaManager(object):
     # and place a json file in the zip with the necessary information.
 
     def zipAdded(self):
-        "Add files to a zip until over SYNC_ZIP_SIZE. Return zip data."
+        "Add files to a zip until over SYNC_ZIP_SIZE/COUNT. Return zip data."
         f = StringIO()
         z = zipfile.ZipFile(f, "w", compression=zipfile.ZIP_DEFLATED)
         sz = 0
@@ -344,7 +373,7 @@ class MediaManager(object):
             z.write(fname, str(cnt))
             files[str(cnt)] = ufname
             sz += os.path.getsize(fname)
-            if sz > SYNC_ZIP_SIZE:
+            if sz > SYNC_ZIP_SIZE or cnt > SYNC_ZIP_COUNT:
                 break
             cnt += 1
         z.writestr("_meta", json.dumps(files))
@@ -385,7 +414,7 @@ class MediaManager(object):
                 print(u'{0} is not {1}'.format(fic_n, fic).encode('utf-8'))
                 self._problem_files[fic_n] = fic
         print('debug, finished building nfd dict. Took {0}'.format(
-                time.clock() - st))
+              time.clock() - st))
 
     def _unnormalize(self, fn):
         """Return the file name we should send during sync."""
@@ -435,7 +464,8 @@ class MediaManager(object):
             self._build_problem_file_dict()
         try:
             print(u'fn {0}'.format(fn).encode('utf-8'))
-            print(u'pf[fn] {0}'.format(self._problem_files[fn]).encode('utf-8'))
+            print(
+                u'pf[fn] {0}'.format(self._problem_files[fn]).encode('utf-8'))
             return self._problem_files[fn]
         except KeyError:
             return fn

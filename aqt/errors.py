@@ -3,6 +3,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from PyQt4.QtCore import QObject, QTimer, SIGNAL
+import cgi
 import sys
 
 from anki.lang import _
@@ -46,7 +47,7 @@ class ErrorHandler(QObject):
         self.timer.start()
 
     def onTimeout(self):
-        error = self.pool
+        error = cgi.escape(self.pool)
         self.pool = ""
         self.mw.progress.clear()
         if "abortSchemaMod" in error:

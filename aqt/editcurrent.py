@@ -68,3 +68,6 @@ class EditCurrent(QDialog):
         self.mw.moveToState("review")
         saveGeom(self, "editcurrent")
         aqt.dialogs.close("EditCurrent")
+
+    def canClose(self):
+        return True

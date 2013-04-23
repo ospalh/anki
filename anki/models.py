@@ -199,6 +199,11 @@ select id from cards where nid in (select id from notes where mid = ?)""",
         return self.col.db.scalar(
             "select count() from notes where mid = ?", m['id'])
 
+    def tmplUseCount(self, m, ord):
+        return self.col.db.scalar("""
+select count() from cards, notes where cards.nid = notes.id
+and notes.mid = ? and cards.ord = ?""", m['id'], ord)
+
     # Copying
     ##################################################
 
@@ -249,18 +254,24 @@ select id from cards where nid in (select id from notes where mid = ?)""",
 
     def remField(self, m, field):
         self.col.modSchema()
+        # save old sort field
+        sortFldName = m['flds'][m['sortf']]['name']
         idx = m['flds'].index(field)
         m['flds'].remove(field)
-        if m['sortf'] >= len(m['flds']):
-            m['sortf'] -= 1
+        # restore old sort field if possible, or revert to first field
+        m['sortf'] = 0
+        for c, f in enumerate(m['flds']):
+            if f['name'] == sortFldName:
+                m['sortf'] = c
+                break
         self._updateFieldOrds(m)
 
         def delete(fields):
             del fields[idx]
             return fields
         self._transformFields(m, delete)
-        if idx == self.sortIdx(m):
-            # need to rebuild
+        if m['flds'][m['sortf']]['name'] != sortFldName:
+            # need to rebuild sort field
             self.col.updateFieldCache(self.nids(m))
         # saves
         self.renameField(m, field, None)
@@ -564,7 +575,7 @@ update notes set flds=:flds,mid=:mid,mod=:m,usn=:u where id = :nid""", d)
             if fname not in map:
                 continue
             ord = map[fname][0]
-            ords.update([int(m) - 1 for m in re.findall(
+            ords.update([int(c_ord) - 1 for c_ord in re.findall(
                 "{{c(\d+)::.+?}}", sflds[ord])])
         if -1 in ords:
             ords.remove(-1)

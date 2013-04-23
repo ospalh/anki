@@ -20,16 +20,20 @@ def noSound(repl):
     return func
 
 
+def _munge(s):
+    return s.replace("&nbsp;", " ")
+
+
 def kanji(txt, *args):
-    return re.sub(r, noSound(r'\1'), txt)
+    return re.sub(r, noSound(r'\1'), _munge(txt))
 
 
 def kana(txt, *args):
-    return re.sub(r, noSound(r'\2'), txt)
+    return re.sub(r, noSound(r'\2'), _munge(txt))
 
 
 def furigana(txt, *args):
-    return re.sub(r, noSound(ruby), txt)
+    return re.sub(r, noSound(ruby), _munge(txt))
 
 
 def install():
