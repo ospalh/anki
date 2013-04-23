@@ -9,7 +9,7 @@ from PyQt4.QtGui import QDialog, QDialogButtonBox, QFont, QHBoxLayout, \
 from PyQt4.QtWebKit import QWebPage
 
 from anki.consts import MODEL_CLOZE
-from anki.lang import _
+from anki.lang import _, ngettext
 from anki.sound import playFromText, clearAudioQueue
 from anki.utils import joinFields
 from aqt.utils import askUser, getBase, getOnlyText, isMac, isWin, mungeQA, \
@@ -142,7 +142,7 @@ class CardLayout(QDialog):
         cards = self.mm.tmplUseCount(self.model, idx)
         cards = ngettext("%d card", "%d cards", cards) % cards
         msg = _("Delete the '%s' card type, and its %s?" %
-            (self.model['tmpls'][idx]['name'], cards))
+                (self.model['tmpls'][idx]['name'], cards))
         if not askUser(msg):
             return
         if not self.mm.remTemplate(self.model, self.cards[idx].template()):
