@@ -575,7 +575,7 @@ update notes set flds=:flds,mid=:mid,mod=:m,usn=:u where id = :nid""", d)
             if fname not in map:
                 continue
             ord = map[fname][0]
-            ords.update([int(m) - 1 for m in re.findall(
+            ords.update([int(c_ord) - 1 for c_ord in re.findall(
                 "{{c(\d+)::.+?}}", sflds[ord])])
         if -1 in ords:
             ords.remove(-1)
