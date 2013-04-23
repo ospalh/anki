@@ -292,7 +292,13 @@ how to restore from a backup.""")
         self.moveToState("deckBrowser")
 
     def unloadCollection(self):
-        "True if unload successful."
+        """
+        Unload the collection.
+
+        This unloads a collection if ther is one and returns True if
+        there is no collection after the call. (Because the unload
+        worked or because there was no collection to start with.)
+        """
         if self.col:
             if not self.closeAllCollectionWindows():
                 return
@@ -302,7 +308,8 @@ how to restore from a backup.""")
             self.progress.start(immediate=True)
             self.backup()
             self.progress.finish()
-            return True
+        return True
+
 
     # Backup and auto-optimize
     ##########################################################################
