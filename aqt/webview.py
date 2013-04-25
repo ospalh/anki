@@ -114,7 +114,10 @@ class AnkiWebView(QWebView):
             button = "font-weight: normal;"
         self.setHtml("""
 <!doctype html>
-<html><head><style>
+<html><head>
+<title>Anki html</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
 button {
 %s
 }
