@@ -20,10 +20,10 @@ from PyQt4.QtCore import QCoreApplication, QEvent, QIODevice, \
 from PyQt4.QtGui import QApplication, QMessageBox
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 
-from aqt.qt import qtmajor, qtminor
 from anki.consts import HELP_SITE
 from anki.lang import langDir
 from anki.utils import isMac
+from aqt.qt import qtmajor, qtminor
 import anki.lang
 
 appVersion = "2.0.8"
