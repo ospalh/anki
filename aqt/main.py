@@ -169,8 +169,8 @@ class AnkiQt(QMainWindow):
         name = self.pm.profiles()[n]
         f = self.profileForm
         passwd = not self.pm.load(name)
-        f.passEdit.setShown(passwd)
-        f.passLabel.setShown(passwd)
+        f.passEdit.setVisible(passwd)
+        f.passLabel.setVisible(passwd)
 
     def openProfile(self):
         name = self.pm.profiles()[self.profileForm.profiles.currentRow()]
@@ -296,7 +296,7 @@ how to restore from a backup.""")
         """
         Unload the collection.
 
-        This unloads a collection if ther is one and returns True if
+        This unloads a collection if there is one and returns True if
         there is no collection after the call. (Because the unload
         worked or because there was no collection to start with.)
         """
@@ -314,6 +314,7 @@ how to restore from a backup.""")
 
     # Backup and auto-optimize
     ##########################################################################
+
 
     def backup(self):
         nbacks = self.pm.profile['numBackups']
@@ -1039,7 +1040,6 @@ will be lost. Continue?"""))
     def setupSystemSpecific(self):
         self.hideMenuAccels = False
         if isMac:
-            qt_mac_set_menubar_icons(False)
             # mac users expect a minimize option
             self.minimizeShortcut = QShortcut("Ctrl+M", self)
             self.connect(self.minimizeShortcut, SIGNAL("activated()"),
