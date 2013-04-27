@@ -17,12 +17,11 @@ import os
 import sys
 import tempfile
 from PyQt4.QtCore import QCoreApplication, QEvent, QIODevice, \
-    QSharedMemory, QTranslator, Qt, SIGNAL
+    QSharedMemory, QTranslator, Qt, QT_VERSION_STR, SIGNAL
 from PyQt4.QtGui import QApplication, QMessageBox
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 
 from aqt.profiles import default_base
-from aqt.qt import qt_version
 from anki.consts import HELP_SITE
 from anki.lang import langDir
 from anki.utils import isMac, isWin
@@ -40,7 +39,7 @@ mw = None  # set on init
 moduleDir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
 
 try:
-    import aqt.forms
+    import aqt.forms  # Unused. Just here as a test.
 except ImportError as e:
     if "forms" in str(e):
         print "If you're running from git, did you run build_ui.sh?"
@@ -202,6 +201,10 @@ class AnkiApp(QApplication):
 
 def parseArgs(argv):
     "Returns (opts, args)."
+    # py2app fails to strip this in some instances, then anki dies
+    # as there's no such profile
+    if isMac and len(argv) > 1 and argv[1].startswith("-psn"):
+        argv = [argv[0]]
     parser = optparse.OptionParser(version="%prog " + appVersion)
     parser.usage = "%prog [OPTIONS] [file to import]"
     parser.add_option("-b", "--base", help="path to base folder")
@@ -212,6 +215,8 @@ def parseArgs(argv):
 
 def run():
     global mw
+    from anki.utils import isMac
+
     # parse args
     opts, args = parseArgs(sys.argv)
     # Use abspath to avoid any disambiguation when we use this as the
@@ -242,6 +247,10 @@ def run():
         # we've signaled the primary instance, so we should close
         return
 
+    # disable icons on mac; this must be done before window created
+    if isMac:
+        app.setAttribute(Qt.AA_DontShowIconsInMenus)
+
     # we must have a usable temp dir
     try:
         tempfile.gettempdir()
@@ -254,7 +263,7 @@ environment points to a valid, writable folder.""")
 
     # Qt version must not be too old. Use StrictVersion to avoid
     # surprises.
-    if qt_version < StrictVersion('4.7'):
+    if StrictVersion(QT_VERSION_STR) < StrictVersion('4.7'):
         QMessageBox.warning(
             None, "Error", """\
 Your Qt version is known to be buggy. Until you upgrade to a newer Qt, you \

@@ -330,7 +330,7 @@ The front of this card is empty. Please run Tools>Maintenance>Empty Cards.""")
   margin: 1em;
 }
 body {
-  margin:0.2em;
+  margin: 0.2em;
   margin-top: 0.5em;
 }
 img {
