@@ -308,7 +308,7 @@ from a backup, please see the 'Backups' section of the user manual."""))
             return
         finally:
             mw.progress.finish()
-        # diag = ImportDialog(mw, importer)
+        ImportDialog(mw, importer)
     else:
         # if it's an apkg, we need to ask whether to import/replace
         if importer.__class__.__name__ == "AnkiPackageImporter":
