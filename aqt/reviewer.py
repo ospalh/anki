@@ -334,8 +334,7 @@ body {
   margin-top: 0.5em;
 }
 img {
-  max-width: 95%;
-  max-height: 95%;
+  max-width: 100%;
 }
 .marked {
   position:absolute;
@@ -343,7 +342,7 @@ img {
   top: 7px;
   display: none;
 }
-#typeans { width: 100%; }
+
 """
 
     def _styles(self):
