@@ -395,12 +395,8 @@ Please run Tools>Maintenance>Empty Cards""")
             else:
                 # empty field, remove type answer pattern
                 return re.sub(self.typeAnsPat, "", buf)
-        return re.sub(self.typeAnsPat, """
-<center>
-<input type=text id=typeans onkeypress="_typeAnsPress();"
-   style="font-family: '%s'; font-size: %spx;">
-</center>
-""" % (self.typeFont, self.typeSize), buf)
+        return re.sub(self.typeAnsPat, """<input type=text id=typeans \
+onkeypress="_typeAnsPress();">""", buf)
 
     def typeAnsAnswerFilter(self, buf):
         # tell webview to call us back with the input content
