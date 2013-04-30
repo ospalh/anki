@@ -529,7 +529,7 @@ min-width: 60px; white-space: nowrap;
 .spacer { height: 18px; }
 .spacer2 { height: 16px; }
 
-button.ease_again {color: #f00;}
+button.ease_again {color: #c35617;}
 button.ease_easy {color: #070;}
 button#defease {font-weight: bold;}
 """
