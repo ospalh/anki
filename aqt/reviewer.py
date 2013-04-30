@@ -528,6 +528,10 @@ min-width: 60px; white-space: nowrap;
 .nobold { font-weight: normal; display: inline-block; padding-top: 4px; }
 .spacer { height: 18px; }
 .spacer2 { height: 16px; }
+
+button.ease_again {color: #f00;}
+button.ease_easy {color: #070;}
+button#defease {font-weight: bold;}
 """
 
     def _bottomHTML(self):
@@ -639,31 +643,34 @@ function showAnswer(txt) {
             return 2
 
     def _answerButtonList(self):
-        l = ((1, _("Again")),)
+        l = ((1, _("Again"), 'again'),)
         cnt = self.mw.col.sched.answerButtons(self.card)
         if cnt == 2:
-            return l + ((2, _("Good")),)
+            return l + ((2, _("Good"), 'good'),)
         elif cnt == 3:
-            return l + ((2, _("Good")), (3, _("Easy")))
+            return l + ((2, _("Good"), 'good'), (3, _("Easy"), 'easy'))
         else:
-            return l + ((2, _("Hard")), (3, _("Good")), (4, _("Easy")))
+            return l + ((2, _("Hard"), 'hard'), (3, _("Good"), 'good'),
+                        (4, _("Easy"), 'easy'))
 
     def _answerButtons(self):
         # times = []
         default = self._defaultEase()
 
-        def but(i, label):
+        def but(i, label, e_label):
             if i == default:
                 extra = "id=defease"
             else:
                 extra = ""
             due = self._buttonTime(i)
-            return '''
-<td align=center>%s<button %s title="%s" onclick='py.link("ease%d");'>\
-%s</button></td>''' % (due, extra, _("Shortcut key: %s") % i, i, label)
+            return u'''
+<td align=center>{d}<button {x} class="ease_{et}" title="{l}" \
+onclick='py.link("ease{e}");'>{t}</button></td>'''.format(
+                d=due, x=extra, l=_("Shortcut key: %s") % i, e=i, t=label,
+                et=e_label)
         buf = "<center><table cellpading=0 cellspacing=0><tr>"
-        for ease, label in self._answerButtonList():
-            buf += but(ease, label)
+        for ease, label, e_label in self._answerButtonList():
+            buf += but(ease, label, e_label)
         buf += "</tr></table>"
         script = """
 <script>$(function () { $("#defease").focus(); });</script>"""
