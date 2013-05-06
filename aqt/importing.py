@@ -166,7 +166,7 @@ you can enter it here. Use \\t to represent tab."""),
         try:
             self.importer.run()
         except UnicodeDecodeError:
-            showWarning(_("Selected file was not in UTF-8 format."))
+            showUnicodeWarning()
             return
         except Exception, e:
             msg = _("Import failed.\n")
@@ -258,6 +258,13 @@ you can enter it here. Use \\t to represent tab."""),
         openHelp("FileImport")
 
 
+def showUnicodeWarning():
+    """Shorthand to show a standard warning."""
+    showWarning(_(
+        "Selected file was not in UTF-8 format. Please see the "
+        "importing section of the manual."))
+
+
 def onImport(mw):
     filt = ";;".join([x[0] for x in importing.Importers])
     file = getFile(mw, _("Import"), None, key="import",
@@ -290,7 +297,7 @@ def importFile(mw, file):
         try:
             importer.open()
         except UnicodeDecodeError:
-            showWarning(_("Selected file was not in UTF-8 format."))
+            showUnicodeWarning()
             return
         except Exception, e:
             msg = unicode(e)

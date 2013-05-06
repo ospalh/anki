@@ -193,7 +193,7 @@ function _typeAnsPress() {
 The front of this card is empty. Please run Tools>Maintenance>Empty Cards.""")
         else:
             q = c.q()
-        if self._autoplay(c):
+        if self.autoplay(c):
             playFromText(q)
         # render & update bottom
         q = self._mungeQA(q)
@@ -208,9 +208,9 @@ The front of this card is empty. Please run Tools>Maintenance>Empty Cards.""")
         # user hook
         runHook('showQuestion')
 
-    def _autoplay(self, card):
+    def autoplay(self, card):
         return self.mw.col.decks.confForDid(
-            self.card.odid or self.card.did)['autoplay']
+            card.odid or card.did)['autoplay']
 
     def _replayq(self, card):
         return self.mw.col.decks.confForDid(
@@ -231,7 +231,7 @@ The front of this card is empty. Please run Tools>Maintenance>Empty Cards.""")
         c = self.card
         a = c.a()
         # play audio?
-        if self._autoplay(c):
+        if self.autoplay(c):
             playFromText(a)
         # render and update bottom
         a = self._mungeQA(a)
