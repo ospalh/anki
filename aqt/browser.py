@@ -21,9 +21,10 @@ from anki.lang import _, ngettext
 from anki.utils import fmtTimeSpan, ids2str, stripHTMLMedia, isWin, intTime, \
     isMac
 from aqt.toolbar import Toolbar
-from aqt.utils import applyStyles, askUser, getTag, openHelp, restoreGeom, \
-    restoreHeader, restoreSplitter, restoreState, saveGeom, saveHeader, \
-    saveSplitter, saveState, shortcut, showInfo, showWarning, tooltip
+from aqt.utils import applyStyles, askUser, getBase, getTag,  mungeQA, \
+    openHelp, restoreGeom, restoreHeader, restoreSplitter, restoreState, \
+    saveGeom, saveHeader, saveSplitter, saveState, shortcut, showInfo, \
+    showWarning, tooltip
 from aqt.webview import AnkiWebView
 import anki
 import anki.utils
@@ -968,7 +969,8 @@ where id in %s""" % ids2str(sf))
         c = self.connect
         self._previewWindow = QDialog()
         self._previewWindow.setWindowTitle(_("Preview"))
-        c(self._previewWindow, SIGNAL("finished(int)"), self._onPreviewFinished)
+        c(self._previewWindow, SIGNAL("finished(int)"),
+          self._onPreviewFinished)
         vbox = QVBoxLayout()
         vbox.setMargin(0)
         self._previewWeb = AnkiWebView()
@@ -1013,10 +1015,10 @@ where id in %s""" % ids2str(sf))
     def _updatePreviewButtons(self):
         if not self._previewWindow:
             return
-        canBack = self.currentRow() >  0 or self._previewState == "question"
+        canBack = self.currentRow() > 0 or self._previewState == "question"
         self._previewPrev.setEnabled(not not (self.card and canBack))
-        canForward = self.currentRow() < self.model.rowCount(None) - 1 or \
-                     self._previewState == "question"
+        canForward = self.currentRow() < self.model.rowCount(None) - 1 \
+            or self._previewState == "question"
         self._previewNext.setEnabled(not not (self.card and canForward))
 
     def _closePreview(self):
