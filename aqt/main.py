@@ -315,7 +315,6 @@ how to restore from a backup.""")
     # Backup and auto-optimize
     ##########################################################################
 
-
     def backup(self):
         nbacks = self.pm.profile['numBackups']
         if not nbacks:
