@@ -1042,6 +1042,8 @@ class EditorWebView(AnkiWebView):
 
     def _processUrls(self, mime):
         url = mime.urls()[0].toString()
+        # chrome likes to give us the URL twice with a \n
+        url = url.splitlines()[0]
         link = self._localizedMediaLink(url)
         mime = QMimeData()
         mime.setHtml(link)
@@ -1114,11 +1116,12 @@ class EditorWebView(AnkiWebView):
         except urllib2.URLError, e:
             showWarning(self.errtxt % e)
             return
+        finally:
+            self.editor.mw.progress.finish()
         path = namedtmp(os.path.basename(urllib2.unquote(url)))
         file = open(path, "wb")
         file.write(filecontents)
         file.close()
-        self.editor.mw.progress.finish()
         return self.editor._addMedia(path)
 
     def _flagAnkiText(self):
@@ -1133,9 +1136,9 @@ class EditorWebView(AnkiWebView):
     def contextMenuEvent(self, evt):
         m = QMenu(self)
         a = m.addAction(_("Cut"))
-        a.connect(a, SIGNAL("activated()"), self.onCut)
+        a.connect(a, SIGNAL("triggered()"), self.onCut)
         a = m.addAction(_("Copy"))
-        a.connect(a, SIGNAL("activated()"), self.onCopy)
+        a.connect(a, SIGNAL("triggered()"), self.onCopy)
         a = m.addAction(_("Paste"))
-        a.connect(a, SIGNAL("activated()"), self.onPaste)
+        a.connect(a, SIGNAL("triggered()"), self.onPaste)
         m.popup(QCursor.pos())
