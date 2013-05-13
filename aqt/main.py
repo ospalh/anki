@@ -317,7 +317,6 @@ the manual for information on how to restore from an automatic backup."))
             self.progress.finish()
         return True
 
-
     # Backup and auto-optimize
     ##########################################################################
 

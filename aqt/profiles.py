@@ -13,15 +13,21 @@ import shutil
 import locale
 import re
 
-from PyQt4.QtCore import QSettings, SIGNAL
+from PyQt4.QtCore import SIGNAL
 from PyQt4.QtGui import QDialog, QMessageBox
 
 from anki.db import DB
 from anki.lang import _, langs
 from anki.utils import checksum, intTime, isMac, isWin
 from aqt import appHelpSite
+from aqt.qt import qtmajor
 from aqt.utils import showWarning
 import aqt.forms
+
+if qtmajor >= 5:
+    from PyQt4.QtCore import QStandardPaths
+else:
+    from PyQt4.QtCore import QDesktopServices
 
 metaConf = dict(
     ver=0,
@@ -188,9 +194,11 @@ documentation for information on using a flash drive.""")
     def _defaultBase(self):
         if isWin:
             if qtmajor >= 5:
-                loc = QStandardPaths.writeableLocation(QStandardPaths.DocumentsLocation)
+                loc = QStandardPaths.writeableLocation(
+                    QStandardPaths.DocumentsLocation)
             else:
-                loc = QDesktopServices.storageLocation(QDesktopServices.DocumentsLocation)
+                loc = QDesktopServices.storageLocation(
+                    QDesktopServices.DocumentsLocation)
             return os.path.join(loc, "Anki")
         elif isMac:
             return os.path.expanduser("~/Documents/Anki")
