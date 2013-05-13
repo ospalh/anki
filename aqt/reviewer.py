@@ -2,6 +2,7 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+from __future__ import division
 import HTMLParser
 import cgi
 import difflib
@@ -589,7 +590,7 @@ function showAnswer(txt) {
 </script>
 """ % dict(rem=self._remaining(), edit=_("Edit"),
            editkey=_("Shortcut key: %s") % "E",
-           more=_("More"), time=self.card.timeTaken() / 1000)
+           more=_("More"), time=self.card.timeTaken() // 1000)
 
     def _showAnswerButton(self):
         self._bottomReady = True

@@ -6,23 +6,30 @@
 # - Saves in pickles rather than json to easily store Qt window state.
 # - Saves in sqlite rather than a flat file so the config can't be corrupted
 
+from distutils.version import StrictVersion
+import cPickle
+import locale
 import os
 import random
-import cPickle
-import shutil
-import locale
 import re
+import shutil
 
-from PyQt4.QtCore import QSettings, SIGNAL
+
+from PyQt4.QtCore import SIGNAL
 from PyQt4.QtGui import QDialog, QMessageBox
 
 from anki.db import DB
 from anki.lang import _, langs
 from anki.utils import checksum, intTime, isMac, isWin
-# from aqt import appHelpSite
 from anki.consts import HELP_SITE as appHelpSite
+from aqt import appHelpSite
 from aqt.utils import showWarning
 import aqt.forms
+
+if StrictVersion(QT_VERSION_STR) >= StrictVersion("5.0"):
+    from PyQt4.QtCore import QStandardPaths
+else:
+    from PyQt4.QtCore import QDesktopServices
 
 metaConf = dict(
     ver=0,
@@ -309,10 +316,13 @@ def default_base():
     when the user didn't provide one.
     """
     if isWin:
-        s = QSettings(QSettings.UserScope, "Microsoft", "Windows")
-        s.beginGroup("CurrentVersion/Explorer/Shell Folders")
-        d = s.value("Personal")
-        return os.path.join(d, "Anki")
+        if StrictVersion(QT_VERSION_STR) >= StrictVersion("5.0"):
+            loc = QStandardPaths.writeableLocation(
+                QStandardPaths.DocumentsLocation)
+        else:
+            loc = QDesktopServices.storageLocation(
+                QDesktopServices.DocumentsLocation)
+        return os.path.join(loc, "Anki")
     elif isMac:
         return os.path.expanduser("~/Documents/Anki")
     else:

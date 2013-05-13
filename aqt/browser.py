@@ -589,12 +589,13 @@ class Browser(QMainWindow):
         self.form.splitter.widget(1).setVisible(not not show)
         if not show:
             self.editor.setNote(None)
-            self.card = None
+            self.singleCard = False
         else:
             self.card = self.model.getCard(
                 self.form.tableView.selectionModel().currentIndex())
             self.editor.setNote(self.card.note(reload=True))
             self.editor.card = self.card
+            self.singleCard = True
         self._renderPreview(True)
         self.toolbar.draw()
 
@@ -967,6 +968,7 @@ where id in %s""" % ids2str(sf))
 
     def _openPreview(self):
         c = self.connect
+        self._previewState = "question"
         self._previewWindow = QDialog()
         self._previewWindow.setWindowTitle(_("Preview"))
         c(self._previewWindow, SIGNAL("finished(int)"),
@@ -974,6 +976,7 @@ where id in %s""" % ids2str(sf))
         vbox = QVBoxLayout()
         vbox.setMargin(0)
         self._previewWeb = AnkiWebView()
+        self._previewWeb.setFocusPolicy(Qt.NoFocus)
         vbox.addWidget(self._previewWeb)
         bbox = QDialogButtonBox()
         self._previewPrev = bbox.addButton("<", QDialogButtonBox.ActionRole)
@@ -988,7 +991,6 @@ where id in %s""" % ids2str(sf))
         self._previewWindow.setLayout(vbox)
         restoreGeom(self._previewWindow, "preview")
         self._previewWindow.show()
-        self._previewState = "question"
         self._renderPreview(True)
 
     def _onPreviewFinished(self, ok):
@@ -1016,10 +1018,10 @@ where id in %s""" % ids2str(sf))
         if not self._previewWindow:
             return
         canBack = self.currentRow() > 0 or self._previewState == "question"
-        self._previewPrev.setEnabled(not not (self.card and canBack))
+        self._previewPrev.setEnabled(not not (self.singleCard and canBack))
         canForward = self.currentRow() < self.model.rowCount(None) - 1 \
             or self._previewState == "question"
-        self._previewNext.setEnabled(not not (self.card and canForward))
+        self._previewNext.setEnabled(not not (self.singleCard and canForward))
 
     def _closePreview(self):
         if self._previewWindow:
