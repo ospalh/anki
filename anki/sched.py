@@ -872,7 +872,8 @@ select id from cards where did in %s and queue = 2 and due <= ? limit ?)"""
         delay = self._daysLate(card)
         conf = self._revConf(card)
         fct = card.factor / 1000
-        ivl2 = self._constrainedIvl((card.ivl + delay // 4) * 1.2, conf, card.ivl)
+        ivl2 = self._constrainedIvl(
+            (card.ivl + delay // 4) * 1.2, conf, card.ivl)
         ivl3 = self._constrainedIvl((card.ivl + delay // 2) * fct, conf, ivl2)
         ivl4 = self._constrainedIvl(
             (card.ivl + delay) * fct * conf['ease4'], conf, ivl3)
@@ -1055,8 +1056,8 @@ did = ?, queue = %s, due = ?, mod = ?, usn = ? where id = ?""" % queue, data)
         if not lf:
             return
         # if over threshold or every half threshold reps after that
-        if (card.lapses >= lf and
-            (card.lapses-lf) % (max(lf // 2, 1)) == 0):
+        if card.lapses >= lf \
+                and (card.lapses-lf) % (max(lf // 2, 1)) == 0:
             # add a leech tag
             f = card.note()
             f.addTag("leech")
