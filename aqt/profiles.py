@@ -15,21 +15,20 @@ import re
 import shutil
 
 
-from PyQt4.QtCore import SIGNAL
+from PyQt4.QtCore import QT_VERSION_STR, SIGNAL
 from PyQt4.QtGui import QDialog, QMessageBox
 
 from anki.db import DB
 from anki.lang import _, langs
 from anki.utils import checksum, intTime, isMac, isWin
-from anki.consts import HELP_SITE as appHelpSite
-from aqt import appHelpSite
+import aqt
 from aqt.utils import showWarning
 import aqt.forms
 
 if StrictVersion(QT_VERSION_STR) >= StrictVersion("5.0"):
     from PyQt4.QtCore import QStandardPaths
 else:
-    from PyQt4.QtCore import QDesktopServices
+    from PyQt4.QtGui import QDesktopServices
 
 metaConf = dict(
     ver=0,
@@ -251,7 +250,7 @@ to make backups easy. To tell Anki to use a different location,
 please see:
 
 %s
-""") % (appHelpSite + "#startupopts")).encode("utf8"))
+""") % (aqt.appHelpSite + "#startupopts")).encode("utf8"))
 
     def _pwhash(self, passwd):
         return checksum(unicode(self.meta['id']) + unicode(passwd))
