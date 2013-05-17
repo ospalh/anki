@@ -63,6 +63,7 @@ class DialogManager(object):
     def open(self, name, *args):
         (creator, instance) = self._dialogs[name]
         if instance:
+            instance.setWindowState(Qt.WindowActive)
             instance.activateWindow()
             instance.raise_()
             return instance
@@ -155,6 +156,7 @@ class AnkiApp(QApplication):
             print 'key:', self.key
             print 'server listens on:', self._srv.serverName()
         else:
+            print "Raising existing window."
             # Treat all remaining args as decks to load. If there are
             # none, send a blank screen to just raise the existing
             # window

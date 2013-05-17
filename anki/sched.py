@@ -9,9 +9,9 @@ import itertools
 import random
 import time
 
-from anki.consts import DYN_RANDOM, DYN_SMALLINT, DYN_BIGINT, DYN_LAPSES, \
-    DYN_ADDED, DYN_REVADDED, DYN_DUE, NEW_CARDS_DUE, NEW_CARDS_DISTRIBUTE, \
-    NEW_CARDS_LAST, NEW_CARDS_FIRST, DYN_OLDEST
+from anki.consts import DYN_ADDED, DYN_BIGINT, DYN_DUE, DYN_LAPSES, \
+    DYN_OLDEST, DYN_RANDOM, DYN_REVADDED, DYN_SMALLINT, NEW_CARDS_DISTRIBUTE, \
+    NEW_CARDS_DUE, NEW_CARDS_FIRST, NEW_CARDS_LAST, NEW_CARDS_RANDOM
 from anki.hooks import runHook
 from anki.lang import _
 from anki.utils import ids2str, intTime, fmtTimeSpan
@@ -126,8 +126,8 @@ order by due""" % self._deckLimit(), self.today, self.today + days - 1))
             # normal review in dyn deck?
             if card.odid and card.queue == 2:
                 return 4
-            conf = self._lapseConf(card)
-            if card.type == 0 or len(conf['delays']) > 1:
+            conf = self._lrnConf(card)
+            if len(conf['delays']) > 1:
                 return 3
             return 2
         elif card.queue == 2:
@@ -1284,9 +1284,9 @@ below."""))
 
     def forgetCards(self, ids):
         "Put cards at the end of the new queue."
-        self.col.db.execute(
-            "update cards set type=0,queue=0,ivl=0,factor=? where id in " +
-            ids2str(ids), 2500)
+        self.col.db.execute("""\
+update cards set type=0,queue=0,ivl=0,odue=0,due=0,factor=? \
+where id in {ids}""".format(ids=ids2str(ids)), 2500)
         pmax = self.col.db.scalar(
             "select max(due) from cards where type=0") or 0
         # takes care of mod + usn
@@ -1308,9 +1308,12 @@ usn=:usn, mod=:mod, factor=:fact where id=:id and odid=0""", d)
 
     def resetCards(self, ids):
         "Completely reset cards for export."
+        nonNew = self.col.db.list(
+            "select id from cards where id in %s and (queue != 0 or type != 0)"
+            % ids2str(ids))
         self.col.db.execute(
-            "update cards set reps=0, lapses=0 where id in " + ids2str(ids))
-        self.forgetCards(ids)
+            "update cards set reps=0, lapses=0 where id in " + ids2str(nonNew))
+        self.forgetCards(nonNew)
 
     # Repositioning new cards
     ##########################################################################
@@ -1369,3 +1372,12 @@ and due >= ? and queue = 0""" % scids, now, self.col.usn(), shiftby, low)
                 self.randomizeCards(did)
             else:
                 self.orderCards(did)
+
+    # for post-import
+    def maybeRandomizeDeck(self, did=None):
+        if not did:
+            did = self.col.decks.selected()
+        conf = self.col.decks.confForDid(did)
+        # in order due?
+        if conf['new']['order'] == NEW_CARDS_RANDOM:
+            self.col.sched.randomizeCards(did)

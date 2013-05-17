@@ -21,9 +21,10 @@ from anki.utils import checksum, isWin, isMac, json
 class MediaManager(object):
 
     # other code depends on this order, so don't reorder
-    regexps = (u"(?i)(\[sound:([^]]+)\])",
-               u"(?i)(<(?:img|embed)[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>)",
-               u"(?i)(<object[^>]+data=[\"']?([^\"'>]+)[\"']?[^>]*>)")
+    regexps = (u"(?i)(\[sound:(?P<fname>[^]]+)\])",
+               u"(?i)(<(?:img|embed)[^>]+src=(?P<str>[\"']?)" +
+               u"(?P<fname>[^>]+)(?P=str)[^>]*>)",
+               u"(?i)(<object[^>]+data=[\"']?(?P<fname>[^\"'>]+)[\"']?[^>]*>)")
 
     def __init__(self, col, server):
         self.col = col
@@ -76,6 +77,15 @@ class MediaManager(object):
     def dir(self):
         return self._dir
 
+    def _isFAT32(self):
+        if not isWin:
+            return
+        import win32api
+        import win32file
+        name = win32file.GetVolumeNameForVolumeMountPoint(self._dir[:3])
+        if win32api.GetVolumeInformation(name)[4].lower().startswith("fat"):
+            return True
+
     # Adding media
     ##########################################################################
 
@@ -112,20 +122,24 @@ class MediaManager(object):
         def repl(match):
             n = int(match.group(1))
             return " (%d)" % (n + 1)
+        # find the first available name
         while True:
             path = os.path.join(mdir, root + ext)
+            # if it doesn't exist, copy it directly
             normalized_base = unicodedata.normalize(
                 'NFKD', root + ext).lower()
             if not normalized_base in normalized_media_files:
-                break
+                shutil.copyfile(opath, path)
+                return os.path.basename(os.path.basename(path))
+            # if it's identical, reuse
+            if self.filesIdentical(opath, path):
+                return os.path.basename(path)
+            # otherwise, increment the index in the filename
             reg = " \((\d+)\)$"
             if not re.search(reg, root, flags=re.UNICODE):
                 root = root + " (1)"
             else:
                 root = re.sub(reg, repl, root, flags=re.UNICODE)
-        # copy and return
-        shutil.copyfile(opath, path)
-        return os.path.basename(os.path.basename(path))
 
     def filesIdentical(self, path1, path2):
         "True if files are the same."
@@ -202,8 +216,8 @@ class MediaManager(object):
             return string
 
         def repl(match):
-            tag = match.group(1)
-            fname = match.group(2)
+            tag = match.group(0)
+            fname = match.group("fname")
             if re.match("(https?|ftp)://", fname, flags=re.UNICODE):
                 return tag
             return tag.replace(
@@ -502,7 +516,7 @@ create table log (fname text primary key, type int);
         # doesn't track edits, but user can add or remove a file to update
         mod = self.db.scalar("select dirMod from meta")
         mtime = self._mtime(self.dir())
-        if mod and mod == mtime:
+        if not self._isFAT32() and mod and mod == mtime:
             return False
         return mtime
 

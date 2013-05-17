@@ -116,6 +116,9 @@ class Syncer(object):
         elif lscm != rscm:
             return "fullSync"
         self.lnewer = self.lmod > self.rmod
+        # step 1.5: check collection is valid
+        if not self.col.basicCheck():
+            return "basicCheckFailed"
         # step 2: deletions
         runHook("sync", "meta")
         lrem = self.removed()
@@ -151,7 +154,7 @@ class Syncer(object):
             self.col.rollback()
             self.col.modSchema()
             self.col.save()
-            raise Exception("collection sanity check failed")
+            return "sanityCheckFailed"
         # finalize
         runHook("sync", "finalize")
         mod = self.server.finish()
@@ -191,12 +194,8 @@ class Syncer(object):
         self.prepareToChunk()
 
     def sanityCheck(self):
-        if self.col.db.scalar("""
-select count() from cards where nid not in (select id from notes)"""):
-            return "missing notes"
-        if self.col.db.scalar("""
-select count() from notes where id not in (select distinct nid from cards)"""):
-            return "missing cards"
+        if not self.col.basicCheck():
+            return "failed basic check"
         for t in "cards", "notes", "revlog", "graves":
             if self.col.db.scalar("select count() from %s where usn = -1" % t):
                 return "%s had usn = -1" % t
@@ -646,13 +645,18 @@ class FullSyncer(HttpSyncer):
         self.col = None
 
     def upload(self):
+        "True if upload successful."
         runHook("sync", "upload")
         # make sure it's ok before we try to upload
-        assert self.col.db.scalar("pragma integrity_check") == "ok"
+        if self.col.db.scalar("pragma integrity_check") != "ok":
+            return False
+        if not self.col.basicCheck():
+            return False
         # apply some adjustments, then upload
         self.col.beforeUpload()
         if self.req("upload", open(self.col.path, "rb")) != "OK":
-            raise Exception("server refused upload")
+            return False
+        return True
 
 # Media syncing
 ##########################################################################

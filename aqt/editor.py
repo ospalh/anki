@@ -20,10 +20,11 @@ from anki.lang import _
 from anki.utils import isMac, isWin, json, namedtmp, stripHTML, stripHTMLMedia
 from aqt.sound import getAudio
 from aqt.utils import getBase, getFile, openHelp, shortcut, showInfo, \
-    showWarning
+    showWarning, tooltip
 from aqt.webview import AnkiWebView
 import anki.js
 import aqt
+import urllib
 
 # fixme: when tab order returns to the webview, the previously focused field
 # is focused, which is not good when the user is tabbing through the dialog
@@ -32,7 +33,7 @@ import aqt
 # fixme: commit from tag area causes error
 
 pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg")
-audio = ("wav", "mp3", "ogg", "flac")
+audio = ("wav", "mp3", "ogg", "flac", "mp4", "swf", "mov", "mpeg", "mkv")
 
 _html = """
 <html><head>%s<style>
@@ -82,6 +83,29 @@ function onKey() {
             saveField("key"); }, 600);
     }
 };
+
+function onKeyPress() {
+    if (window.event.which == 13) {
+        if (window.getSelection) {
+              var selection = window.getSelection(),
+                  range = selection.getRangeAt(0),
+                  br = document.createElement("br");
+              range.deleteContents();
+              range.insertNode(br);
+              range.setStartAfter(br);
+              range.setEndAfter(br);
+              selection.removeAllRanges();
+              selection.addRange(range);
+              return false;
+        }
+    }
+}
+
+function onKeyUp(elem) {
+    if (!elem.lastChild || elem.lastChild.nodeName.toLowerCase() != "br") {
+        elem.appendChild(document.createElement("br"));
+    }
+}
 
 function sendState() {
     var r = {
@@ -207,7 +231,8 @@ function setFields(fields, focusTo) {
         txt +=
             "<div id=f{0} onkeydown='onKey();' onmouseup='onKey();'".format(i);
         txt += " onfocus='onFocus(this);' onblur='onBlur();' class=field ";
-        txt += "ondragover='onDragOver(this);' ";
+        txt += "ondragover='onDragOver(this);' onkeyup='onKeyUp(this)' ";
+        txt += "onkeypress='return onKeyPress();' ";
         txt += "contentEditable=true class=field>{0}</div>".format(f);
         txt += "</td></tr>";
     }
@@ -248,11 +273,9 @@ $(function () {
 document.body.onmousedown = function () {
     mouseDown++;
 }
-
 document.body.onmouseup = function () {
     mouseDown--;
 }
-
 document.onclick = function (evt) {
     var src = window.event.srcElement;
     if (src.tagName == "IMG") {
@@ -266,7 +289,6 @@ document.onclick = function (evt) {
         }
     }
 }
-
 });
 
 </script></head><body>
@@ -321,6 +343,16 @@ def _filterHTML(html):
     for elem in "html", "head", "body", "meta":
         for tag in doc(elem):
             tag.replaceWithChildren()
+    # remove outer styling if implicit
+    if doc.span:
+        hadExtraAttr = False
+        for attr in doc.span['style'].split(";"):
+            attr = attr.strip()
+            if attr and attr not in (
+                    "font-style: normal", "font-weight: normal"):
+                hadExtraAttr = True
+        if hadExtraAttr:
+            doc.span.replaceWithChildren()
     html = unicode(doc)
     return html
 
@@ -461,6 +493,9 @@ class Editor(object):
         s.connect(s, SIGNAL("activated()"), self.insertLatexMathEnv)
         s = QShortcut(QKeySequence("Ctrl+Shift+X"), self.widget)
         s.connect(s, SIGNAL("activated()"), self.onHtmlEdit)
+        # tags
+        s = QShortcut(QKeySequence("Ctrl+Shift+T"), self.widget)
+        s.connect(s, SIGNAL("activated()"), lambda: self.tags.setFocus())
         runHook("setupEditorButtons", self)
 
     def enableButtons(self, val=True):
@@ -631,10 +666,8 @@ class Editor(object):
         contents = stripHTMLMedia(self.note.fields[0])
         browser = aqt.dialogs.open("Browser", self.mw)
         browser.form.searchEdit.lineEdit().setText(
-            "'note:%s' '%s:%s'" % (
-                self.note.model()['name'],
-                self.note.model()['flds'][0]['name'],
-                contents))
+            '"dupe:%s,%s"' % (self.note.model()['id'],
+                              contents))
         browser.onSearch()
 
     def fieldsAreBlank(self):
@@ -688,6 +721,7 @@ class Editor(object):
         self.tags = aqt.tagedit.TagEdit(self.widget)
         self.tags.connect(self.tags, SIGNAL("lostFocus"),
                           self.saveTags)
+        self.tags.setToolTip(shortcut(_("Jump to tags with Ctrl+Shift+T")))
         tb.addWidget(self.tags, 1, 1)
         g.setLayout(tb)
         self.outerLayout.addWidget(g)
@@ -701,7 +735,9 @@ class Editor(object):
     def saveTags(self):
         if not self.note:
             return
-        self.note.tags = self.mw.col.tags.split(self.tags.text())
+        self.note.tags = self.mw.col.tags.canonify(
+            self.mw.col.tags.split(self.tags.text()))
+        self.tags.setText(self.mw.col.tags.join(self.note.tags).strip())
         if not self.addMode:
             self.note.flush()
         runHook("tagsUpdated", self.note)
@@ -741,14 +777,14 @@ class Editor(object):
         # check that the model is set up for cloze deletion
         if '{{cloze:' not in self.note.model()['tmpls'][0]['qfmt']:
             if self.addMode:
-                showInfo(_("""\
-To use this button, please select the Cloze note type. To learn more, \
-please click the help button."""), help="cloze")
+                tooltip(_("""\
+Warning, cloze deletions will not work until you switch the type at the top \
+to Cloze."""))
             else:
                 showInfo(_("""\
 To make a cloze deletion on an existing note, you need to change it \
 to a cloze type first, via Edit>Change Note Type."""))
-            return
+                return
         # find the highest existing cloze
         highest = 0
         for name, val in self.note.items():
@@ -833,7 +869,7 @@ to a cloze type first, via Edit>Change Note Type."""))
         # return a local html link
         ext = name.split(".")[-1].lower()
         if ext in pics:
-            return '<img src="%s">' % name
+            return '<img src="%s">' % urllib.quote(name.encode("utf8"))
         else:
             anki.sound.play(name)
             return '[sound:%s]' % name
@@ -1051,7 +1087,8 @@ class EditorWebView(AnkiWebView):
         url = url.splitlines()[0]
         link = self._localizedMediaLink(url)
         mime = QMimeData()
-        mime.setHtml(link)
+        if link:
+            mime.setHtml(link)
         return mime
 
     def _localizedMediaLink(self, url):
@@ -1071,6 +1108,8 @@ class EditorWebView(AnkiWebView):
                 or l.startswith("file://"):
             txt = txt.split("\r\n")[0]
             html = self._localizedMediaLink(txt)
+            if not html:
+                return QMimeData()
             if html == txt:
                 # wasn't of a supported media type; don't change
                 html = None
@@ -1112,8 +1151,12 @@ class EditorWebView(AnkiWebView):
         ext = url.split(".")[-1].lower()
         if ext not in pics and ext not in audio:
             return
+        if url.lower().startswith("file://"):
+            url = url.replace("%", "%25")
+            url = url.replace("#", "%23")
         # fetch it into a temporary folder
-        self.editor.mw.progress.start(immediate=True)
+        self.editor.mw.progress.start(
+            immediate=True, parent=self.editor.parentWindow)
         try:
             req = urllib2.Request(url, None, {
                 'User-Agent': 'Mozilla/5.0 (compatible; Anki)'})
@@ -1123,7 +1166,10 @@ class EditorWebView(AnkiWebView):
             return
         finally:
             self.editor.mw.progress.finish()
-        path = namedtmp(os.path.basename(urllib2.unquote(url)))
+        path = unicode(urllib2.unquote(url.encode("utf8")), "utf8")
+        path = path.replace("#", "")
+        path = path.replace("%", "")
+        path = namedtmp(os.path.basename(path))
         file = open(path, "wb")
         file.write(filecontents)
         file.close()

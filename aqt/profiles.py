@@ -75,7 +75,6 @@ class ProfileManager(object):
         self.name = None
         self.base = base
         self.new_base_asked = False
-        self.ensureLocalFS()
         self.ensureBaseExists()
         # load metadata
         self.firstRun = self._loadMeta()
@@ -88,15 +87,6 @@ class ProfileManager(object):
 
     # Base creation
     ######################################################################
-
-    def ensureLocalFS(self):
-        if self.base.startswith("\\\\"):
-            QMessageBox.critical(
-                None, "Error", """\
-To use Anki on a network share, the share must be mapped to a local drive \
-letter. Please see the 'File Locations' section of the manual for more \
-information.""")
-            raise Exception("unc")
 
     def ensureBaseExists(self):
         if self.base != default_base() and not os.path.exists(self.base):
