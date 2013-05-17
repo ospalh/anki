@@ -2,6 +2,7 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+from __future__ import division
 from hashlib import sha1
 import atexit
 import htmlentitydefs
@@ -72,7 +73,7 @@ def fmtTimeSpan(time, pad=0, point=0, short=False, after=False, unit=99):
     (type, point) = optimalPeriod(time, point, unit)
     time = convertSecondsTo(time, type)
     if not point:
-        time = round(time)
+        time = int(round(time))
     if short:
         fmt = shortTimeFmt(type)
     else:
@@ -107,15 +108,15 @@ def convertSecondsTo(seconds, type):
     if type == "seconds":
         return seconds
     elif type == "minutes":
-        return seconds / 60.0
+        return seconds / 60
     elif type == "hours":
-        return seconds / 3600.0
+        return seconds / 3600
     elif type == "days":
-        return seconds / 86400.0
+        return seconds / 86400
     elif type == "months":
-        return seconds / 2592000.0
+        return seconds / 2592000
     elif type == "years":
-        return seconds / 31536000.0
+        return seconds / 31536000
     assert False
 
 

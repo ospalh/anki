@@ -2,15 +2,16 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+from __future__ import division
 from heapq import heappop, heappush
 from operator import itemgetter
 import itertools
 import random
 import time
 
-from anki.consts import DYN_RANDOM, DYN_SMALLINT, DYN_BIGINT, DYN_LAPSES, \
-    DYN_ADDED, DYN_REVADDED, DYN_DUE, NEW_CARDS_DUE, NEW_CARDS_DISTRIBUTE, \
-    NEW_CARDS_LAST, NEW_CARDS_FIRST, DYN_OLDEST
+from anki.consts import DYN_ADDED, DYN_BIGINT, DYN_DUE, DYN_LAPSES, \
+    DYN_OLDEST, DYN_RANDOM, DYN_REVADDED, DYN_SMALLINT, NEW_CARDS_DISTRIBUTE, \
+    NEW_CARDS_DUE, NEW_CARDS_FIRST, NEW_CARDS_LAST, NEW_CARDS_RANDOM
 from anki.hooks import runHook
 from anki.lang import _
 from anki.utils import ids2str, intTime, fmtTimeSpan
@@ -94,7 +95,7 @@ class Scheduler(object):
         if card:
             idx = self.countIdx(card)
             if idx == 1:
-                counts[1] += card.left / 1000
+                counts[1] += card.left // 1000
             else:
                 counts[idx] += 1
         return tuple(counts)
@@ -125,8 +126,8 @@ order by due""" % self._deckLimit(), self.today, self.today + days - 1))
             # normal review in dyn deck?
             if card.odid and card.queue == 2:
                 return 4
-            conf = self._lapseConf(card)
-            if card.type == 0 or len(conf['delays']) > 1:
+            conf = self._lrnConf(card)
+            if len(conf['delays']) > 1:
                 return 3
             return 2
         elif card.queue == 2:
@@ -378,7 +379,7 @@ select id, due from cards where did = ? and queue = 0 limit ?""", did, lim)
         if self.col.conf['newSpread'] == NEW_CARDS_DISTRIBUTE:
             if self.newCount:
                 self.newCardModulus = (
-                    (self.newCount + self.revCount) / self.newCount)
+                    (self.newCount + self.revCount) // self.newCount)
                 # if there are cards to review, ensure modulo >= 2
                 if self.revCount:
                     self.newCardModulus = max(2, self.newCardModulus)
@@ -476,7 +477,7 @@ limit %d""" % (self._deckLimit(), self.reportLimit), lim=self.dayCutoff)
             if self._lrnQueue[0][0] < cutoff:
                 id = heappop(self._lrnQueue)[1]
                 card = self.col.getCard(id)
-                self.lrnCount -= card.left / 1000
+                self.lrnCount -= card.left // 1000
                 return card
 
     # daily learning
@@ -554,7 +555,7 @@ did = ? and queue = 3 and due <= ? limit ?""", did, self.today,
             card.due = int(time.time() + delay)
             # due today?
             if card.due < self.dayCutoff:
-                self.lrnCount += card.left / 1000
+                self.lrnCount += card.left // 1000
                 # if the queue is not empty and there's nothing else
                 # to do, make sure we don't put it at the head of the
                 # queue and end up showing it twice in a row
@@ -566,7 +567,7 @@ did = ? and queue = 3 and due <= ? limit ?""", did, self.today,
             else:
                 # the card is due in one or more days, so we need to use the
                 # day learn queue
-                ahead = ((card.due - self.dayCutoff) / 86400) + 1
+                ahead = ((card.due - self.dayCutoff) // 86400) + 1
                 card.due = self.today + ahead
                 card.queue = 3
         self._logLrn(card, ease, conf, leaving, type, lastLeft)
@@ -821,12 +822,12 @@ select id from cards where did in %s and queue = 2 and due <= ? limit ?)"""
         card.left = self._startingLeft(card)
         # queue 1
         if card.due < self.dayCutoff:
-            self.lrnCount += card.left / 1000
+            self.lrnCount += card.left // 1000
             card.queue = 1
             heappush(self._lrnQueue, (card.due, card.id))
         else:
             # day learn queue
-            ahead = ((card.due - self.dayCutoff) / 86400) + 1
+            ahead = ((card.due - self.dayCutoff) // 86400) + 1
             card.due = self.today + ahead
             card.queue = 3
         return delay
@@ -870,10 +871,10 @@ select id from cards where did in %s and queue = 2 and due <= ? limit ?)"""
         "Ideal next interval for CARD, given EASE."
         delay = self._daysLate(card)
         conf = self._revConf(card)
-        fct = card.factor / 1000.0
+        fct = card.factor / 1000
         ivl2 = self._constrainedIvl(
-            (card.ivl + delay / 4) * 1.2, conf, card.ivl)
-        ivl3 = self._constrainedIvl((card.ivl + delay / 2) * fct, conf, ivl2)
+            (card.ivl + delay // 4) * 1.2, conf, card.ivl)
+        ivl3 = self._constrainedIvl((card.ivl + delay // 2) * fct, conf, ivl2)
         ivl4 = self._constrainedIvl(
             (card.ivl + delay) * fct * conf['ease4'], conf, ivl3)
         if ease == 2:
@@ -1055,7 +1056,8 @@ did = ?, queue = %s, due = ?, mod = ?, usn = ? where id = ?""" % queue, data)
         if not lf:
             return
         # if over threshold or every half threshold reps after that
-        if (card.lapses >= lf and (card.lapses - lf) % (max(lf / 2, 1)) == 0):
+        if card.lapses >= lf \
+                and (card.lapses-lf) % (max(lf // 2, 1)) == 0:
             # add a leech tag
             f = card.note()
             f.addTag("leech")
@@ -1140,7 +1142,7 @@ did = ?, queue = %s, due = ?, mod = ?, usn = ? where id = ?""" % queue, data)
 
     def _updateCutoff(self):
         # days since col created
-        self.today = int((time.time() - self.col.crt) / 86400)
+        self.today = (time.time() - self.col.crt) // 86400
         # end of day cutoff
         self.dayCutoff = self.col.crt + (self.today + 1) * 86400
         # update all daily counts, but don't save decks to prevent needless
@@ -1282,9 +1284,9 @@ below."""))
 
     def forgetCards(self, ids):
         "Put cards at the end of the new queue."
-        self.col.db.execute(
-            "update cards set type=0,queue=0,ivl=0,factor=? where id in " +
-            ids2str(ids), 2500)
+        self.col.db.execute("""\
+update cards set type=0,queue=0,ivl=0,odue=0,due=0,factor=? \
+where id in {ids}""".format(ids=ids2str(ids)), 2500)
         pmax = self.col.db.scalar(
             "select max(due) from cards where type=0") or 0
         # takes care of mod + usn
@@ -1306,9 +1308,12 @@ usn=:usn, mod=:mod, factor=:fact where id=:id and odid=0""", d)
 
     def resetCards(self, ids):
         "Completely reset cards for export."
+        nonNew = self.col.db.list(
+            "select id from cards where id in %s and (queue != 0 or type != 0)"
+            % ids2str(ids))
         self.col.db.execute(
-            "update cards set reps=0, lapses=0 where id in " + ids2str(ids))
-        self.forgetCards(ids)
+            "update cards set reps=0, lapses=0 where id in " + ids2str(nonNew))
+        self.forgetCards(nonNew)
 
     # Repositioning new cards
     ##########################################################################
@@ -1367,3 +1372,12 @@ and due >= ? and queue = 0""" % scids, now, self.col.usn(), shiftby, low)
                 self.randomizeCards(did)
             else:
                 self.orderCards(did)
+
+    # for post-import
+    def maybeRandomizeDeck(self, did=None):
+        if not did:
+            did = self.col.decks.selected()
+        conf = self.col.decks.confForDid(did)
+        # in order due?
+        if conf['new']['order'] == NEW_CARDS_RANDOM:
+            self.col.sched.randomizeCards(did)

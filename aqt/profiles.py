@@ -6,23 +6,29 @@
 # - Saves in pickles rather than json to easily store Qt window state.
 # - Saves in sqlite rather than a flat file so the config can't be corrupted
 
+from distutils.version import StrictVersion
+import cPickle
+import locale
 import os
 import random
-import cPickle
-import shutil
-import locale
 import re
+import shutil
 
-from PyQt4.QtCore import QSettings, SIGNAL
+
+from PyQt4.QtCore import QT_VERSION_STR, SIGNAL
 from PyQt4.QtGui import QDialog, QMessageBox
 
 from anki.db import DB
 from anki.lang import _, langs
 from anki.utils import checksum, intTime, isMac, isWin
-# from aqt import appHelpSite
-from anki.consts import HELP_SITE as appHelpSite
+import aqt
 from aqt.utils import showWarning
 import aqt.forms
+
+if StrictVersion(QT_VERSION_STR) >= StrictVersion("5.0"):
+    from PyQt4.QtCore import QStandardPaths
+else:
+    from PyQt4.QtGui import QDesktopServices
 
 metaConf = dict(
     ver=0,
@@ -69,7 +75,6 @@ class ProfileManager(object):
         self.name = None
         self.base = base
         self.new_base_asked = False
-        self.ensureLocalFS()
         self.ensureBaseExists()
         # load metadata
         self.firstRun = self._loadMeta()
@@ -82,15 +87,6 @@ class ProfileManager(object):
 
     # Base creation
     ######################################################################
-
-    def ensureLocalFS(self):
-        if self.base.startswith("\\\\"):
-            QMessageBox.critical(
-                None, "Error", """\
-To use Anki on a network share, the share must be mapped to a local drive \
-letter. Please see the 'File Locations' section of the manual for more \
-information.""")
-            raise Exception("unc")
 
     def ensureBaseExists(self):
         if self.base != default_base() and not os.path.exists(self.base):
@@ -244,7 +240,7 @@ to make backups easy. To tell Anki to use a different location,
 please see:
 
 %s
-""") % (appHelpSite + "#startupopts")).encode("utf8"))
+""") % (aqt.appHelpSite + "#startupopts")).encode("utf8"))
 
     def _pwhash(self, passwd):
         return checksum(unicode(self.meta['id']) + unicode(passwd))
@@ -309,10 +305,13 @@ def default_base():
     when the user didn't provide one.
     """
     if isWin:
-        s = QSettings(QSettings.UserScope, "Microsoft", "Windows")
-        s.beginGroup("CurrentVersion/Explorer/Shell Folders")
-        d = s.value("Personal")
-        return os.path.join(d, "Anki")
+        if StrictVersion(QT_VERSION_STR) >= StrictVersion("5.0"):
+            loc = QStandardPaths.writeableLocation(
+                QStandardPaths.DocumentsLocation)
+        else:
+            loc = QDesktopServices.storageLocation(
+                QDesktopServices.DocumentsLocation)
+        return os.path.join(loc, "Anki")
     elif isMac:
         return os.path.expanduser("~/Documents/Anki")
     else:

@@ -2,6 +2,7 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+from __future__ import division
 import HTMLParser
 import cgi
 import difflib
@@ -143,6 +144,8 @@ function _updateQA (q, answerMode, klass) {
     if (klass) {
         document.body.className = klass;
     }
+    // don't allow drags of images, which cause them to be deleted
+    $("img").attr("draggable", false);
 };
 
 function _toggleStar (show) {
@@ -388,7 +391,7 @@ img {
             if self.typeCorrect is None:
                 if clozeIdx:
                     warn = _("""\
-Please run Tools>Maintenance>Empty Cards""")
+Please run Tools>Empty Cards""")
                 else:
                     warn = _("Type answer: unknown field %s") % fld
                 return re.sub(self.typeAnsPat, warn, buf)
@@ -589,7 +592,7 @@ function showAnswer(txt) {
 </script>
 """ % dict(rem=self._remaining(), edit=_("Edit"),
            editkey=_("Shortcut key: %s") % "E",
-           more=_("More"), time=self.card.timeTaken() / 1000)
+           more=_("More"), time=self.card.timeTaken() // 1000)
 
     def _showAnswerButton(self):
         self._bottomReady = True

@@ -284,7 +284,7 @@ def getSaveFile(parent, title, dir, key, ext):
     "Ask the user for a file to save. Use DIR as config variable."
     dirkey = dir + "Directory"
     file = unicode(QFileDialog.getSaveFileName(
-        parent, title, aqt.mw.pm.base, key,
+        parent, title, aqt.mw.pm.base, "{0} (*{1})".format(key, ext),
         options=QFileDialog.DontConfirmOverwrite))
     if file:
         # add extension
@@ -311,9 +311,7 @@ def restoreGeom(widget, key, offset=None):
     if aqt.mw.pm.profile.get(key):
         widget.restoreGeometry(aqt.mw.pm.profile[key])
         if isMac and offset:
-            from aqt.main import QtConfig as q
-            minor = (q.qt_version & 0x00ff00) >> 8
-            if minor > 6:
+            if qtminor > 6:
                 # bug in osx toolkit
                 s = widget.size()
                 widget.resize(s.width(), s.height() + offset * 2)
@@ -368,10 +366,11 @@ def applyStyles(widget):
 def getBase(col):
     base = None
     mdir = col.media.dir()
-    if isWin:
+    if isWin and not mdir.startswith("\\\\"):
         prefix = u"file:///"
     else:
         prefix = u"file://"
+    mdir = mdir.replace("\\", "/")
     base = prefix + unicode(
         urllib.quote(mdir.encode("utf-8")),
         "utf-8") + "/"

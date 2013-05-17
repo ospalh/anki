@@ -72,12 +72,17 @@ class AnkiQt(QMainWindow):
             self.pm.meta['firstRun'] = False
             self.pm.save()
         # init rest of app
+        self.safeMode = self.app.queryKeyboardModifiers() & Qt.ShiftModifier
         try:
             self.setupUI()
             self.setupAddons()
         except:
             showInfo(_("Error during startup:\n%s") % traceback.format_exc())
             sys.exit(1)
+        # must call this after ui set up
+        if self.safeMode:
+            tooltip(_("Shift key was held down. Skipping automatic "
+                    "syncing and add-on loading."))
         # were we given a file to import?
         if args:
             for deck_to_load in args:
@@ -304,13 +309,19 @@ how to restore from a backup.""")
             if not self.closeAllCollectionWindows():
                 return
             self.maybeOptimize()
+            self.progress.start(immediate=True)
+            corrupt = self.col.db.scalar("pragma integrity_check") != "ok"
+            if corrupt:
+                showWarning(_("Your collection file appears to be corrupt. \
+This can happen when the file is copied or moved while Anki is open, or \
+when the collection is stored on a network or cloud drive. Please see \
+the manual for information on how to restore from an automatic backup."))
             self.col.close()
             self.col = None
-            self.progress.start(immediate=True)
-            self.backup()
+            if not corrupt:
+                self.backup()
             self.progress.finish()
         return True
-
 
     # Backup and auto-optimize
     ##########################################################################
@@ -349,7 +360,7 @@ how to restore from a backup.""")
                 os.unlink(os.path.join(dir, file[1]))
 
     def maybeOptimize(self):
-        # has two weeks passed?
+        # have two weeks passed?
         if (intTime() - self.pm.profile['lastOptimize']) < 86400 * 14:
             return
         self.progress.start(label=_("Optimizing..."), immediate=True)
@@ -561,7 +572,8 @@ title="%s">%s</button>''' % (
 
     def onSync(self, auto=False, reload=True):
         if not auto or (self.pm.profile['syncKey'] and
-                        self.pm.profile['autoSync']):
+                        self.pm.profile['autoSync'] and
+                        not self.safeMode):
             if not self.unloadCollection():
                 return
             # set a sync state so the refresh timer doesn't fire while deck
@@ -572,17 +584,6 @@ title="%s">%s</button>''' % (
         if reload:
             if not self.col:
                 self.loadCollection()
-
-    def onFullSync(self):
-        if not askUser(_("""\
-If you proceed, you will need to choose between a full download or full \
-upload, overwriting any changes either here or on AnkiWeb. Proceed?""")):
-            return
-        self.hideSchemaMsg = True
-        self.col.modSchema()
-        self.col.setMod()
-        self.hideSchemaMsg = False
-        self.onSync()
 
     # Tools
     ##########################################################################
@@ -788,7 +789,6 @@ and check the statistics for a home deck instead."""))
         self.connect(m.actionCheckMediaDatabase, s, self.onCheckMediaDB)
         self.connect(m.actionDocumentation, s, self.onDocumentation)
         self.connect(m.actionDonate, s, self.onDonate)
-        self.connect(m.actionFullSync, s, self.onFullSync)
         self.connect(m.actionStudyDeck, s, self.onStudyDeck)
         self.connect(m.actionCreateFiltered, s, self.onCram)
         self.connect(m.actionEmptyCards, s, self.onEmptyCards)
