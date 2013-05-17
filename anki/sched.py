@@ -1209,7 +1209,7 @@ below."""))
             return _("(end)")
         s = fmtTimeSpan(ivl, short=short)
         if ivl < self.col.conf['collapseTime']:
-            s = "<" + s
+            s = "<" + fmtTimeSpan(self.col.conf['collapseTime'], short=short)
         return s
 
     def nextIvl(self, card, ease):
