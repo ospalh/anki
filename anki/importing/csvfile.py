@@ -34,20 +34,24 @@ class TextImporter(NoteImporter):
                 self.data, delimiter=self.delimiter, doublequote=True)
         else:
             reader = csv.reader(self.data, self.dialect, doublequote=True)
-        for row in reader:
-            row = [unicode(x, "utf-8") for x in row]
-            if len(row) != self.numFields:
-                if row:
-                    log.append(
-                        _("'%(row)s' had %(num1)d fields, "
-                          "expected %(num2)d")
-                        % {"row": u" ".join(row),
-                           "num1": len(row),
-                           "num2": self.numFields})
-                    ignored += 1
-                continue
-            note = self.noteFromFields(row)
-            notes.append(note)
+        try:
+            for row in reader:
+                row = [unicode(x, "utf-8") for x in row]
+                if len(row) != self.numFields:
+                    if row:
+                        log.append(_(
+                            "'%(row)s' had %(num1)d fields, "
+                            "expected %(num2)d") % {
+                            "row": u" ".join(row),
+                            "num1": len(row),
+                            "num2": self.numFields,
+                            })
+                        ignored += 1
+                    continue
+                note = self.noteFromFields(row)
+                notes.append(note)
+        except (csv.Error), e:
+            log.append(_("Aborted: %s") % str(e))
         self.log = log
         self.ignored = ignored
         self.fileobj.close()

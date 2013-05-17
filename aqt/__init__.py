@@ -62,6 +62,7 @@ class DialogManager(object):
     def open(self, name, *args):
         (creator, instance) = self._dialogs[name]
         if instance:
+            instance.setWindowState(Qt.WindowActive)
             instance.activateWindow()
             instance.raise_()
             return instance
@@ -149,6 +150,7 @@ class AnkiApp(QApplication):
             self.connect(self._srv, SIGNAL("newConnection()"), self.onRecv)
             self._srv.listen(self.KEY)
         else:
+            print "Raising existing window."
             # we accept only one command line argument. if it's missing, send
             # a blank screen to just raise the existing window
             opts, args = parseArgs(self._argv)

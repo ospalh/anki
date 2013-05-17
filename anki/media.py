@@ -21,8 +21,9 @@ from anki.utils import checksum, isWin, isMac, json
 class MediaManager(object):
 
     # other code depends on this order, so don't reorder
-    regexps = ("(?i)(\[sound:([^]]+)\])",
-               "(?i)(<img[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>)")
+    regexps = ("(?i)(\[sound:(?P<fname>[^]]+)\])",
+               "(?i)(<img[^>]+src=(?P<str>[\"']?)" +
+               "(?P<fname>[^>]+)(?P=str)[^>]*>)")
 
     def __init__(self, col, server):
         self.col = col
@@ -71,6 +72,15 @@ class MediaManager(object):
     def dir(self):
         return self._dir
 
+    def _isFAT32(self):
+        if not isWin:
+            return
+        import win32api
+        import win32file
+        name = win32file.GetVolumeNameForVolumeMountPoint(self._dir[:3])
+        if win32api.GetVolumeInformation(name)[4].lower().startswith("fat"):
+            return True
+
     # Adding media
     ##########################################################################
 
@@ -80,32 +90,27 @@ If the same name exists, compare checksums."""
         mdir = self.dir()
         # remove any dangerous characters
         base = re.sub(r"[][<>:/\\&?\"\|]", "", os.path.basename(opath))
-        dst = os.path.join(mdir, base)
-        # if it doesn't exist, copy it directly
-        if not os.path.exists(dst):
-            shutil.copyfile(opath, dst)
-            return base
-        # if it's identical, reuse
-        if self.filesIdentical(opath, dst):
-            return base
-        # otherwise, find a unique name
         (root, ext) = os.path.splitext(base)
 
         def repl(match):
             n = int(match.group(1))
             return " (%d)" % (n + 1)
+        # find the first available name
         while True:
             path = os.path.join(mdir, root + ext)
+            # if it doesn't exist, copy it directly
             if not os.path.exists(path):
-                break
+                shutil.copyfile(opath, path)
+                return os.path.basename(os.path.basename(path))
+            # if it's identical, reuse
+            if self.filesIdentical(opath, path):
+                return os.path.basename(path)
+            # otherwise, increment the index in the filename
             reg = " \((\d+)\)$"
             if not re.search(reg, root):
                 root = root + " (1)"
             else:
                 root = re.sub(reg, repl, root)
-        # copy and return
-        shutil.copyfile(opath, path)
-        return os.path.basename(os.path.basename(path))
 
     def filesIdentical(self, path1, path2):
         "True if files are the same."
@@ -130,7 +135,8 @@ If the same name exists, compare checksums."""
             string = mungeQA(string, None, None, model, None, self.col)
             # extract filenames
             for reg in self.regexps:
-                for (full, fname) in re.findall(reg, string):
+                for match in re.finditer(reg, string):
+                    fname = match.group("fname")
                     isLocal = not re.match("(https?|ftp)://", fname.lower())
                     if isLocal or includeRemote:
                         l.append(fname)
@@ -176,8 +182,8 @@ If the same name exists, compare checksums."""
             return string
 
         def repl(match):
-            tag = match.group(1)
-            fname = match.group(2)
+            tag = match.group(0)
+            fname = match.group("fname")
             if re.match("(https?|ftp)://", fname):
                 return tag
             return tag.replace(
@@ -389,7 +395,7 @@ create table log (fname text primary key, type int);
         # doesn't track edits, but user can add or remove a file to update
         mod = self.db.scalar("select dirMod from meta")
         mtime = self._mtime(self.dir())
-        if mod and mod == mtime:
+        if not self._isFAT32() and mod and mod == mtime:
             return False
         return mtime
 

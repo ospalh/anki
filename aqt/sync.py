@@ -96,6 +96,9 @@ automatically."""))
             self.pm.save()
         elif evt == "offline":
             tooltip(_("Syncing failed; internet offline."))
+        elif evt == "upbad":
+            self._didFullUp = False
+            self._checkFailed()
         elif evt == "sync":
             m = None
             t = args[0]
@@ -121,6 +124,8 @@ Please visit AnkiWeb, upgrade your deck, then try again."""))
                      self._rewriteError(args[0]))
         elif evt == "clockOff":
             self._clockOff()
+        elif evt == "checkFailed":
+            self._checkFailed()
         elif evt == "noChanges":
             pass
         elif evt == "fullSync":
@@ -151,9 +156,13 @@ the problem persists, please file a bug report.""")
 Please upgrade to the latest version of Anki.""")
         # 502 is technically due to the server restarting, but we reuse the
         # error message
-        elif "502" in err or "503" in err or "504" in err:
+        elif "502" in err:
+            return _("AnkiWeb is under maintenance. Please try again in a few minutes.")
+        elif "503" in err:
             return _("""\
 AnkiWeb is too busy at the moment. Please try again in a few minutes.""")
+        elif "504" in err:
+            return _("504 gateway timeout error received. Please try temporarily disabling your antivirus.")
         elif "409" in err:
             return _(
                 "A previous sync failed; please try again in a few minutes.")
@@ -168,11 +177,6 @@ antivirus/firewall software is blocking Anki from connecting to the \
 internet.""")
         elif "407" in err:
             return _("Proxy authentication required.")
-        elif "collection sanity check failed" in err:
-            return _("""\
-After syncing, the collection was in an inconsistent state. To fix \
-this problem, Anki will force a full sync. Please sync again, and \
-choose which side you would like to keep.""")
         return err
 
     def _getUserPass(self):
@@ -247,6 +251,11 @@ automatically."""),
         showWarning(_("""\
 Syncing requires the clock on your computer to be set correctly. Please \
 fix the clock and try again."""))
+
+    def _checkFailed(self):
+        showWarning(_("""\
+Your collection is in an inconsistent state. Please run Tools>\
+Check Database, then sync again."""))
 
     def badUserPass(self):
         aqt.preferences.Preferences(
@@ -346,6 +355,8 @@ class SyncThread(QThread):
             return self.fireEvent("badAuth")
         elif ret == "clockOff":
             return self.fireEvent("clockOff")
+        elif ret == "basicCheckFailed" or ret == "sanityCheckFailed":
+            return self.fireEvent("checkFailed")
         # note mediaUSN for later
         self.mediaUsn = self.client.mediaUsn
         # full sync?
@@ -375,7 +386,8 @@ class SyncThread(QThread):
             return
         self.client = FullSyncer(self.col, self.hkey, self.server.con)
         if f == "upload":
-            self.client.upload()
+            if not self.client.upload():
+                self.fireEvent("upbad")
         else:
             self.client.download()
         # reopen db and move on to media sync
