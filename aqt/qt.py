@@ -36,7 +36,6 @@ if os.environ.get("DEBUG"):
         pm()
     sys.excepthook = info
 
-qtconf = pyqtconfig.Configuration()
 # Don't muck around with bit shifts. RAS 2013-03-31
 qtmajor, qtminor, qtpatch = QT_VERSION_STR.split('.')
 qt_version = StrictVersion(QT_VERSION_STR)
