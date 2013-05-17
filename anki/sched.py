@@ -9,9 +9,9 @@ import itertools
 import random
 import time
 
-from anki.consts import DYN_RANDOM, DYN_SMALLINT, DYN_BIGINT, DYN_LAPSES, \
-    DYN_ADDED, DYN_REVADDED, DYN_DUE, NEW_CARDS_DUE, NEW_CARDS_DISTRIBUTE, \
-    NEW_CARDS_LAST, NEW_CARDS_FIRST, DYN_OLDEST
+from anki.consts import DYN_ADDED, DYN_BIGINT, DYN_DUE, DYN_LAPSES, \
+    DYN_OLDEST, DYN_RANDOM, DYN_REVADDED, DYN_SMALLINT, NEW_CARDS_DISTRIBUTE, \
+    NEW_CARDS_DUE, NEW_CARDS_FIRST, NEW_CARDS_LAST, NEW_CARDS_RANDOM
 from anki.hooks import runHook
 from anki.lang import _
 from anki.utils import ids2str, intTime, fmtTimeSpan
@@ -1284,9 +1284,9 @@ below."""))
 
     def forgetCards(self, ids):
         "Put cards at the end of the new queue."
-        self.col.db.execute(
-            "update cards set type=0,queue=0,ivl=0,odue=0,due=0,factor=? where id in "+
-            ids2str(ids), 2500)
+        self.col.db.execute("""\
+update cards set type=0,queue=0,ivl=0,odue=0,due=0,factor=? \
+where id in {ids}""".format(ids=ids2str(ids)), 2500)
         pmax = self.col.db.scalar(
             "select max(due) from cards where type=0") or 0
         # takes care of mod + usn

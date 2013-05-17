@@ -96,8 +96,9 @@ class DeckConf(QDialog):
             if d['conf'] == conf['id']:
                 cnt += 1
         if cnt > 1:
-            txt = _("Your changes will affect multiple decks. If you wish to "
-            "change only the current deck, please add a new options group first.")
+            txt = _("""\
+Your changes will affect multiple decks. If you wish to change only the \
+current deck, please add a new options group first.""")
         else:
             txt = ""
         self.form.count.setText(txt)

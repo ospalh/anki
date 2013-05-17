@@ -112,7 +112,7 @@ to their original deck.""")
         else:
             dyn = ""
         return '<div class="descfont descmid description %s">%s</div>' % (
-                dyn, desc)
+            dyn, desc)
 
     def _table(self):
         counts = list(self.mw.col.sched.counts())

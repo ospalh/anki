@@ -3,7 +3,8 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
-from .utils import ids2str, intTime, joinFields, splitFields, fieldChecksum, stripHTMLMedia
+from .utils import fieldChecksum, ids2str, intTime, joinFields, \
+    splitFields, stripHTMLMedia
 from .consts import MODEL_CLOZE
 import sre_constants
 

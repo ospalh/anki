@@ -20,7 +20,7 @@ from anki.lang import _
 from anki.utils import isMac, isWin, json, namedtmp, stripHTML, stripHTMLMedia
 from aqt.sound import getAudio
 from aqt.utils import getBase, getFile, openHelp, shortcut, showInfo, \
-    showWarning
+    showWarning, tooltip
 from aqt.webview import AnkiWebView
 import anki.js
 import aqt
@@ -33,7 +33,7 @@ import urllib
 # fixme: commit from tag area causes error
 
 pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg")
-audio =  ("wav", "mp3", "ogg", "flac", "mp4", "swf", "mov", "mpeg", "mkv")
+audio = ("wav", "mp3", "ogg", "flac", "mp4", "swf", "mov", "mpeg", "mkv")
 
 _html = """
 <html><head>%s<style>
@@ -347,7 +347,8 @@ def _filterHTML(html):
         hadExtraAttr = False
         for attr in doc.span['style'].split(";"):
             attr = attr.strip()
-            if attr and attr not in ("font-style: normal", "font-weight: normal"):
+            if attr and attr not in (
+                    "font-style: normal", "font-weight: normal"):
                 hadExtraAttr = True
         if hadExtraAttr:
             doc.span.replaceWithChildren()
@@ -771,8 +772,9 @@ class Editor(object):
         # check that the model is set up for cloze deletion
         if '{{cloze:' not in self.note.model()['tmpls'][0]['qfmt']:
             if self.addMode:
-                tooltip(_("Warning, cloze deletions will not work until "
-                "you switch the type at the top to Cloze."))
+                tooltip(_("""\
+Warning, cloze deletions will not work until you switch the type at the top \
+to Cloze."""))
             else:
                 showInfo(_("""\
 To make a cloze deletion on an existing note, you need to change it \
