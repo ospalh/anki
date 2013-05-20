@@ -23,8 +23,9 @@ class MediaManager(object):
     # other code depends on this order, so don't reorder
     regexps = (u"(?i)(\[sound:(?P<fname>[^]]+)\])",
                u"(?i)(<(?:img|embed)[^>]+src=(?P<str>[\"']?)" +
-               u"(?P<fname>[^>]+)(?P=str)[^>]*>)",
-               u"(?i)(<object[^>]+data=[\"']?(?P<fname>[^\"'>]+)[\"']?[^>]*>)")
+               u"(?P<fname>[^>]+?)(?P=str)[^>]*>)",
+               u"(?i)(<object[^>]+data=(?P<str>[\"']?)" +
+               u"(?P<fname>[^>]+?)(?P=str)[^>]*>)")
 
     def __init__(self, col, server):
         self.col = col
@@ -169,7 +170,8 @@ class MediaManager(object):
             string = mungeQA(string, None, None, model, None, self.col)
             # extract filenames
             for reg in self.regexps:
-                for (full, fname) in re.findall(reg, string, flags=re.UNICODE):
+                for match in re.finditer(reg, string, flags=re.UNICODE):
+                    fname = match.group("fname")
                     isLocal = not re.match(
                         "(https?|ftp)://", fname.lower(), flags=re.UNICODE)
                     if isLocal or includeRemote:
