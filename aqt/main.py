@@ -22,6 +22,7 @@ from anki.lang import _, ngettext
 from anki.utils import isWin, isMac, intTime
 from aqt.deckbrowser import DeckBrowser
 from aqt.overview import Overview
+from aqt.qt import qtminor, qtmajor
 from aqt.reviewer import Reviewer
 from aqt.studydeck import StudyDeck
 from aqt.sync import SyncManager
@@ -72,7 +73,12 @@ class AnkiQt(QMainWindow):
             self.pm.meta['firstRun'] = False
             self.pm.save()
         # init rest of app
-        self.safeMode = self.app.queryKeyboardModifiers() & Qt.ShiftModifier
+        if qtmajor == 4 and qtminor < 8:
+            # can't get modifiers immediately on qt4.7, so no safe mode there
+            self.safeMode = False
+        else:
+            self.safeMode = self.app.queryKeyboardModifiers() \
+                & Qt.ShiftModifier
         try:
             self.setupUI()
             self.setupAddons()

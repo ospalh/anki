@@ -666,8 +666,8 @@ or mid not in %s limit 1""" % ids2str(self.models.ids())):
             if self.db.scalar("""
 select 1 from cards where ord not in %s and nid in (
 select id from notes where mid = ?) limit 1""" %
-                               ids2str([t['ord'] for t in m['tmpls']]),
-                               m['id']):
+                              ids2str([t['ord'] for t in m['tmpls']]),
+                              m['id']):
                 return
         return True
 

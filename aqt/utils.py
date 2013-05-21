@@ -15,6 +15,7 @@ from PyQt4.QtGui import QColor, QDesktopServices, QDialog, QDialogButtonBox, \
 from anki.lang import _
 from anki.sound import stripSounds
 from anki.utils import isMac, isWin, invalidFilename
+from aqt.qt import qtminor
 import aqt
 
 
@@ -280,11 +281,14 @@ def getFile(parent, title, cb, filter="*.*", dir=None, key=None):
     return ret and ret[0]
 
 
-def getSaveFile(parent, title, dir, key, ext):
-    "Ask the user for a file to save. Use DIR as config variable."
-    dirkey = dir + "Directory"
+def getSaveFile(parent, title, dir_description, key, ext, fname=None):
+    """Ask the user for a file to save. Use DIR_DESCRIPTION as config
+    variable. The file dialog will default to open with FNAME."""
+    config_key = dir_description + 'Directory'
+    base = aqt.mw.pm.profile.get(config_key, aqt.mw.pm.base)
+    path = os.path.join(base, fname)
     file = unicode(QFileDialog.getSaveFileName(
-        parent, title, aqt.mw.pm.base, "{0} (*{1})".format(key, ext),
+        parent, title, path, "{0} (*{1})".format(key, ext),
         options=QFileDialog.DontConfirmOverwrite))
     if file:
         # add extension
@@ -292,7 +296,7 @@ def getSaveFile(parent, title, dir, key, ext):
             file += ext
         # save new default
         dir = os.path.dirname(file)
-        aqt.mw.pm.profile[dirkey] = dir
+        aqt.mw.pm.profile[config_key] = dir
         # check if it exists
         if os.path.exists(file):
             if not askUser(_("""\
