@@ -38,7 +38,10 @@ class Reviewer(object):
         self.delShortcut.setAutoRepeat(False)
         self.mw.connect(self.delShortcut, SIGNAL("activated()"), self.onDelete)
         addHook("leech", self.onLeech)
-        addHook("filterTypedAnswer", self.correct)
+        addHook(
+            "filterTypedAnswer",
+            lambda r, g, co, ca: self.correct(
+                ret=r, given=g, correct=co, card=ca, showBad=False))
 
     def show(self):
         self.mw.col.reset()
@@ -405,16 +408,13 @@ onkeypress="_typeAnsPress();">""", buf)
         self.web.eval("_getTypedText();")
         if not self.typeCorrect or not self.typedAnswer:
             return re.sub(self.typeAnsPat, "", buf)
-        origSize = len(buf)
-        buf = buf.replace("<hr id=answer>", "")
-        hadHR = len(buf) != origSize
         # munge correct value
         parser = HTMLParser.HTMLParser()
         cor = stripHTML(self.mw.col.media.strip(self.typeCorrect))
         cor = parser.unescape(cor)
         given = self.typedAnswer
         # compare with typed answer
-        res = self.correct(given, cor, showBad=False)
+        res = runFilter("filterTypedAnswer", u'', given, cor, self.card)
         # and update the type answer area
 
         def repl(match):
@@ -469,8 +469,11 @@ onkeypress="_typeAnsPress();">""", buf)
             logGood(y, cnt, correct, correctElems)
         return givenElems, correctElems
 
-    def correct(self, given, correct, showBad=True):
+    def correct(self, ret, given, correct, card=None, showBad=True):
         "Diff-corrects the typed-in answer."
+        if ret:
+            # Someone else has already done some correcting.
+            return ret
         givenElems, correctElems = self.tokenizeComparison(given, correct)
 
         def good(s):
@@ -482,21 +485,26 @@ onkeypress="_typeAnsPress();">""", buf)
         def missed(s):
             return "<span class=typeMissed>"+s+"</span>"
         if given == correct:
-            res = good(given)
+            res = "<div class=allgood>" + good(given) + "</div>"
         else:
-            res = ""
+            ge = u""
             for ok, txt in givenElems:
                 if ok:
-                    res += good(txt)
+                    ge += good(txt)
                 else:
-                    res += bad(txt)
-            res += "<br>&darr;<br>"
+                    ge += bad(txt)
+            ce = u''
             for ok, txt in correctElems:
                 if ok:
-                    res += good(txt)
+                    ce += good(txt)
                 else:
-                    res += missed(txt)
-        res = "<div><code id=typeans>" + res + "</code></div>"
+                    ce += missed(txt)
+            res = u"""\
+<div class=given>{ge}</div>
+<div class=arrow>&darr;</div>
+<div class=correct>{ce}</div>
+""".format(ge=ge, ce=ce)
+        res = "<span id=typeans>" + res + "</span>"
         return res
 
     # Bottom bar
