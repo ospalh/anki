@@ -27,7 +27,7 @@ import aqt.forms
 if qtmajor >= 5:
     from PyQt4.QtCore import QStandardPaths
 else:
-    from PyQt4.QtCore import QDesktopServices
+    from PyQt4.QtGui import QDesktopServices
 
 metaConf = dict(
     ver=0,
