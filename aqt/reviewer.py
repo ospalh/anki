@@ -485,7 +485,7 @@ onkeypress="_typeAnsPress();">""", buf)
         def missed(s):
             return "<span class=typeMissed>"+s+"</span>"
         if given == correct:
-            res = "<div class=allgood>" + good(given) + "</div>"
+            res = "<span class=allgood>" + good(given) + "</span>"
         else:
             ge = u""
             for ok, txt in givenElems:
@@ -499,10 +499,9 @@ onkeypress="_typeAnsPress();">""", buf)
                     ce += good(txt)
                 else:
                     ce += missed(txt)
-            res = u"""\
-<div class=given>{ge}</div>
-<div class=arrow>&darr;</div>
-<div class=correct>{ce}</div>
+            res = u"""
+<span class=given>{ge}</span><span class=arrow>→</span>\
+<span class=correct>{ce}</span>
 """.format(ge=ge, ce=ce)
         res = "<span id=typeans>" + res + "</span>"
         return res
