@@ -4,7 +4,6 @@
 
 import sys
 
-from PyQt4 import pyqtconfig
 from PyQt4.QtCore import pyqtSlot, QObject, Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QPainter
 from PyQt4.QtWebKit import QWebPage, QWebView

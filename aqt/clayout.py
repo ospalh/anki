@@ -245,6 +245,7 @@ Please create a new card type first."""))
         origLen = len(txt)
         txt = txt.replace("<hr id=answer>", "")
         hadHR = origLen != len(txt)
+
         def answerRepl(match):
             res = self.mw.reviewer.correct("exomple", "an example")
             if hadHR:

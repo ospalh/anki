@@ -15,6 +15,7 @@ from PyQt4.QtGui import QColor, QDesktopServices, QDialog, QDialogButtonBox, \
 from anki.lang import _
 from anki.sound import stripSounds
 from anki.utils import isMac, isWin, invalidFilename
+from aqt.qt import qtminor
 import aqt
 
 
@@ -278,6 +279,7 @@ def getFile(parent, title, cb, filter="*.*", dir=None, key=None):
     d.connect(d, SIGNAL("accepted()"), accept)
     d.exec_()
     return ret and ret[0]
+
 
 def getSaveFile(parent, title, dir_description, key, ext, fname=None):
     """Ask the user for a file to save. Use DIR_DESCRIPTION as config

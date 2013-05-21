@@ -68,7 +68,7 @@ class DeckConf(QDialog):
         self.ignoreConfChange = False
         self.form.dconf.setCurrentIndex(startOn)
         if self._origNewOrder is None:
-            self._origNewOrder =  self.confList[startOn]['new']['order']
+            self._origNewOrder = self.confList[startOn]['new']['order']
         self.onConfChange(startOn)
 
     def confOpts(self):

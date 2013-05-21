@@ -138,9 +138,10 @@ body { margin: 1em; -webkit-user-select: none; }
         tree = self._renderDeckTree(self._dueTree)
         stats = self._renderStats()
         op = self._oldPos()
-        self.web.stdHtml(self._body % dict(tree=tree, stats=stats), css=css,
-                         js=anki.js.jquery + anki.js.ui, loadCB=lambda ok:
-                             self.web.page().mainFrame().setScrollPosition(op))
+        self.web.stdHtml(
+            self._body % dict(tree=tree, stats=stats), css=css,
+            js=anki.js.jquery + anki.js.ui, loadCB=lambda ok:
+                self.web.page().mainFrame().setScrollPosition(op))
         self.web.key = "deckBrowser"
         self._drawButtons()
 

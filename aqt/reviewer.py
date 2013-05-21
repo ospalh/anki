@@ -4,10 +4,8 @@
 
 from __future__ import division
 import HTMLParser
-import cgi
 import difflib
 import re
-import unicodedata as ucd
 
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QShortcut
@@ -441,9 +439,11 @@ Please run Tools>Empty Cards""")
         givenPoint = 0
         correctPoint = 0
         offby = 0
+
         def logBad(old, new, str, array):
             if old != new:
                 array.append((False, str[old:new]))
+
         def logGood(start, cnt, str, array):
             if cnt:
                 array.append((True, str[start:start+cnt]))
@@ -465,10 +465,13 @@ Please run Tools>Empty Cards""")
     def correct(self, given, correct, showBad=True):
         "Diff-corrects the typed-in answer."
         givenElems, correctElems = self.tokenizeComparison(given, correct)
+
         def good(s):
             return "<span class=typeGood>"+s+"</span>"
+
         def bad(s):
             return "<span class=typeBad>"+s+"</span>"
+
         def missed(s):
             return "<span class=typeMissed>"+s+"</span>"
         if given == correct:
