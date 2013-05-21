@@ -2,6 +2,8 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import os
+import re
+
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QDesktopServices, QDialog, QDialogButtonBox, \
     QPushButton
@@ -72,10 +74,15 @@ class ExportDialog(QDialog):
                     return
         else:
             verbatim = False
+            # Get deck name and remove invalid filename characters
+            deck_name = self.decks[self.frm.deck.currentIndex()]
+            deck_name = re.sub('[\\\\/?<>:*|"^]', '_', deck_name)
+            filename = os.path.join(aqt.mw.pm.base,
+                                    '{}.apkg'.format(deck_name))
             while 1:
-                file = getSaveFile(
-                    self, _("Export"), "export",
-                    self.exporter.key, self.exporter.ext)
+                file = getSaveFile(self, _("Export"), "export",
+                                   self.exporter.key, self.exporter.ext,
+                                   fname=filename)
                 if not file:
                     return
                 if checkInvalidFilename(os.path.basename(file), dirsep=False):

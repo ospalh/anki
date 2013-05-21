@@ -536,6 +536,8 @@ class Editor(object):
             # reverse the url quoting we added to get images to display
             txt = unicode(urllib2.unquote(
                 txt.encode("utf8")), "utf8", "replace")
+            # make sure a trailing <br /> is removed
+            txt = re.sub("(<br />)*$", "", txt)
             self.note.fields[self.currentField] = txt
             if not self.addMode:
                 self.note.flush()
@@ -562,6 +564,7 @@ class Editor(object):
             (type, num) = str.split(":", 1)
             self.enableButtons()
             self.currentField = int(num)
+            runHook("editFocusGained", self.note, self.currentField)
         # state buttons changed?
         elif str.startswith("state"):
             (cmd, txt) = str.split(":", 1)
@@ -1064,14 +1067,14 @@ class EditorWebView(AnkiWebView):
         # print "html", mime.html()
         # print "urls", mime.urls()
         # print "text", mime.text()
-        if mime.hasImage():
-            return self._processImage(mime)
-        elif mime.hasUrls():
+        if mime.hasUrls():
             return self._processUrls(mime)
         elif mime.hasText() and (self.strip or not mime.hasHtml()):
             return self._processText(mime)
         elif mime.hasHtml():
             return self._processHtml(mime)
+        elif mime.hasImage():
+            return self._processImage(mime)
         else:
             # nothing
             return QMimeData()
