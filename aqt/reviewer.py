@@ -10,7 +10,7 @@ import re
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QShortcut
 
-from anki.hooks import addHook, runHook, runFilter
+from anki.hooks import addHook, runHook
 from anki.lang import _, ngettext
 from anki.sound import playFromText, clearAudioQueue, play
 from anki.utils import stripHTML, isMac, json
@@ -205,7 +205,7 @@ The front of this card is empty. Please run Tools>Maintenance>Empty Cards.""")
         if self.autoplay(c):
             playFromText(q)
         # render & update bottom
-        q = runFilter("filterQuestionText", self._mungeQA(q), c)
+        q = self._mungeQA(q)
         klass = "card card%d" % (c.ord + 1)
         self.web.eval("_updateQA(%s, false, '%s');" % (json.dumps(q), klass))
         self._toggleStar()
@@ -243,7 +243,7 @@ The front of this card is empty. Please run Tools>Maintenance>Empty Cards.""")
         if self.autoplay(c):
             playFromText(a)
         # render and update bottom
-        a = runFilter("filterAnswerText", self._mungeQA(a), c)
+        a = self._mungeQA(a)
         self.web.eval("_updateQA(%s, true);" % json.dumps(a))
         self._showEaseButtons()
         # user hook
