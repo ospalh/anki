@@ -201,11 +201,11 @@ function _typeAnsPress() {
             q = _("""\
 The front of this card is empty. Please run Tools>Maintenance>Empty Cards.""")
         else:
-            q = runFilter("filterQuestionText", c.q(), c)
+            q = c.q()
         if self.autoplay(c):
             playFromText(q)
         # render & update bottom
-        q = self._mungeQA(q)
+        q = runFilter("filterQuestionText", self._mungeQA(q), c)
         klass = "card card%d" % (c.ord + 1)
         self.web.eval("_updateQA(%s, false, '%s');" % (json.dumps(q), klass))
         self._toggleStar()
@@ -238,12 +238,12 @@ The front of this card is empty. Please run Tools>Maintenance>Empty Cards.""")
             return
         self.state = "answer"
         c = self.card
-        a = runFilter("filterAnswerText", c.a(), c)
+        a = c.a()
         # play audio?
         if self.autoplay(c):
             playFromText(a)
         # render and update bottom
-        a = self._mungeQA(a)
+        a = runFilter("filterAnswerText", self._mungeQA(a), c)
         self.web.eval("_updateQA(%s, true);" % json.dumps(a))
         self._showEaseButtons()
         # user hook
