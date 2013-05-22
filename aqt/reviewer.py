@@ -10,7 +10,7 @@ import re
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QShortcut
 
-from anki.hooks import addHook, runHook
+from anki.hooks import addHook, runFilter, runHook
 from anki.lang import _, ngettext
 from anki.sound import playFromText, clearAudioQueue, play
 from anki.utils import stripHTML, isMac, json
