@@ -344,9 +344,13 @@ def _filterHTML(html):
         for tag in doc(elem):
             tag.replaceWithChildren()
     # remove outer styling if implicit
-    if doc.span:
+    try:
+        attr_list = doc.span['style'].split(";")
+    except (KeyError, TypeError):
+        pass
+    else:
         hadExtraAttr = False
-        for attr in doc.span['style'].split(";"):
+        for attr in attr_list:
             attr = attr.strip()
             if attr and attr not in (
                     "font-style: normal", "font-weight: normal"):
