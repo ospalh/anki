@@ -400,6 +400,8 @@ class Browser(QMainWindow):
         # edit
         c(f.actionUndo, s, self.mw.onUndo)
         c(f.previewButton, SIGNAL("clicked()"), self.onTogglePreview)
+        f.previewButton.setToolTip(_("Preview Selected Card (%s)") %
+            shortcut(_("Ctrl+Shift+P")))
         c(f.actionInvertSelection, s, self.invertSelection)
         c(f.actionSelectNotes, s, self.selectNotes)
         c(f.actionFindReplace, s, self.onFindReplace)
@@ -969,7 +971,7 @@ where id in %s""" % ids2str(sf))
     def _openPreview(self):
         c = self.connect
         self._previewState = "question"
-        self._previewWindow = QDialog()
+        self._previewWindow = QDialog(None, Qt.Window)
         self._previewWindow.setWindowTitle(_("Preview"))
         c(self._previewWindow, SIGNAL("finished(int)"),
           self._onPreviewFinished)

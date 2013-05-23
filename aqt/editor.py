@@ -329,8 +329,9 @@ def _filterHTML(html):
         else:
             # remove completely
             tag.replaceWithChildren()
-    # turn file:/// links into relative ones
+    # now images
     for tag in doc("img"):
+        # turn file:/// links into relative ones
         try:
             if tag['src'].lower().startswith("file://"):
                 tag['src'] = os.path.basename(tag['src'])
@@ -338,6 +339,10 @@ def _filterHTML(html):
             # for some bizarre reason, mnemosyne removes src elements
             # from missing media
             pass
+        # strip all other attributes, including implicit max-width
+        for attr, val in tag.attrs:
+            if attr != "src":
+                del tag[attr]
     # strip superfluous elements
     for elem in "html", "head", "body", "meta":
         for tag in doc(elem):
@@ -551,7 +556,6 @@ class Editor(object):
                     def onUpdate():
                         self.stealFocus = True
                         self.loadNote()
-                        self.stealFocus = False
                         self.checkValid()
                     self.mw.progress.timer(100, onUpdate, False)
                 else:
@@ -597,6 +601,8 @@ class Editor(object):
         self.note = note
         self.currentField = 0
         self.disableButtons()
+        if focus:
+            self.stealFocus = True
         # change timer
         if self.note:
             self.web.setHtml(_html % (
@@ -630,6 +636,7 @@ class Editor(object):
         self.widget.show()
         if self.stealFocus:
             self.web.setFocus()
+            self.stealFocus = False
 
     def focus(self):
         self.web.setFocus()
@@ -867,7 +874,7 @@ to a cloze type first, via Edit>Change Note Type."""))
         # return a local html link
         ext = name.split(".")[-1].lower()
         if ext in pics:
-            return '<img src="%s">' % urllib.quote(name.encode("utf8"))
+            return '<img src="%s">' % name
         else:
             anki.sound.play(name)
             return '[sound:%s]' % name
@@ -1165,8 +1172,8 @@ class EditorWebView(AnkiWebView):
         finally:
             self.editor.mw.progress.finish()
         path = unicode(urllib2.unquote(url.encode("utf8")), "utf8")
-        path = path.replace("#", "")
-        path = path.replace("%", "")
+        for badChar in "#%\"":
+            path = path.replace(badChar, "")
         path = namedtmp(os.path.basename(path))
         file = open(path, "wb")
         file.write(filecontents)
