@@ -533,6 +533,7 @@ min-width: 60px; white-space: nowrap;
 button.ease_again {color: #c35617;}
 button.ease_easy {color: #070;}
 button#defease {font-weight: bold;}
+#ansbut {min-width: 260px;}
 """
 
     def _bottomHTML(self):
