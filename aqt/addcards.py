@@ -1,6 +1,7 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+from anki.lang import _
 
 from PyQt4.QtCore import QPoint, Qt, SIGNAL
 from PyQt4.QtGui import QDialog, QDialogButtonBox, QKeySequence, QMenu, \
@@ -9,7 +10,7 @@ from PyQt4.QtGui import QDialog, QDialogButtonBox, QKeySequence, QMenu, \
 from anki.hooks import addHook, remHook
 from anki.lang import _
 from anki.sound import clearAudioQueue
-from anki.utils import stripHTMLMedia
+from anki.utils import stripHTMLMedia, isMac
 from aqt.utils import addCloseShortcut, askUser, openHelp, restoreGeom, \
     saveGeom, shortcut, showWarning, tooltip
 import aqt.deckchooser
@@ -73,6 +74,12 @@ class AddCards(QDialog):
         self.connect(self.helpButton, SIGNAL("clicked()"), self.helpRequested)
         # history
         b = bb.addButton(_("History") + u" ▾", ar)
+        if isMac:
+            sc = "Ctrl+Shift+H"
+        else:
+            sc = "Ctrl+H"
+        b.setShortcut(QKeySequence(sc))
+        b.setToolTip(_("Shortcut: %s") % shortcut(sc))
         self.connect(b, SIGNAL("clicked()"), self.onHistory)
         b.setEnabled(False)
         self.historyButton = b

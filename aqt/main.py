@@ -9,7 +9,7 @@ import signal
 import sys
 import traceback
 import zipfile
-
+from send2trash import send2trash
 from PyQt4.QtCore import Qt, QThread, SIGNAL, SLOT
 from PyQt4.QtGui import QAction, QDialog, QDialogButtonBox, QFontInfo, \
     QKeySequence, QMainWindow, QPushButton, QShortcut, QStyleFactory, \
@@ -365,7 +365,7 @@ the manual for information on how to restore from an automatic backup."))
             delete = len(backups) + 1 - nbacks
             delete = backups[:delete]
             for file in delete:
-                os.unlink(os.path.join(dir, file[1]))
+                send2trash(os.path.join(dir, file[1]))
 
     def maybeOptimize(self):
         # have two weeks passed?
@@ -947,7 +947,7 @@ will be lost. Continue?"""))
         mdir = self.col.media.dir()
         for f in unused:
             path = os.path.join(mdir, f)
-            os.unlink(path)
+            send2trash(path)
         tooltip(_("Deleted."))
         diag.close()
 

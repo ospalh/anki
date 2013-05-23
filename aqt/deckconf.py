@@ -36,6 +36,9 @@ class DeckConf(QDialog):
             self.form.buttonBox.button(QDialogButtonBox.RestoreDefaults),
             SIGNAL("clicked()"), self.onRestore)
         self.setWindowTitle(_("Options for %s") % self.deck['name'])
+        # qt doesn't size properly with altered fonts otherwise
+        self.show()
+        self.adjustSize()
         self.exec_()
 
     def setupCombos(self):

@@ -9,6 +9,7 @@ import sys
 import unicodedata
 import urllib
 import zipfile
+import send2trash
 from cStringIO import StringIO
 
 from anki.consts import MEDIA_ADD, MEDIA_REM, MODEL_CLOZE, SYNC_ZIP_COUNT, \
@@ -262,7 +263,7 @@ If the same name exists, compare checksums."""
         # remove provided deletions
         for f in fnames:
             if os.path.exists(f):
-                os.unlink(f)
+                send2trash.send2trash(f)
             self.db.execute("delete from log where fname = ?", f)
             self.db.execute("delete from media where fname = ?", f)
         # and all locally-logged deletions, as server has acked them
