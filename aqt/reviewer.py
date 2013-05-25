@@ -4,6 +4,7 @@
 
 from __future__ import division
 import HTMLParser
+from anki.lang import _, ngettext
 import difflib
 import re
 
@@ -15,7 +16,7 @@ from anki.lang import _, ngettext
 from anki.sound import playFromText, clearAudioQueue, play
 from anki.utils import stripHTML, isMac, json
 from aqt.sound import getAudio
-from aqt.utils import mungeQA, getBase, openLink, tooltip
+from aqt.utils import askUserDialog, mungeQA, getBase, openLink, tooltip
 import aqt
 
 
@@ -70,11 +71,15 @@ class Reviewer(object):
     def nextCard(self):
         elapsed = self.mw.col.timeboxReached()
         if elapsed:
-            part1 = ngettext("%d card studied in", "%d cards studied in",
-                             elapsed[1]) % elapsed[1]
-            part2 = ngettext("%s minute.", "%s minutes.",
-                             elapsed[0] / 60) % (elapsed[0] / 60)
-            tooltip("%s %s" % (part1, part2), period=5000)
+            part1 = ngettext("%d card studied in", "%d cards studied in", elapsed[1]) % elapsed[1]
+            mins = int(round(elapsed[0]/60))
+            part2 = ngettext("%s minute.", "%s minutes.", mins) % mins
+            fin = _("Finish")
+            diag = askUserDialog("%s %s" % (part1, part2),
+                             [_("Continue"), fin])
+            diag.setIcon(QMessageBox.Information)
+            if diag.run() == fin:
+                return self.mw.moveToState("deckBrowser")
             self.mw.col.startTimebox()
         if self.cardQueue:
             # undone/edited cards to show
@@ -397,7 +402,10 @@ Please run Tools>Empty Cards""")
         # munge correct value
         parser = HTMLParser.HTMLParser()
         cor = stripHTML(self.mw.col.media.strip(self.typeCorrect))
+        # ensure we don't chomp multiple whitespace
+        cor = cor.replace(" ", "&nbsp;")
         cor = parser.unescape(cor)
+        cor = cor.replace(u"\xa0", " ")
         given = self.typedAnswer
         # compare with typed answer
         res = self.correct(given, cor, showBad=False)

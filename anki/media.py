@@ -9,6 +9,7 @@ import sys
 import unicodedata
 import urllib
 import zipfile
+import send2trash
 from cStringIO import StringIO
 
 from anki.consts import MEDIA_ADD, MEDIA_REM, MODEL_CLOZE, SYNC_ZIP_COUNT, \
@@ -20,10 +21,14 @@ from anki.utils import checksum, isWin, isMac, json
 
 class MediaManager(object):
 
-    # other code depends on this order, so don't reorder
-    regexps = ("(?i)(\[sound:(?P<fname>[^]]+)\])",
-               "(?i)(<img[^>]+src=(?P<str>[\"']?)" +
-               "(?P<fname>[^>]+)(?P=str)[^>]*>)")
+    soundRegexps = ["(?i)(\[sound:(?P<fname>[^]]+)\])"]
+    imgRegexps = [
+        # src element quoted case
+        "(?i)(<img[^>]+src=(?P<str>[\"'])(?P<fname>[^>]+?)(?P=str)[^>]*>)",
+        # unquoted case
+        "(?i)(<img[^>]+src=(?!['\"])(?P<fname>[^ >]+)[^>]*?>)",
+    ]
+    regexps = soundRegexps + imgRegexps
 
     def __init__(self, col, server):
         self.col = col
@@ -188,7 +193,9 @@ If the same name exists, compare checksums."""
                 return tag
             return tag.replace(
                 fname, urllib.quote(fname.encode("utf-8")))
-        return re.sub(self.regexps[1], repl, string)
+        for reg in self.imgRegexps:
+            string = re.sub(reg, repl, string)
+        return string
 
     # Rebuilding DB
     ##########################################################################
@@ -256,7 +263,7 @@ If the same name exists, compare checksums."""
         # remove provided deletions
         for f in fnames:
             if os.path.exists(f):
-                os.unlink(f)
+                send2trash.send2trash(f)
             self.db.execute("delete from log where fname = ?", f)
             self.db.execute("delete from media where fname = ?", f)
         # and all locally-logged deletions, as server has acked them

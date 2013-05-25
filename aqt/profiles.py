@@ -23,6 +23,7 @@ from aqt import appHelpSite
 from aqt.qt import qtmajor
 from aqt.utils import showWarning
 import aqt.forms
+from send2trash import send2trash
 
 if qtmajor >= 5:
     from PyQt4.QtCore import QStandardPaths
@@ -133,7 +134,9 @@ documentation for information on using a flash drive.""")
         self.db.commit()
 
     def remove(self, name):
-        shutil.rmtree(self.profileFolder())
+        p = self.profileFolder()
+        if os.path.exists(p):
+            send2trash(p)
         self.db.execute("delete from profiles where name = ?",
                         name.encode("utf8"))
         self.db.commit()

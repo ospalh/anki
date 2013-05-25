@@ -372,15 +372,15 @@ class SupermemoXmlImporter(NoteImporter):
                 else:
                     #import sm element data to Anki
                     self.addItemToCards(smel)
-                    self.logger(u"Import element \t- " + smel[
-                            'Question'], level=3)
+                    self.logger(
+                        u"Import element \t- " + smel['Question'], level=3)
 
                     #print element
                     self.logger('-' * 45, level=3)
                     for key in smel.keys():
                         self.logger(
-                            '\t%s %s' % ((key + ':').ljust(15), smel[
-                                    key]), level=3)
+                            '\t%s %s' % (
+                                (key + ':').ljust(15), smel[key]), level=3)
             else:
                 self.logger(
                     u'Element skiped  \t- no valid Q and A ...', level=3)
@@ -426,30 +426,12 @@ class SupermemoXmlImporter(NoteImporter):
         self.cntElm[-1][node.tagName] = t
         self.cntMeta['title'].append(t)
         self.cntElm[-1]['lTitle'] = self.cntMeta['title']
-        self.logger(u'Start of topic \t- ' + u" / ".join(
-                self.cntMeta['title']), level=2)
+        self.logger(
+            u'Start of topic \t- '
+            + u" / ".join(self.cntMeta['title']), level=2)
 
     def do_Type(self, node):
         "Process SM element Type"
 
         if len(self.cntBuf) >= 1:
             self.cntElm[-1][node.tagName] = self.cntBuf.pop()
-
-
-if __name__ == '__main__':
-
-    # for testing you can start it standalone
-
-    # file = u'/home/epcim/hg2g/dev/python/sm2anki/' \
-        #     'ADVENG2EXP.xxe.esc.zaloha_FINAL.xml'
-    # file = u'/home/epcim/hg2g/dev/python/anki/libanki/tests/importing/' \
-        #     'supermemo/original_ENGLISHFORBEGGINERS_noOEM.xml'
-    # file = u'/home/epcim/hg2g/dev/python/anki/libanki/tests/importing/' \
-        #     'supermemo/original_ENGLISHFORBEGGINERS_oem_1250.xml'
-    file = str(sys.argv[1])
-    impo = SupermemoXmlImporter(Deck(), file)
-    impo.foreignCards()
-
-    sys.exit(1)
-
-# vim: ts=4 sts=2 ft=python
