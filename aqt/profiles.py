@@ -9,7 +9,6 @@
 import os
 import random
 import cPickle
-import shutil
 import locale
 import re
 

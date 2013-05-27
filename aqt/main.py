@@ -17,10 +17,9 @@ from PyQt4.QtGui import QAction, QDialog, QDialogButtonBox, QFontInfo, \
 from PyQt4.QtWebKit import QWebSettings
 
 from anki import Collection
-from anki.utils import  isWin, isMac, intTime, splitFields, ids2str
+from anki.utils import ids2str, intTime, isMac, isWin, splitFields
 from anki.hooks import runHook, addHook
 from anki.lang import _, ngettext
-from anki.utils import isWin, isMac, intTime
 from aqt.deckbrowser import DeckBrowser
 from aqt.overview import Overview
 from aqt.reviewer import Reviewer
@@ -867,9 +866,10 @@ the problem and restart Anki.""")
                 f.write("nid\tmid\tfields\n")
             for id, mid, flds in self.col.db.execute(
                     "select id, mid, flds from notes where id in %s" %
-                ids2str(nids)):
+                    ids2str(nids)):
                 fields = splitFields(flds)
-                f.write(("\t".join([str(id), str(mid)] + fields)).encode("utf8"))
+                f.write(
+                    ("\t".join([str(id), str(mid)] + fields)).encode("utf8"))
                 f.write("\n")
 
     # Schema modifications
@@ -943,8 +943,7 @@ will be lost. Continue?"""))
         diag.exec_()
 
     def deleteUnused(self, unused, diag):
-        if not askUser(
-            _("Delete unused media?")):
+        if not askUser(_("Delete unused media?")):
             return
         mdir = self.col.media.dir()
         for f in unused:
