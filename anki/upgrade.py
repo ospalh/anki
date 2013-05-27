@@ -591,14 +591,7 @@ order by ordinal""", mid)):
                 new = fld
             # rewrite reference in template
             t[key] = t[key].replace(all, "{{{%s}}}" % new)
-        regexps = [
-            # We add the img regxp from media.py here. This mechanism
-            # will not work with embeds or objects, as the new media
-            # code will. Also, in media, there is only one regexp
-            # left, not a list.
-            col.media.sound_regexp,
-            "(?i)(<img[^>]+src=(?P<str>[\"'])(?P<fname>[^>]+?)(?P=str)[^>]*>)",
-            "(?i)(<img[^>]+src=(?!['\"])(?P<fname>[^ >]+)[^>]*?>)",
+        regexps = col.media.regexps + [
             r"(\[latex\](?P<fname>.+?)\[/latex\])",
             r"(\[\$\](?P<fname>.+?)\[/\$\])",
             r"(\[\$\$\](?P<fname>.+?)\[/\$\$\])"]

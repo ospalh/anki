@@ -11,20 +11,31 @@ import urllib
 import zipfile
 import send2trash
 from cStringIO import StringIO
-from lxml import html
 
 from anki.consts import MEDIA_ADD, MEDIA_REM, MODEL_CLOZE, SYNC_ZIP_COUNT, \
     SYNC_ZIP_SIZE
 from anki.db import DB
 from anki.latex import mungeQA
-from anki.utils import checksum, is_local, isWin, isMac, json
-
-
-# Only do the audio/video files with regexp.
-sound_regexp = ur"(?i)(\[sound:(?P<fname>[^]]+)\])"
+from anki.utils import checksum, isWin, isMac, json
 
 
 class MediaManager(object):
+
+    soundRegexps = ["(?i)(\[sound:(?P<fname>[^]]+)\])"]
+    imgRegexps = [
+        # src element quoted case
+        """(?i)(<(?:img|embed)[^>]+\
+src=(?P<str>["'])(?P<fname>[^>]+?)(?P=str)[^>]*>)""",
+        # unquoted case
+        """(?i)(<(?:img|embed)[^>]+\
+src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
+        """(?i)(<object[^>]+\
+src=(?P<str>["'])(?P<fname>[^>]+?)(?P=str)[^>]*>)""",
+        """(?i)(<object[^>]+\
+src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
+
+    ]
+    regexps = soundRegexps + imgRegexps
 
     def __init__(self, col, server):
         self.col = col
@@ -168,19 +179,13 @@ class MediaManager(object):
             # handle latex
             string = mungeQA(string, None, None, model, None, self.col)
             # extract filenames
-            for match in re.finditer(sound_regexp, string, flags=re.UNICODE):
-                fname = match.group("fname")
-                if is_local(fname) or includeRemote:
-                    l.append(fname)
-            # For html-tags, make extracting the attribute sep.
-            frag = html.fromstring(string)
-            html_fnames = [image.get('src') for image in frag.xpath('//img')]
-            html_fnames += [emb.get('src') for emb in frag.xpath('//embed')]
-            html_fnames += [obj.get('data') for obj in frag.xpath('//object')]
-            for fname in html_fnames:
-                if fname and (is_local(fname) or includeRemote):
-                    print(u'Found name “{}” in “{}”'.format(fname, string))
-                    l.append(fname)
+            for reg in self.regexps:
+                for match in re.finditer(reg, string, flags=re.UNICODE):
+                    fname = match.group("fname")
+                    isLocal = not re.match(
+                        "(https?|ftp)://", fname.lower(), flags=re.UNICODE)
+                    if isLocal or includeRemote:
+                        l.append(fname)
         return l
 
     def _expandClozes(self, string):
@@ -229,7 +234,7 @@ class MediaManager(object):
                 return tag
             return tag.replace(
                 fname, urllib.quote(fname.encode("utf-8")))
-        for reg in self.tag_regexps:
+        for reg in self.imgRegexps:
             string = re.sub(reg, repl, string, flags=re.UNICODE)
         return string
 
