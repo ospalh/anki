@@ -15,7 +15,8 @@ from anki.lang import _, ngettext
 from anki.sound import clearAudioQueue, play, playFromText
 from anki.utils import isMac, json, stripHTML
 from aqt.sound import getAudio
-from aqt.utils import askUserDialog, getBase, mungeQA, openLink, tooltip
+from aqt.utils import askUser, askUserDialog, getBase, mungeQA, openLink, \
+    tooltip
 import aqt
 
 
@@ -470,8 +471,8 @@ onkeypress="_typeAnsPress();">""", buf)
             # log any proceeding bad elems
             logBad(givenPoint, x, given, givenElems)
             logBad(correctPoint, y, correct, correctElems)
-            givenPoint = x+cnt
-            correctPoint = y+cnt
+            givenPoint = x + cnt
+            correctPoint = y + cnt
             # log the match
             logGood(x, cnt, given, givenElems)
             logGood(y, cnt, correct, correctElems)

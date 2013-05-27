@@ -374,3 +374,7 @@ def invalidFilename(str, dirsep=True):
         return "/"
     elif (dirsep or not isWin) and "\\" in str:
         return "\\"
+
+def is_local(src):
+    src_l = src.lower()
+    return not src_l.beginswith('http://') and not src_l.beginswith('ftp://')
