@@ -3,9 +3,9 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from PyQt4.QtCore import Qt, SIGNAL
-from PyQt4.QtGui import QDialog
+from PyQt4.QtGui import QDialog, QDialogButtonBox
 
-from anki.consts import DYN_DUE, DYN_OLDEST, DYN_RANDOM
+from anki.consts import DYN_ADDED, DYN_DUE, DYN_OLDEST, DYN_RANDOM
 from anki.lang import _
 from aqt.utils import showInfo, showWarning
 import aqt
@@ -87,7 +87,8 @@ class CustomStudy(QDialog):
         elif idx == RADIO_CRAM:
             pre = _("Select")
             post = _("cards from the deck")
-            #tit = _("After pressing OK, you can choose which tags to include.")
+            # tit = _(
+            #     "After pressing OK, you can choose which tags to include.")
             ok = _("Choose Tags")
             sval = 100
             typeShow = True
