@@ -20,10 +20,11 @@ from anki.latex import mungeQA
 from anki.utils import checksum, is_local, isWin, isMac, json
 
 
-class MediaManager(object):
+# Only do the audio/video files with regexp.
+sound_regexp = ur"(?i)(\[sound:(?P<fname>[^]]+)\])"
 
-    # Only do the audio/video files with regexp.
-    sound_regexp = ur"(?i)(\[sound:(?P<fname>[^]]+)\])"
+
+class MediaManager(object):
 
     def __init__(self, col, server):
         self.col = col

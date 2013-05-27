@@ -591,7 +591,7 @@ order by ordinal""", mid)):
                 new = fld
             # rewrite reference in template
             t[key] = t[key].replace(all, "{{{%s}}}" % new)
-        regexps = {
+        regexps = [
             # We add the img regxp from media.py here. This mechanism
             # will not work with embeds or objects, as the new media
             # code will. Also, in media, there is only one regexp
