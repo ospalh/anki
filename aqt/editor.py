@@ -318,7 +318,8 @@ def _filterHTML(html):
             new = []
             for attr in attrs:
                 sattr = attr.strip()
-                if sattr and sattr not in ("font-style: normal", "font-weight: normal"):
+                if sattr and sattr not in (
+                        "font-style: normal", "font-weight: normal"):
                     new.append(sattr)
             doc.span['style'] = ";".join(new)
     # filter out implicit formatting from webkit

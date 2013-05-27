@@ -8,7 +8,7 @@ from PyQt4.QtGui import QCursor, QMenu
 from anki.errors import DeckRenameError
 from anki.lang import _, ngettext
 from anki.sound import clearAudioQueue
-from anki.utils import ids2str, isMac, fmtTimeSpan
+from anki.utils import ids2str, isMac, fmtTimeSpan, openHelp
 from aqt.utils import askUser, getOnlyText, openLink, shortcut, showWarning
 import anki.js
 import aqt
@@ -144,10 +144,12 @@ body { margin: 1em; -webkit-user-select: none; }
         tree = self._renderDeckTree(self._dueTree)
         stats = self._renderStats()
         op = self._oldPos()
-        self.web.stdHtml(self._body%dict(
-            tree=tree, stats=stats, countwarn=self._countWarn()), css=css,
-                         js=anki.js.jquery+anki.js.ui, loadCB=lambda ok:\
-                         self.web.page().mainFrame().setScrollPosition(op))
+        self.web.stdHtml(
+            self._body % dict(
+                tree=tree, stats=stats, countwarn=self._countWarn()),
+            css=css, js=anki.js.jquery+anki.js.ui,
+            loadCB=lambda ok:
+                self.web.page().mainFrame().setScrollPosition(op))
         self.web.key = "deckBrowser"
         self._drawButtons()
 
@@ -173,11 +175,12 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         if (self.mw.col.decks.count() < 25 or
                 self.mw.pm.profile.get("hideDeckLotsMsg")):
             return ""
-        return "<br><div style='width:50%;border: 1px solid #000;padding:5px;'>"+(
+        return """\
+<br><div style='width:50%;border: 1px solid #000;padding:5px;'>""" + (
             _("You have a lot of decks. Please see %(a)s. %(b)s") % dict(
                 a=("<a href=lots>%s</a>" % _("this page")),
-                b=("<br><small><a href=hidelots>(%s)</a></small>" % (_("hide"))+
-                    "</div")))
+                b=("<br><small><a href=hidelots>(%s)</a></small>"
+                   % (_("hide")) + "</div")))
 
     def _renderDeckTree(self, nodes, depth=0):
         if not nodes:

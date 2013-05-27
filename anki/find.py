@@ -6,7 +6,7 @@ import re
 from .utils import fieldChecksum, ids2str, intTime, joinFields, \
     splitFields, stripHTMLMedia
 from .consts import MODEL_CLOZE
-from anki.hooks import *
+from anki.hooks import runHook
 import sre_constants
 
 # Find

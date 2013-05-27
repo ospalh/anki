@@ -1,7 +1,6 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-from anki.lang import _
 
 from PyQt4.QtCore import QPoint, Qt, SIGNAL
 from PyQt4.QtGui import QDialog, QDialogButtonBox, QKeySequence, QMenu, \

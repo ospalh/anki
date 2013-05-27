@@ -13,7 +13,7 @@ from anki.consts import HELP_SITE, MODEL_CLOZE, MODEL_STD, \
     NEW_CARDS_DISTRIBUTE, NEW_CARDS_DUE, REM_CARD, REM_NOTE
 from anki.decks import DeckManager
 from anki.errors import AnkiError
-from anki.hooks import runFilter
+from anki.hooks import runFilter, runHook
 from anki.lang import _, ngettext
 from anki.media import MediaManager
 from anki.models import ModelManager

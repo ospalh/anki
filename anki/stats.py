@@ -180,8 +180,9 @@ select count(), sum(case when ease = 1 then 0 else 1 end) from revlog
 where lastIvl >= 21 and id > ?"""+lim, (self.col.sched.dayCutoff-86400)*1000)
         b += "<br>"
         if mcnt:
-            b += _("Correct answers on mature cards: %(a)d/%(b)d (%(c).1f%%)") % dict(
-                a=msum, b=mcnt, c=(msum / float(mcnt) * 100))
+            b += _(
+                "Correct answers on mature cards: %(a)d/%(b)d (%(c).1f%%)") \
+                % dict(a=msum, b=mcnt, c=(msum / float(mcnt) * 100))
         else:
             b += _("No mature cards were studied today.")
         return b
@@ -344,7 +345,8 @@ group by day order by day""" % (self._limit(), lim),
                 period = 1
             else:
                 period = max(
-                    1, int(1 + ((self.col.sched.dayCutoff - (t / 1000)) / 86400)))
+                    1,
+                    int(1 + ((self.col.sched.dayCutoff - (t / 1000)) / 86400)))
         i = []
         self._line(i, _("Days studied"),
                    _("<b>%(pct)d%%</b> (%(x)s of %(y)s)") % dict(
