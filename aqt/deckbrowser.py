@@ -9,7 +9,8 @@ from anki.errors import DeckRenameError
 from anki.lang import _, ngettext
 from anki.sound import clearAudioQueue
 from anki.utils import ids2str, isMac, fmtTimeSpan
-from aqt.utils import askUser, getOnlyText, openLink, shortcut, showWarning
+from aqt.utils import askUser, getOnlyText, openHelp, openLink, shortcut, \
+    showWarning
 import anki.js
 import aqt
 
@@ -47,6 +48,11 @@ class DeckBrowser(object):
             self._onShared()
         elif cmd == "import":
             self.mw.onImport()
+        elif cmd == "lots":
+            openHelp("using-decks-appropriately")
+        elif cmd == "hidelots":
+            self.mw.pm.profile['hideDeckLotsMsg'] = True
+            self.refresh()
         elif cmd == "create":
             deck = getOnlyText(_("Name for deck:"))
             if deck:
@@ -134,6 +140,7 @@ body { margin: 1em; -webkit-user-select: none; }
 
 <br>
 %(stats)s
+%(countwarn)s
 </center>
 <script>
     $( init );
@@ -214,8 +221,10 @@ body { margin: 1em; -webkit-user-select: none; }
         stats = self._renderStats()
         op = self._oldPos()
         self.web.stdHtml(
-            self._body % dict(tree=tree, stats=stats), css=css,
-            js=anki.js.jquery + anki.js.ui + anki.js.qtip_js, loadCB=lambda ok:
+            self._body % dict(
+                tree=tree, stats=stats, countwarn=self._countWarn()),
+            css=css, js=anki.js.jquery + anki.js.ui + anki.js.qtip_js,
+            loadCB=lambda ok:
                 self.web.page().mainFrame().setScrollPosition(op))
         self.web.key = "deckBrowser"
         self.web.eval("add_qtips()")
@@ -238,6 +247,17 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         buf = _("Studied %(a)s in %(b)s today.") % \
             dict(a=msgp1, b=fmtTimeSpan(thetime, unit=1))
         return buf
+
+    def _countWarn(self):
+        if (self.mw.col.decks.count() < 25 or
+                self.mw.pm.profile.get("hideDeckLotsMsg")):
+            return ""
+        return """\
+<br><div style='width:50%;border: 1px solid #000;padding:5px;'>""" + (
+            _("You have a lot of decks. Please see %(a)s. %(b)s") % dict(
+                a=("<a href=lots>%s</a>" % _("this page")),
+                b=("<br><small><a href=hidelots>(%s)</a></small>"
+                   % (_("hide")) + "</div")))
 
     def _renderDeckTree(self, nodes, depth=0):
         if not nodes:

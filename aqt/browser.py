@@ -400,6 +400,8 @@ class Browser(QMainWindow):
         # edit
         c(f.actionUndo, s, self.mw.onUndo)
         c(f.previewButton, SIGNAL("clicked()"), self.onTogglePreview)
+        f.previewButton.setToolTip(
+            _("Preview Selected Card (%s)") % shortcut(_("Ctrl+Shift+P")))
         c(f.actionInvertSelection, s, self.invertSelection)
         c(f.actionSelectNotes, s, self.selectNotes)
         c(f.actionFindReplace, s, self.onFindReplace)
@@ -446,8 +448,16 @@ class Browser(QMainWindow):
         self.mw.maybeHideAccelerators(self)
 
     def updateFont(self):
+        # we can't choose different line heights efficiently, so we need
+        # to pick a line height big enough for any card template
+        curmax = 16
+        for m in self.col.models.all():
+            for t in m['tmpls']:
+                bsize = t.get("bsize", 0)
+                if bsize > curmax:
+                    curmax = bsize
         self.form.tableView.verticalHeader().setDefaultSectionSize(
-            max(16, self.mw.fontHeight * 1.4))
+            curmax + 6)
 
     def closeEvent(self, evt):
         saveSplitter(self.form.splitter_2, "editor2")
@@ -969,7 +979,7 @@ where id in %s""" % ids2str(sf))
     def _openPreview(self):
         c = self.connect
         self._previewState = "question"
-        self._previewWindow = QDialog()
+        self._previewWindow = QDialog(None, Qt.Window)
         self._previewWindow.setWindowTitle(_("Preview"))
         c(self._previewWindow, SIGNAL("finished(int)"),
           self._onPreviewFinished)

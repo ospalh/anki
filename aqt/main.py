@@ -9,7 +9,7 @@ import signal
 import sys
 import traceback
 import zipfile
-
+from send2trash import send2trash
 from PyQt4.QtCore import Qt, QThread, SIGNAL, SLOT
 from PyQt4.QtGui import QAction, QDialog, QDialogButtonBox, QFontInfo, \
     QKeySequence, QMainWindow, QPushButton, QShortcut, QStyleFactory, \
@@ -17,9 +17,9 @@ from PyQt4.QtGui import QAction, QDialog, QDialogButtonBox, QFontInfo, \
 from PyQt4.QtWebKit import QWebSettings
 
 from anki import Collection
+from anki.utils import ids2str, intTime, isMac, isWin, splitFields
 from anki.hooks import runHook, addHook
 from anki.lang import _, ngettext
-from anki.utils import isWin, isMac, intTime
 from aqt.deckbrowser import DeckBrowser
 from aqt.overview import Overview
 from aqt.reviewer import Reviewer
@@ -114,7 +114,7 @@ class AnkiQt(QMainWindow):
         self.setupErrorHandler()
         self.setupSignals()
         self.setupAutoUpdate()
-        self.setupSchema()
+        self.setupHooks()
         self.setupRefreshTimer()
         self.updateTitleBar()
         # screens
@@ -252,6 +252,8 @@ Are you sure?""")):
             self.resize(500, 400)
         # toolbar needs to be retranslated
         self.toolbar.draw()
+        # titlebar
+        self.setWindowTitle("Anki - " + self.pm.name)
         # show and raise window for osx
         self.show()
         self.activateWindow()
@@ -365,7 +367,7 @@ the manual for information on how to restore from an automatic backup."))
             delete = len(backups) + 1 - nbacks
             delete = backups[:delete]
             for file in delete:
-                os.unlink(os.path.join(dir, file[1]))
+                send2trash(os.path.join(dir, file[1]))
 
     def maybeOptimize(self):
         # have two weeks passed?
@@ -847,11 +849,32 @@ the problem and restart Anki.""")
         elif self.state == "overview":
             self.overview.refresh()
 
-    # Schema modifications
+    # Permanent libanki hooks
     ##########################################################################
 
-    def setupSchema(self):
+    def setupHooks(self):
         addHook("modSchema", self.onSchemaMod)
+        addHook("remNotes", self.onRemNotes)
+
+    # Log note deletion
+    ##########################################################################
+
+    def onRemNotes(self, nids):
+        path = os.path.join(self.pm.profileFolder(), "deleted.txt")
+        existed = os.path.exists(path)
+        with open(path, "a") as f:
+            if not existed:
+                f.write("nid\tmid\tfields\n")
+            for id, mid, flds in self.col.db.execute(
+                    "select id, mid, flds from notes where id in %s" %
+                    ids2str(nids)):
+                fields = splitFields(flds)
+                f.write(
+                    ("\t".join([str(id), str(mid)] + fields)).encode("utf8"))
+                f.write("\n")
+
+    # Schema modifications
+    ##########################################################################
 
     def onSchemaMod(self, arg):
         # if triggered in sync, make sure we don't use the gui
@@ -921,13 +944,12 @@ will be lost. Continue?"""))
         diag.exec_()
 
     def deleteUnused(self, unused, diag):
-        if not askUser(
-                _("Delete unused media? This operation can not be undone.")):
+        if not askUser(_("Delete unused media?")):
             return
         mdir = self.col.media.dir()
         for f in unused:
             path = os.path.join(mdir, f)
-            os.unlink(path)
+            send2trash(path)
         tooltip(_("Deleted."))
         diag.close()
 

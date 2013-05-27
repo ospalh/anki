@@ -18,6 +18,7 @@ class Anki2Importer(Importer):
     needMapper = False
     deckPrefix = None
     allowUpdate = True
+    dupeOnSchemaChange = False
 
     def run(self, media=None):
         self._prepareFiles()
@@ -110,7 +111,7 @@ class Anki2Importer(Importer):
         srcMid = note[MID]
         dstMid = self._mid(srcMid)
         # duplicate schemas?
-        if srcMid == dstMid:
+        if srcMid == dstMid or not self.dupeOnSchemaChange:
             return origGuid not in self._notes
         # differing schemas
         note[MID] = dstMid
@@ -335,7 +336,7 @@ insert or ignore into revlog values (?,?,?,?,?,?,?,?,?)""", revlog)
         fields = splitFields(fields)
 
         def repl(match):
-            fname = match.group(2)
+            fname = match.group("fname")
             srcData = self._srcMediaData(fname)
             dstData = self._dstMediaData(fname)
             if not srcData:

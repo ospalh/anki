@@ -8,14 +8,14 @@ import difflib
 import re
 
 from PyQt4.QtCore import Qt, SIGNAL
-from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QShortcut
+from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QMessageBox, QShortcut
 
 from anki.hooks import addHook, runFilter, runHook
 from anki.lang import _, ngettext
-from anki.sound import playFromText, clearAudioQueue, play
-from anki.utils import stripHTML, isMac, json
+from anki.sound import clearAudioQueue, play, playFromText
+from anki.utils import isMac, json, stripHTML
 from aqt.sound import getAudio
-from aqt.utils import askUser, mungeQA, getBase, openLink, tooltip
+from aqt.utils import askUserDialog, getBase, mungeQA, openLink, tooltip
 import aqt
 
 
@@ -74,11 +74,16 @@ class Reviewer(object):
     def nextCard(self):
         elapsed = self.mw.col.timeboxReached()
         if elapsed:
-            part1 = ngettext("%d card studied in", "%d cards studied in",
-                             elapsed[1]) % elapsed[1]
-            part2 = ngettext("%s minute.", "%s minutes.",
-                             elapsed[0] / 60) % (elapsed[0] / 60)
-            tooltip("%s %s" % (part1, part2), period=5000)
+            part1 = ngettext("%d card studied in",
+                             "%d cards studied in", elapsed[1]) % elapsed[1]
+            mins = int(round(elapsed[0]/60))
+            part2 = ngettext("%s minute.", "%s minutes.", mins) % mins
+            fin = _("Finish")
+            diag = askUserDialog(
+                "%s %s" % (part1, part2), [_("Continue"), fin])
+            diag.setIcon(QMessageBox.Information)
+            if diag.run() == fin:
+                return self.mw.moveToState("deckBrowser")
             self.mw.col.startTimebox()
         if self.cardQueue:
             # undone/edited cards to show
@@ -411,7 +416,10 @@ onkeypress="_typeAnsPress();">""", buf)
         # munge correct value
         parser = HTMLParser.HTMLParser()
         cor = stripHTML(self.mw.col.media.strip(self.typeCorrect))
+        # ensure we don't chomp multiple whitespace
+        cor = cor.replace(" ", "&nbsp;")
         cor = parser.unescape(cor)
+        cor = cor.replace(u"\xa0", " ")
         given = self.typedAnswer
         # compare with typed answer
         res = runFilter("filterTypedAnswer", u'', given, cor, self.card)

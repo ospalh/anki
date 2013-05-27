@@ -9,7 +9,7 @@ from PyQt4.QtGui import QDialog, QDialogButtonBox, QKeySequence, QMenu, \
 from anki.hooks import addHook, remHook
 from anki.lang import _
 from anki.sound import clearAudioQueue
-from anki.utils import stripHTMLMedia
+from anki.utils import stripHTMLMedia, isMac
 from aqt.utils import addCloseShortcut, askUser, openHelp, restoreGeom, \
     saveGeom, shortcut, showWarning, tooltip
 import aqt.deckchooser
@@ -73,14 +73,21 @@ class AddCards(QDialog):
         self.connect(self.helpButton, SIGNAL("clicked()"), self.helpRequested)
         # history
         b = bb.addButton(_("History") + u" ▾", ar)
+        if isMac:
+            sc = "Ctrl+Shift+H"
+        else:
+            sc = "Ctrl+H"
+        b.setShortcut(QKeySequence(sc))
+        b.setToolTip(_("Shortcut: %s") % shortcut(sc))
         self.connect(b, SIGNAL("clicked()"), self.onHistory)
         b.setEnabled(False)
         self.historyButton = b
 
     def setupNewNote(self, set=True):
         f = self.mw.col.newNote()
+        f.tags = f.model()['tags']
         if set:
-            self.editor.setNote(f)
+            self.editor.setNote(f, focus=True)
         return f
 
     def onReset(self, model=None, keep=False):
@@ -100,7 +107,7 @@ class AddCards(QDialog):
                 except IndexError:
                     break
         self.editor.currentField = 0
-        self.editor.setNote(note)
+        self.editor.setNote(note, focus=True)
 
     def removeTempNote(self, note):
         if not note or not note.id:
