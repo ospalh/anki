@@ -336,7 +336,7 @@ insert or ignore into revlog values (?,?,?,?,?,?,?,?,?)""", revlog)
         fields = splitFields(fields)
 
         def repl(match):
-            fname = match.group(2)
+            fname = match.group("fname")
             srcData = self._srcMediaData(fname)
             dstData = self._dstMediaData(fname)
             if not srcData:

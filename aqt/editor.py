@@ -887,9 +887,8 @@ to a cloze type first, via Edit>Change Note Type."""))
                     pass
         # return a local html link
         ext = name.split(".")[-1].lower()
-        if not isWin and not isMac:
-            name = urllib.quote(name.encode("utf8"))
         if ext in pics:
+            name = urllib.quote(name.encode("utf8"))
             return '<img src="%s">' % name
         else:
             anki.sound.play(name)

@@ -672,10 +672,20 @@ class MediaSyncer(object):
     def sync(self, mediaUsn):
         # step 1: check if there have been any changes
         runHook("sync", "findMedia")
-        self.col.media.findChanges()
         lusn = self.col.media.usn()
+        # if first sync or resync, clear list of files we think we've sent
+        if not lusn:
+            self.col.media.forceResync()
+        self.col.media.findChanges()
         if lusn == mediaUsn and not self.col.media.hasChanged():
             return "noChanges"
+        # step 1.5: if resyncing, we need to get the list of files the server
+        # has and remove them from our local list of files to sync
+        if not lusn:
+            files = self.server.mediaList()
+            need = self.col.media.removeExisting(files)
+        else:
+            need = None
         # step 2: send/recv deletions
         runHook("sync", "removeMedia")
         lrem = self.removed()
@@ -686,7 +696,7 @@ class MediaSyncer(object):
         while 1:
             runHook("sync", "streamMedia")
             usn = self.col.media.usn()
-            zip = self.server.files(minUsn=usn)
+            zip = self.server.files(minUsn=usn, need=need)
             if self.addFiles(zip=zip):
                 break
         # step 4: stream files to the server
@@ -707,6 +717,8 @@ class MediaSyncer(object):
         s = self.server.mediaSanity()
         c = self.mediaSanity()
         if c != s:
+            # if the sanity check failed, force a resync
+            self.col.media.forceResync()
             raise Exception("""\
 Media sanity check failed. Please copy and paste the text below:\n%s\n%s""" %
                             (c, s))
@@ -755,6 +767,10 @@ class RemoteMediaServer(HttpSyncer):
     def mediaSanity(self):
         return json.loads(
             self.req("mediaSanity"))
+
+    def mediaList(self):
+        return json.loads(
+            self.req("mediaList"))
 
     # only for unit tests
     def mediatest(self, n):
