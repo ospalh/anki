@@ -8,8 +8,9 @@ from PyQt4.QtGui import QCursor, QMenu
 from anki.errors import DeckRenameError
 from anki.lang import _, ngettext
 from anki.sound import clearAudioQueue
-from anki.utils import ids2str, isMac, fmtTimeSpan, openHelp
-from aqt.utils import askUser, getOnlyText, openLink, shortcut, showWarning
+from anki.utils import ids2str, isMac, fmtTimeSpan
+from aqt.utils import askUser, getOnlyText, openHelp, openLink, shortcut, \
+    showWarning
 import anki.js
 import aqt
 
