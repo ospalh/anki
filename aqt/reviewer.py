@@ -476,16 +476,20 @@ onkeypress="_typeAnsPress();">""", buf)
             return ret
         givenElems, correctElems = self.tokenizeComparison(given, correct)
 
+        def vspace(s):
+            u"""Replace spaces characters with open boxes."""
+            return re.sub(u'\s', u'␣', s, flags=re.UNICODE)
+
         def good(s):
-            return "<span class=typeGood>"+s+"</span>"
+            return u"<span class=typeGood>{0}</span>".format(s)
 
         def bad(s):
-            return "<span class=typeBad>"+s+"</span>"
+            return u"<span class=typeBad>{0}</span>".format(vspace(s))
 
         def missed(s):
-            return "<span class=typeMissed>"+s+"</span>"
+            return u"<span class=typeMissed>{0}</span>".format(vspace(s))
         if given == correct:
-            res = "<span class=allgood>" + good(given) + "</span>"
+            res = u"<span class=allgood>{0}</span>".format(good(given))
         else:
             ge = u""
             for ok, txt in givenElems:
