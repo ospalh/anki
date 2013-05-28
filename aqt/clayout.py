@@ -242,6 +242,8 @@ Please create a new card type first."""))
             self.playedAudio[c.id] = True
 
     def maybeTextInput(self, txt, type='q'):
+        if "[[type:" not in txt:
+            return txt
         if type == 'q':
             repl = "<input id='typeans' type=text value='Lorenipsuum'>"
         else:

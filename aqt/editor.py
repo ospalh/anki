@@ -105,6 +105,13 @@ function onKeyUp(elem) {
     if (!elem.lastChild || elem.lastChild.nodeName.toLowerCase() != "br") {
         elem.appendChild(document.createElement("br"));
     }
+    var old = elem.innerHTML;
+    var new_ = old.replace(/<([biu])><br><\\/\\1>/g, "");
+    if (old != new_) {
+        elem.innerHTML = new_;
+        // this may have caused the cursor to disappear
+        caretToEnd();
+    }
 }
 
 function sendState() {
@@ -301,6 +308,20 @@ document.onclick = function (evt) {
 
 def _filterHTML(html):
     doc = BeautifulSoup(html)
+    # remove implicit regular font style from outermost element
+    if doc.span:
+        try:
+            attrs = doc.span['style'].split(";")
+        except (KeyError, TypeError):
+            attrs = []
+        if attrs:
+            new = []
+            for attr in attrs:
+                sattr = attr.strip()
+                if sattr and sattr not in (
+                        "font-style: normal", "font-weight: normal"):
+                    new.append(sattr)
+            doc.span['style'] = ";".join(new)
     # filter out implicit formatting from webkit
     for tag in doc("span", "Apple-style-span"):
         preserve = ""
@@ -316,7 +337,7 @@ def _filterHTML(html):
                 preserve += item + ";"
         if preserve:
             # preserve colour attribute, delete implicit class
-            tag.attrs = ((u"style", preserve),)
+            tag['style'] = preserve
             del tag['class']
         else:
             # strip completely
@@ -324,14 +345,17 @@ def _filterHTML(html):
     for tag in doc("font", "Apple-style-span"):
         # strip all but colour attr from implicit font tags
         if 'color' in dict(tag.attrs):
-            tag.attrs = ((u"color", tag['color']),)
+            for attr in tag.attrs:
+                if attr != "color":
+                    del tag[attr]
             # and apple class
             del tag['class']
         else:
             # remove completely
             tag.replaceWithChildren()
-    # turn file:/// links into relative ones
+    # now images
     for tag in doc("img"):
+        # turn file:/// links into relative ones
         try:
             if tag['src'].lower().startswith("file://"):
                 tag['src'] = os.path.basename(tag['src'])
@@ -339,24 +363,14 @@ def _filterHTML(html):
             # for some bizarre reason, mnemosyne removes src elements
             # from missing media
             pass
+        # strip all other attributes, including implicit max-width
+        for attr, val in tag.attrs:
+            if attr != "src":
+                del tag[attr]
     # strip superfluous elements
     for elem in "html", "head", "body", "meta":
         for tag in doc(elem):
             tag.replaceWithChildren()
-    # remove outer styling if implicit
-    try:
-        attr_list = doc.span['style'].split(";")
-    except (KeyError, TypeError):
-        pass
-    else:
-        hadExtraAttr = False
-        for attr in attr_list:
-            attr = attr.strip()
-            if attr and attr not in (
-                    "font-style: normal", "font-weight: normal"):
-                hadExtraAttr = True
-        if hadExtraAttr:
-            doc.span.replaceWithChildren()
     html = unicode(doc)
     return html
 
@@ -556,7 +570,6 @@ class Editor(object):
                     def onUpdate():
                         self.stealFocus = True
                         self.loadNote()
-                        self.stealFocus = False
                         self.checkValid()
                     self.mw.progress.timer(100, onUpdate, False)
                 else:
@@ -602,6 +615,8 @@ class Editor(object):
         self.note = note
         self.currentField = 0
         self.disableButtons()
+        if focus:
+            self.stealFocus = True
         # change timer
         if self.note:
             self.web.setHtml(_html % (
@@ -635,6 +650,7 @@ class Editor(object):
         self.widget.show()
         if self.stealFocus:
             self.web.setFocus()
+            self.stealFocus = False
 
     def focus(self):
         self.web.setFocus()
@@ -680,8 +696,9 @@ class Editor(object):
     def fieldsAreBlank(self):
         if not self.note:
             return True
-        for f in self.note.fields:
-            if f:
+        m = self.note.model()
+        for c, f in enumerate(self.note.fields):
+            if f and not m['flds'][c]['sticky']:
                 return False
         return True
 
@@ -876,7 +893,8 @@ to a cloze type first, via Edit>Change Note Type."""))
         # return a local html link
         ext = name.split(".")[-1].lower()
         if ext in pics:
-            return '<img src="%s">' % urllib.quote(name.encode("utf8"))
+            name = urllib.quote(name.encode("utf8"))
+            return '<img src="%s">' % name
         else:
             anki.sound.play(name)
             return '[sound:%s]' % name
@@ -1174,8 +1192,8 @@ class EditorWebView(AnkiWebView):
         finally:
             self.editor.mw.progress.finish()
         path = unicode(urllib2.unquote(url.encode("utf8")), "utf8")
-        path = path.replace("#", "")
-        path = path.replace("%", "")
+        for badChar in "#%\"":
+            path = path.replace(badChar, "")
         path = namedtmp(os.path.basename(path))
         file = open(path, "wb")
         file.write(filecontents)

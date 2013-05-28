@@ -4,7 +4,7 @@
 import re
 
 from PyQt4.QtCore import Qt, SIGNAL
-from PyQt4.QtGui import QCompleter, QLineEdit, QStringListModel
+from PyQt4.QtGui import QCompleter, QLineEdit, QStringListModel, QWidget
 
 
 class TagEdit(QLineEdit):
@@ -37,6 +37,10 @@ class TagEdit(QLineEdit):
         self.showCompleter()
 
     def keyPressEvent(self, evt):
+        if evt.key() in (Qt.Key_Enter, Qt.Key_Return):
+            self.hideCompleter()
+            QWidget.keyPressEvent(self, evt)
+            return
         QLineEdit.keyPressEvent(self, evt)
         if not evt.text():
             # if it's a modifier, don't show
