@@ -153,6 +153,8 @@ function _updateQA (q, answerMode, klass) {
     }
     // don't allow drags of images, which cause them to be deleted
     $("img").attr("draggable", false);
+    $("embed").attr("draggable", false);
+    $("object").attr("draggable", false);
 };
 
 function _toggleStar (show) {
