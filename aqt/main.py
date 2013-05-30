@@ -865,13 +865,19 @@ the problem and restart Anki.""")
         with open(path, "a") as f:
             if not existed:
                 f.write("nid\tmid\tfields\n")
-            for id, mid, flds in self.col.db.execute(
-                    "select id, mid, flds from notes where id in %s" %
-                    ids2str(nids)):
-                fields = splitFields(flds)
-                f.write(
-                    ("\t".join([str(id), str(mid)] + fields)).encode("utf8"))
-                f.write("\n")
+            try:
+                note_info = self.col.db.execute(
+                        "select id, mid, flds from notes where id in %s" %
+                        ids2str(nids))
+            except AttributeError:
+                return
+            else:
+                for nid, mid, flds in note_info:
+                    fields = splitFields(flds)
+                    f.write(("\t".join([str(nid), str(mid)]
+                                       + fields)).encode("utf8"))
+                    f.write("\n")
+
 
     # Schema modifications
     ##########################################################################
