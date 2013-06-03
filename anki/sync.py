@@ -459,7 +459,7 @@ from notes where %s""" % d)
             self.newerRows(cards, "cards", 4))
 
     def mergeNotes(self, notes):
-        rows = self.newerRows(notes, "notes", 4)
+        rows = self.newerRows(notes, "notes", 3)
         self.col.db.executemany(
             "insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)",
             rows)
@@ -719,10 +719,7 @@ class MediaSyncer(object):
         if c != s:
             # if the sanity check failed, force a resync
             self.col.media.forceResync()
-            raise Exception("""\
-Media sanity check failed. Please copy and paste the text below:\n%s\n%s""" %
-                            (c, s))
-        return "success"
+            return "sanityCheckFailed"
 
     def removed(self):
         return self.col.media.removed()
