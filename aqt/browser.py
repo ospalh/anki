@@ -393,6 +393,8 @@ class Browser(QMainWindow):
         c = self.connect
         f = self.form
         s = SIGNAL("triggered()")
+        if not isMac:
+            f.actionClose.setVisible(False)
         c(f.actionReposition, s, self.reposition)
         c(f.actionReschedule, s, self.reschedule)
         c(f.actionCram, s, self.cram)

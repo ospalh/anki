@@ -126,6 +126,10 @@ Please visit AnkiWeb, upgrade your deck, then try again."""))
             self._clockOff()
         elif evt == "checkFailed":
             self._checkFailed()
+        elif evt == "mediaSanity":
+            showWarning(_("""\
+A problem occurred while syncing media. Please sync again and Anki will \
+correct the issue."""))
         elif evt == "noChanges":
             pass
         elif evt == "fullSync":
@@ -405,6 +409,8 @@ class SyncThread(QThread):
         ret = self.client.sync(self.mediaUsn)
         if ret == "noChanges":
             self.fireEvent("noMediaChanges")
+        elif ret == "sanityCheckFailed":
+            self.fireEvent("mediaSanity")
         else:
             self.fireEvent("mediaSuccess")
 

@@ -859,25 +859,19 @@ the problem and restart Anki.""")
     # Log note deletion
     ##########################################################################
 
-    def onRemNotes(self, nids):
+    def onRemNotes(self, col, nids):
         path = os.path.join(self.pm.profileFolder(), "deleted.txt")
         existed = os.path.exists(path)
         with open(path, "a") as f:
             if not existed:
                 f.write("nid\tmid\tfields\n")
-            try:
-                note_info = self.col.db.execute(
-                        "select id, mid, flds from notes where id in %s" %
-                        ids2str(nids))
-            except AttributeError:
-                return
-            else:
-                for nid, mid, flds in note_info:
-                    fields = splitFields(flds)
-                    f.write(("\t".join([str(nid), str(mid)]
-                                       + fields)).encode("utf8"))
-                    f.write("\n")
-
+            for id, mid, flds in col.db.execute(
+                    "select id, mid, flds from notes where id in %s" %
+                    ids2str(nids)):
+                fields = splitFields(flds)
+                f.write(
+                    ("\t".join([str(id), str(mid)] + fields)).encode("utf8"))
+                f.write("\n")
 
     # Schema modifications
     ##########################################################################
