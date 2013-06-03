@@ -59,7 +59,8 @@ class DeckStats(QDialog):
         name = time.strftime("-%Y-%m-%d@%H-%M-%S.png",
                              time.localtime(time.time()))
         name = "anki-" + _("stats") + name
-        desktopPath = QDesktopServices.storageLocation(QDesktopServices.DesktopLocation)
+        desktopPath = QDesktopServices.storageLocation(
+            QDesktopServices.DesktopLocation)
         if not os.path.exists(desktopPath):
             os.mkdir(desktopPath)
         path = os.path.join(desktopPath, name)

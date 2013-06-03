@@ -167,6 +167,7 @@ acq_reps+ret_reps, lapses, card_type_id from cards"""):
             n.fields = []
             fld = orig.get("text", "")
             state = dict(n=1)
+
             def repl(match):
                 # replace [...] with cloze refs
                 res = ("{{c%d::%s}}" % (state['n'], match.group(1)))
@@ -175,7 +176,7 @@ acq_reps+ret_reps, lapses, card_type_id from cards"""):
             fld = re.sub("\[(.+)\]", repl, fld)
             fld = self._mungeField(fld)
             n.fields.append(fld)
-            n.fields.append("") # extra
+            n.fields.append("")  # extra
             n.tags = orig['tags']
             n.cards = orig.get('cards', {})
             data.append(n)
