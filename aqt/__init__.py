@@ -26,7 +26,7 @@ from anki.utils import isMac
 from aqt.qt import qtmajor, qtminor
 import anki.lang
 
-appVersion = "2.0.8"
+appVersion = "2.0.9"
 appWebsite = "http://ankisrs.net/"
 appChanges = "http://ankisrs.net/docs/changes.html"
 appDonate = "http://ankisrs.net/support/"
