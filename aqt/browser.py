@@ -524,19 +524,21 @@ class Browser(QMainWindow):
         self.form.searchEdit.addItems(self.mw.pm.profile['searchHistory'])
 
     def onSearch(self, reset=True):
-        "Careful: if reset is true, the current note is saved."
+        u"""Execute a search for cards."""
+        # Careful: if reset is True, the current note is saved.
         txt = unicode(self.form.searchEdit.lineEdit().text()).strip()
-        prompt = _("<type here to search; hit enter to show current deck>")
         sh = self.mw.pm.profile['searchHistory']
         # update search history
         if txt in sh:
             sh.remove(txt)
         sh.insert(0, txt)
+        if not u'deck:current ' in sh[:30]:
+            sh.insert(1, u'deck:current ')
         sh = sh[:30]
         self.form.searchEdit.clear()
         self.form.searchEdit.addItems(sh)
         self.mw.pm.profile['searchHistory'] = sh
-        if self.mw.state == "review" and "is:current" in txt:
+        if self.mw.state == "review" and txt == "is:current":
             # search for current card, but set search to easily display whole
             # deck
             if reset:
@@ -545,15 +547,8 @@ class Browser(QMainWindow):
             self.model.search("nid:%d" % self.mw.reviewer.card.nid, False)
             if reset:
                 self.model.endReset()
-            self.form.searchEdit.lineEdit().setText(prompt)
             self.form.searchEdit.lineEdit().selectAll()
             return
-        elif "is:current" in txt:
-            self.form.searchEdit.lineEdit().setText(prompt)
-            self.form.searchEdit.lineEdit().selectAll()
-        elif txt == prompt:
-            self.form.searchEdit.lineEdit().setText("deck:current ")
-            txt = "deck:current "
         self.model.search(txt, reset)
         if not self.model.cards:
             # no row change will fire
