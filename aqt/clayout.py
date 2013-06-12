@@ -228,11 +228,11 @@ Please create a new card type first."""))
         ti = self.maybeTextInput
         base = getBase(self.mw.col)
         self.tab['pform'].frontWeb.stdHtml(
-            ti(mungeQA(c.q(reload=True))), self.mw.reviewer._styles(),
+            ti(mungeQA(self.mw.col, c.q(reload=True))), self.mw.reviewer._styles(),
             bodyClass="card card%d" % (c.ord + 1), head=base,
             js=anki.js.browserSel)
         self.tab['pform'].backWeb.stdHtml(
-            ti(mungeQA(c.a()), type='a'), self.mw.reviewer._styles(),
+            ti(mungeQA(self.mw.col, c.a()), type='a'), self.mw.reviewer._styles(),
             bodyClass="card card%d" % (c.ord + 1), head=base,
             js=anki.js.browserSel)
         clearAudioQueue()
@@ -249,7 +249,7 @@ Please create a new card type first."""))
         hadHR = origLen != len(txt)
 
         def answerRepl(match):
-            res = self.mw.reviewer.correct("exomple", "an example")
+            res = self.mw.reviewer.correct(u"exomple", u"an example")
             if hadHR:
                 res = "<hr id=answer>" + res
             return res

@@ -226,12 +226,12 @@ where lastIvl >= 21 and id > ?"""+lim, (self.col.sched.dayCutoff-86400)*1000)
             _("The number of reviews due in the future."))
         xaxis = dict(tickDecimals=0, min=-0.5)
         if end is not None:
-            xaxis['max'] = end - 0.5
-        txt += self._graph(
-            id="due", data=data, ylabel2=_("Cumulative Cards"),
-            conf=dict(xaxis=xaxis,
-                      yaxes=[dict(), dict(tickDecimals=0, position="right")]))
-        txt += self._dueInfo(tot, len(totd) * chunk)
+            xaxis['max'] = end-0.5
+        txt += self._graph(id="due", data=data,
+                           ylabel2=_("Cumulative Cards"), conf=dict(
+                xaxis=xaxis, yaxes=[dict(min=0), dict(
+                    min=0, tickDecimals=0, position="right")]))
+        txt += self._dueInfo(tot, len(totd)*chunk)
         return txt
 
     def _dueInfo(self, tot, num):

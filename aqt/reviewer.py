@@ -185,8 +185,7 @@ function _typeAnsPress() {
     ##########################################################################
 
     def _mungeQA(self, buf):
-        return self.mw.col.media.escapeImages(
-            self.typeAnsFilter(mungeQA(buf)))
+        return self.typeAnsFilter(mungeQA(self.mw.col, buf))
 
     def _showQuestion(self):
         self._reps += 1
@@ -394,7 +393,7 @@ Please run Tools>Empty Cards""")
     def typeAnsAnswerFilter(self, buf):
         # tell webview to call us back with the input content
         self.web.eval("_getTypedText();")
-        if not self.typeCorrect or not self.typedAnswer:
+        if not self.typeCorrect:
             return re.sub(self.typeAnsPat, "", buf)
         origSize = len(buf)
         buf = buf.replace("<hr id=answer>", "")
@@ -441,6 +440,9 @@ Please run Tools>Empty Cards""")
         return txt
 
     def tokenizeComparison(self, given, correct):
+        # compare in NFC form so accents appear correct
+        given = ucd.normalize("NFC", given)
+        correct = ucd.normalize("NFC", correct)
         s = difflib.SequenceMatcher(None, given, correct, autojunk=False)
         givenElems = []
         correctElems = []
