@@ -485,8 +485,9 @@ onkeypress="_typeAnsPress();">""", buf)
 
     def correct(self, ret, given, correct, card=None, showBad=True):
         "Diff-corrects the typed-in answer."
-        if ret:
-            # Someone else has already done some correcting.
+        if ret or not given:
+            # Someone else has already done some correcting, or the
+            # user has not entered anything.
             return ret
         givenElems, correctElems = self.tokenizeComparison(given, correct)
 
