@@ -12,7 +12,6 @@ import locale
 import os
 import random
 import re
-import shutil
 
 
 from PyQt4.QtCore import QT_VERSION_STR, SIGNAL
