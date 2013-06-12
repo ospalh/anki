@@ -98,6 +98,8 @@ acq_reps+ret_reps, lapses, card_type_id from cards"""):
         return self._fields
 
     def _mungeField(self, fld):
+        # \n -> br
+        fld = re.sub("\r?\n", "<br>", fld)
         # latex differences
         fld = re.sub("(?i)<(/?(\$|\$\$|latex))>", "[\\1]", fld)
         # audio differences
@@ -166,6 +168,7 @@ acq_reps+ret_reps, lapses, card_type_id from cards"""):
             n = ForeignNote()
             n.fields = []
             fld = orig.get("text", "")
+            fld = re.sub("\r?\n", "<br>", fld)
             state = dict(n=1)
 
             def repl(match):
@@ -173,7 +176,7 @@ acq_reps+ret_reps, lapses, card_type_id from cards"""):
                 res = ("{{c%d::%s}}" % (state['n'], match.group(1)))
                 state['n'] += 1
                 return res
-            fld = re.sub("\[(.+)\]", repl, fld)
+            fld = re.sub("\[(.+?)\]", repl, fld)
             fld = self._mungeField(fld)
             n.fields.append(fld)
             n.fields.append("")  # extra

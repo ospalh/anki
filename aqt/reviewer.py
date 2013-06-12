@@ -6,6 +6,7 @@ from __future__ import division
 import HTMLParser
 import difflib
 import re
+import unicodedata as ucd
 
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QMessageBox, QShortcut
@@ -196,8 +197,7 @@ function _typeAnsPress() {
     ##########################################################################
 
     def _mungeQA(self, buf):
-        return self.mw.col.media.escapeImages(
-            self.typeAnsFilter(mungeQA(buf)))
+        return self.typeAnsFilter(mungeQA(self.mw.col, buf))
 
     def _showQuestion(self):
         self._reps += 1
@@ -414,7 +414,7 @@ onkeypress="_typeAnsPress();">""", buf)
     def typeAnsAnswerFilter(self, buf):
         # tell webview to call us back with the input content
         self.web.eval("_getTypedText();")
-        if not self.typeCorrect or not self.typedAnswer:
+        if not self.typeCorrect:
             return re.sub(self.typeAnsPat, "", buf)
         # munge correct value
         parser = HTMLParser.HTMLParser()
@@ -451,6 +451,9 @@ onkeypress="_typeAnsPress();">""", buf)
         return txt
 
     def tokenizeComparison(self, given, correct):
+        # compare in NFC form so accents appear correct
+        given = ucd.normalize("NFC", given)
+        correct = ucd.normalize("NFC", correct)
         s = difflib.SequenceMatcher(None, given, correct, autojunk=False)
         givenElems = []
         correctElems = []

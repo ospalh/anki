@@ -288,7 +288,7 @@ def getSaveFile(parent, title, dir_description, key, ext, fname=None):
     base = aqt.mw.pm.profile.get(config_key, aqt.mw.pm.base)
     path = os.path.join(base, fname)
     file = unicode(QFileDialog.getSaveFileName(
-        parent, title, path, "{0} (*{1})".format(key, ext),
+        parent, title, path, u"{0} (*{1})".format(key, ext),
         options=QFileDialog.DontConfirmOverwrite))
     if file:
         # add extension
@@ -354,7 +354,8 @@ def restoreHeader(widget, key):
         widget.restoreState(aqt.mw.pm.profile[key])
 
 
-def mungeQA(txt):
+def mungeQA(col, txt):
+    txt = col.media.escapeImages(txt)
     txt = stripSounds(txt)
     # osx webkit doesn't understand font weight 600
     txt = re.sub("font-weight: *600", "font-weight:bold", txt)

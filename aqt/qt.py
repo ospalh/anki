@@ -14,7 +14,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 
-import anki.template.furigana
+from anki.utils import isWin, isMac
 
 
 def debug():
@@ -42,3 +42,9 @@ qt_version = StrictVersion(QT_VERSION_STR)
 
 # This is my private version. I don't have ancient Qt versions lying
 # around. Take out the patch for those.
+
+if isWin or isMac:
+    # we no longer use this, but want it included in the mac+win builds
+    # so we don't break add-ons that use it. any new add-ons should use
+    # the above variables instead
+    from PyQt4 import pyqtconfig

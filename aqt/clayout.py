@@ -228,13 +228,13 @@ Please create a new card type first."""))
         ti = self.maybeTextInput
         base = getBase(self.mw.col)
         self.tab['pform'].frontWeb.stdHtml(
-            ti(mungeQA(c.q(reload=True))), self.mw.reviewer._styles(),
-            bodyClass="card card%d" % (c.ord + 1), head=base,
-            js=anki.js.browserSel)
+            ti(mungeQA(self.mw.col, c.q(reload=True))),
+            self.mw.reviewer._styles(), bodyClass="card card%d" % (c.ord + 1),
+            head=base, js=anki.js.browserSel)
         self.tab['pform'].backWeb.stdHtml(
-            ti(mungeQA(c.a()), type='a'), self.mw.reviewer._styles(),
-            bodyClass="card card%d" % (c.ord + 1), head=base,
-            js=anki.js.browserSel)
+            ti(mungeQA(self.mw.col, c.a()), type='a'),
+            self.mw.reviewer._styles(), bodyClass="card card%d" % (c.ord + 1),
+            head=base, js=anki.js.browserSel)
         clearAudioQueue()
         if c.id not in self.playedAudio:
             playFromText(c.q())
@@ -248,7 +248,7 @@ Please create a new card type first."""))
             repl = "<input id='typeans' type=text value='Lorenipsuum'>"
         else:
             repl = self.mw.reviewer.correct(
-                u"", "Lorenipsuum", "Lorem ipsum dolor sit amet")
+                u"", u"Lorenipsuum", u"Lorem ipsum dolor sit amet")
         return re.sub("\[\[type:.+?\]\]", repl, txt)
 
     # Card operations
