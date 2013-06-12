@@ -6,6 +6,7 @@ from __future__ import division
 import HTMLParser
 import difflib
 import re
+import unicodedata as ucd
 
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QMessageBox, QShortcut

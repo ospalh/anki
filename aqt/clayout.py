@@ -228,13 +228,13 @@ Please create a new card type first."""))
         ti = self.maybeTextInput
         base = getBase(self.mw.col)
         self.tab['pform'].frontWeb.stdHtml(
-            ti(mungeQA(self.mw.col, c.q(reload=True))), self.mw.reviewer._styles(),
-            bodyClass="card card%d" % (c.ord + 1), head=base,
-            js=anki.js.browserSel)
+            ti(mungeQA(self.mw.col, c.q(reload=True))),
+            self.mw.reviewer._styles(), bodyClass="card card%d" % (c.ord + 1),
+            head=base, js=anki.js.browserSel)
         self.tab['pform'].backWeb.stdHtml(
-            ti(mungeQA(self.mw.col, c.a()), type='a'), self.mw.reviewer._styles(),
-            bodyClass="card card%d" % (c.ord + 1), head=base,
-            js=anki.js.browserSel)
+            ti(mungeQA(self.mw.col, c.a()), type='a'),
+            self.mw.reviewer._styles(), bodyClass="card card%d" % (c.ord + 1),
+            head=base, js=anki.js.browserSel)
         clearAudioQueue()
         if c.id not in self.playedAudio:
             playFromText(c.q())

@@ -13,6 +13,8 @@ from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 
+from anki.utils import isWin, isMac
+
 
 def debug():
     from PyQt4.QtCore import pyqtRemoveInputHook
