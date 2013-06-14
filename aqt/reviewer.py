@@ -11,7 +11,7 @@ import unicodedata as ucd
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QMessageBox, QShortcut
 
-from anki.hooks import addHook, runFilter, runHook
+from anki.hooks import addHook, runHook
 from anki.lang import _, ngettext
 from anki.sound import clearAudioQueue, play, playFromText
 from anki.utils import isMac, json, stripHTML
@@ -40,10 +40,6 @@ class Reviewer(object):
         self.delShortcut.setAutoRepeat(False)
         self.mw.connect(self.delShortcut, SIGNAL("activated()"), self.onDelete)
         addHook("leech", self.onLeech)
-        addHook(
-            "filterTypedAnswer",
-            lambda r, g, co, ca: self.correct(
-                ret=r, given=g, correct=co, card=ca, showBad=False))
 
     def show(self):
         self.mw.col.reset()
@@ -425,7 +421,7 @@ onkeypress="_typeAnsPress();">""", buf)
         cor = cor.replace(u"\xa0", " ")
         given = self.typedAnswer
         # compare with typed answer
-        res = runFilter("filterTypedAnswer", u'', given, cor, self.card)
+        res = self.correct(given, cor, showBad=False)
         # and update the type answer area
 
         def repl(match):
@@ -483,12 +479,11 @@ onkeypress="_typeAnsPress();">""", buf)
             logGood(y, cnt, correct, correctElems)
         return givenElems, correctElems
 
-    def correct(self, ret, given, correct, card=None, showBad=True):
+    def correct(self, given, correct, showBad=True):
         "Diff-corrects the typed-in answer."
-        if ret or not given:
-            # Someone else has already done some correcting, or the
-            # user has not entered anything.
-            return ret
+        if not given:
+            # My way/ the old way. Show nothing when nothing typed.
+            return u""
         givenElems, correctElems = self.tokenizeComparison(given, correct)
 
         def vspace(s):
@@ -519,11 +514,11 @@ onkeypress="_typeAnsPress();">""", buf)
                 else:
                     ce += missed(txt)
             res = u"""
+
 <span class=given>{ge}</span><span class=arrow>→</span>\
 <span class=correct>{ce}</span>
 """.format(ge=ge, ce=ce)
-        res = "<span id=typeans>" + res + "</span>"
-        return res
+        return u"<span id=typeans>{rs}</span>".format(rs=res)
 
     # Bottom bar
     ##########################################################################

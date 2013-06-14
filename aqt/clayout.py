@@ -248,7 +248,7 @@ Please create a new card type first."""))
             repl = "<input id='typeans' type=text value='Lorenipsuum'>"
         else:
             repl = self.mw.reviewer.correct(
-                u"", u"Lorenipsuum", u"Lorem ipsum dolor sit amet")
+                u"Lorenipsuum", u"Lorem ipsum dolor sit amet")
         return re.sub("\[\[type:.+?\]\]", repl, txt)
 
     # Card operations

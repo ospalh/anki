@@ -136,7 +136,7 @@ lapses=?, left=?, odue=?, odid=?, did=? where id = ?""",
         return self.css() + self._getQA()['a']
 
     def css(self):
-        return "<style>%s</style>" % self.model()['css']
+        return "<style scoped>%s</style>" % self.model()['css']
 
     def _getQA(self, reload=False, browser=False):
         if not self._qa or reload:
