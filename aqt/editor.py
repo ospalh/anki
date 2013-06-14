@@ -84,36 +84,6 @@ function onKey() {
     }
 };
 
-function onKeyPress() {
-    if (window.event.which == 13) {
-        if (window.getSelection) {
-              var selection = window.getSelection(),
-                  range = selection.getRangeAt(0),
-                  br = document.createElement("br");
-              range.deleteContents();
-              range.insertNode(br);
-              range.setStartAfter(br);
-              range.setEndAfter(br);
-              selection.removeAllRanges();
-              selection.addRange(range);
-              return false;
-        }
-    }
-}
-
-function onKeyUp(elem) {
-    if (!elem.lastChild || elem.lastChild.nodeName.toLowerCase() != "br") {
-        elem.appendChild(document.createElement("br"));
-    }
-    var old = elem.innerHTML;
-    var new_ = old.replace(/<([biu])><br><\\/\\1>/g, "");
-    if (old != new_) {
-        elem.innerHTML = new_;
-        // this may have caused the cursor to disappear
-        caretToEnd();
-    }
-}
-
 function sendState() {
     var r = {
         'bold': document.queryCommandState("bold"),
@@ -238,8 +208,7 @@ function setFields(fields, focusTo) {
         txt +=
             "<div id=f{0} onkeydown='onKey();' onmouseup='onKey();'".format(i);
         txt += " onfocus='onFocus(this);' onblur='onBlur();' class=field ";
-        txt += "ondragover='onDragOver(this);' onkeyup='onKeyUp(this)' ";
-        txt += "onkeypress='return onKeyPress();' ";
+        txt += "ondragover='onDragOver(this);' ";
         txt += "contentEditable=true class=field>{0}</div>".format(f);
         txt += "</td></tr>";
     }
@@ -280,9 +249,11 @@ $(function () {
 document.body.onmousedown = function () {
     mouseDown++;
 }
+
 document.body.onmouseup = function () {
     mouseDown--;
 }
+
 document.onclick = function (evt) {
     var src = window.event.srcElement;
     if (src.tagName == "IMG") {
@@ -296,6 +267,7 @@ document.onclick = function (evt) {
         }
     }
 }
+
 });
 
 </script></head><body>
@@ -555,8 +527,6 @@ class Editor(object):
             # reverse the url quoting we added to get images to display
             txt = unicode(urllib2.unquote(
                 txt.encode("utf8")), "utf8", "replace")
-            # make sure a trailing <br /> is removed
-            txt = re.sub("(<br />)*$", "", txt)
             self.note.fields[self.currentField] = txt
             if not self.addMode:
                 self.note.flush()
