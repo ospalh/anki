@@ -79,13 +79,15 @@ class MediaManager(object):
 
     def _isFAT32(self):
         if not isWin:
-            return
-        import win32api, win32file
+            return False
+        import win32api
+        import win32file
         try:
             name = win32file.GetVolumeNameForVolumeMountPoint(self._dir[:3])
         except:
-            # mapped & unmapped network drive; pray that it's not vfat
-            return
+            # Probably a network drive. When that is FAT we may have a
+            # problem.
+            return False
         if win32api.GetVolumeInformation(name)[4].lower().startswith("fat"):
             return True
 
