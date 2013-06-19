@@ -544,6 +544,15 @@ min-width: 60px; white-space: nowrap;
 .spacer { height: 18px; }
 .spacer2 { height: 16px; }
 
+#this_due_count {text-decoration: underline;}
+span.due_count + span.due_count:before {
+  content: " + ";
+  color: black;
+}
+span.due_count0 {color: #009;}
+span.due_count1 {color: #c35617;}
+span.due_count2 {color: #070;}
+
 button.ease_again {color: #c35617;}
 button.ease_easy {color: #070;}
 button#defease {font-weight: bold;}
@@ -645,11 +654,14 @@ function showAnswer(txt) {
         else:
             counts = list(self.mw.col.sched.counts(self.card))
         idx = self.mw.col.sched.countIdx(self.card)
-        counts[idx] = "<u>%s</u>" % (counts[idx])
-        space = " + "
-        ctxt = '<font color="#000099">%s</font>' % counts[0]
-        ctxt += space + '<font color="#C35617">%s</font>' % counts[1]
-        ctxt += space + '<font color="#007700">%s</font>' % counts[2]
+        ctxt = u""
+        for due_idx, due_num in enumerate(counts):
+            if due_idx == idx:
+                due_num = u'<span id=this_due_count>{num}</span>'.format(
+                    num=due_num)
+            ctxt += u'<span class="due_count ' \
+                'due_count{dci}">{num}</span>'.format(
+                dci=due_idx, num=due_num)
         return ctxt
 
     def _defaultEase(self):
