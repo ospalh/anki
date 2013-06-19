@@ -49,7 +49,8 @@ class Reviewer(object):
         if isMac:
             self.bottom.web.setFixedHeight(46)
         else:
-            self.bottom.web.setFixedHeight(52 + self.mw.fontHeightDelta * 4)
+            # self.bottom.web.setFixedHeight(52 + self.mw.fontHeightDelta * 4)
+            self.bottom.web.setFixedHeight(54 + self.mw.fontHeightDelta * 4)
         self.bottom.web.setLinkHandler(self._linkHandler)
         self._reps = None
         self.nextCard()
@@ -534,7 +535,9 @@ padding: 0px;
 padding-left: 5px; padding-right: 5px;
 }
 button {
-min-width: 60px; white-space: nowrap;
+  min-width: 60px;
+  white-space: nowrap;
+  font-size: 120%;
 }
 .hitem { margin-top: 2px; }
 .stat { padding-top: 5px; }
@@ -549,7 +552,7 @@ span.due_count + span.due_count:before {
   content: " + ";
   color: black;
 }
-span.due_count {font-family: "Praxis X";}
+span.due_count {font-family: "Praxis X"; font-size: 141%;}
 span.due_count0 {color: #009;}
 span.due_count1 {color: #c35617;}
 span.due_count2 {color: #070;}
