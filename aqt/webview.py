@@ -123,14 +123,14 @@ class AnkiWebView(QWebView):
     def stdHtml(self, body, css="", bodyClass="", loadCB=None, js=None,
                 head=""):
         if isMac:
-            button = "font-weight: bold; height: 24px;"
+            button = u"font-weight: bold; height: 24px;"
         else:
-            button = "font-weight: normal;"
-        self.setHtml("""
+            button = u"font-weight: normal;"
+        self.setHtml(u"""
 <!doctype html>
 <html><head>
+<meta charset="utf-8" />
 <title>Anki html</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <style>
 button {
 %s

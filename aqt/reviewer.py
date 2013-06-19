@@ -544,18 +544,19 @@ min-width: 60px; white-space: nowrap;
 .spacer { height: 18px; }
 .spacer2 { height: 16px; }
 
-#this_due_count {text-decoration: underline;}
+#this_due_count {font-weight: bold; text-shadow: 1px 1px 2px black; }
 span.due_count + span.due_count:before {
   content: " + ";
   color: black;
 }
+span.due_count {font-family: "Praxis X";}
 span.due_count0 {color: #009;}
 span.due_count1 {color: #c35617;}
 span.due_count2 {color: #070;}
 
 button.ease_again {color: #c35617;}
 button.ease_easy {color: #070;}
-button#defease {font-weight: bold;}
+button#defease {font-weight: bold; text-shadow: 1px 1px 2px black;}
 #ansbut {min-width: 260px;}
 """
 
@@ -624,30 +625,30 @@ function showAnswer(txt) {
         self._bottomReady = True
         if not self.typeCorrect:
             self.bottom.web.setFocus()
-        middle = '''
+        middle = u'''
 <span class=stattxt>%s</span><br>
 <button title="%s" id=ansbut onclick='py.link(\"ans\");'>%s</button>''' % (
             self._remaining(), _(
-                "Shortcut key: %s") % _("Space"), _("Show Answer"))
+                u"Shortcut key: %s") % _(u"Space"), _(u"Show Answer"))
         # wrap it in a table so it has the same top margin as the ease buttons
-        middle = """\
+        middle = u"""\
 <table cellpadding=0><tr><td class=stat2 align=center>%s</td></tr></table>""" \
             % middle
         if self.card.shouldShowTimer():
             maxTime = self.card.timeLimit() / 1000
         else:
             maxTime = 0
-        self.bottom.web.eval("showQuestion(%s,%d);" % (
+        self.bottom.web.eval(u"showQuestion(%s,%d);" % (
             json.dumps(middle), maxTime))
 
     def _showEaseButtons(self):
         self.bottom.web.setFocus()
         middle = self._answerButtons()
-        self.bottom.web.eval("showAnswer(%s);" % json.dumps(middle))
+        self.bottom.web.eval(u"showAnswer(%s);" % json.dumps(middle))
 
     def _remaining(self):
         if not self.mw.col.conf['dueCounts']:
-            return ""
+            return u""
         if self.hadCardQueue:
             # if it's come from the undo queue, don't count it separately
             counts = list(self.mw.col.sched.counts())
