@@ -537,7 +537,6 @@ padding-left: 5px; padding-right: 5px;
 button {
   min-width: 60px;
   white-space: nowrap;
-  font-size: 120%;
 }
 .hitem { margin-top: 2px; }
 .stat { padding-top: 5px; }
