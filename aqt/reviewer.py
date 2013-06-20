@@ -546,7 +546,7 @@ button {
 .spacer { height: 18px; }
 .spacer2 { height: 16px; }
 
-#this_due_count {font-weight: bold; text-shadow: 1px 1px 2px black; }
+#this_due_count {font-weight: bold; text-shadow: 1px 1px 4px #666; }
 span.due_count + span.due_count:before {
   content: " + ";
   color: black;
@@ -558,7 +558,7 @@ span.due_count2 {color: #070;}
 
 button.ease_again {color: #c35617;}
 button.ease_easy {color: #070;}
-button#defease {font-weight: bold; text-shadow: 1px 1px 2px black;}
+button#defease {font-weight: bold; text-shadow: 1px 1px 4px #666;}
 #ansbut {min-width: 260px;}
 """
 
