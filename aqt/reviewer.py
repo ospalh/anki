@@ -546,7 +546,7 @@ button {
 .spacer { height: 18px; }
 .spacer2 { height: 16px; }
 
-#this_due_count {font-weight: bold; text-shadow: 1px 1px 4px #666; }
+#this_due_count {font-weight: bold; text-shadow: 1px 1px 4px #444; }
 span.due_count + span.due_count:before {
   content: " + ";
   color: black;
