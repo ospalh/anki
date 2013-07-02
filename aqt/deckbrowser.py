@@ -288,9 +288,9 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
             if parent['collapsed']:
                 buff = ""
                 return buff
-        prefix = "-"
+        prefix = u"⌄"
         if self.mw.col.decks.get(did)['collapsed']:
-            prefix = "+"
+            prefix = u"➤"
         # Don't add those. We show both in the qtip
         # due += lrn
 
@@ -304,9 +304,9 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         # deck link
         if children:
             collapse = \
-                "<a class=collapse href='collapse:%d'>%s</a>" % (did, prefix)
+                u"<a class=collapse href='collapse:%d'>%s</a>" % (did, prefix)
         else:
-            collapse = "<span class=collapse></span>"
+            collapse = u"<span class=collapse>•</span>"
         if deck['dyn']:
             extraclass = "filtered"
         else:
