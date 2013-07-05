@@ -267,8 +267,8 @@ Are you sure?""")):
 To import into a password protected profile, please open the profile before \
 attempting to import."""))
             else:
-                import aqt.importing
-                aqt.importing.importFile(self, self.pendingImport)
+                self.handleImport(self.pendingImport)
+
             self.pendingImport = None
         runHook("profileLoaded")
 
@@ -367,7 +367,7 @@ the manual for information on how to restore from an automatic backup."))
             delete = len(backups) + 1 - nbacks
             delete = backups[:delete]
             for file in delete:
-                send2trash(os.path.join(dir, file[1]))
+                os.unlink(os.path.join(dir, file[1]))
 
     def maybeOptimize(self):
         # have two weeks passed?
@@ -752,6 +752,13 @@ and check the statistics for a home deck instead."""))
 
     # Importing & exporting
     ##########################################################################
+
+    def handleImport(self, path):
+        import aqt.importing
+        if not os.path.exists(path):
+            return showInfo(_("Please use File>Import to import this file."))
+
+        aqt.importing.importFile(self, path)
 
     def onImport(self):
         aqt.importing.onImport(self)
@@ -1138,6 +1145,5 @@ Please ensure a profile is open and Anki is not busy, then try again."""),
         # import
         if not isinstance(buf, unicode):
             buf = unicode(buf, "utf8", "ignore")
-        if not os.path.exists(buf):
-            return showInfo(_("Please use File>Import to import this file."))
-        aqt.importing.importFile(self, buf)
+
+        self.handleImport(buf)
