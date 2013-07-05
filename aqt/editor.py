@@ -40,6 +40,7 @@ _html = """
 <html><head>
 <meta charset="utf-8">
 %s<style>
+%s
 .field {
   border: 1px solid #aaa; background:#fff; color:#000; padding: 5px;
 }
@@ -593,7 +594,7 @@ class Editor(object):
         # change timer
         if self.note:
             self.web.setHtml(_html % (
-                getBase(self.mw.col), anki.js.jquery,
+                getBase(self.mw.col), self.note._model['css'],  anki.js.jquery,
                 _("Show Duplicates")), loadCB=self._loadFinished)
             self.updateTags()
             self.updateKeyboard()
