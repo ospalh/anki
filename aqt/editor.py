@@ -26,7 +26,10 @@ pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg")
 audio =  ("wav", "mp3", "ogg", "flac", "mp4", "swf", "mov", "mpeg", "mkv")
 
 _html = """
-<html><head>%s<style>
+<!doctype html>
+<html><head>
+<meta charset="utf-8">
+%s<style>
 .field {
   border: 1px solid #aaa; background:#fff; color:#000; padding: 5px;
 }
