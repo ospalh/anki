@@ -283,6 +283,9 @@ document.onclick = function (evt) {
 
 
 def _filterHTML(html):
+    # Get rid of trailing "<br>"s. by hand.
+    if html.endswith(u'<br>'):
+        html = html[:-4]
     doc = BeautifulSoup(html)
     # remove implicit regular font style from outermost element
     if doc.span:
