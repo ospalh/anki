@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-from anki.lang import _
 
 from BeautifulSoup import BeautifulSoup
 from PyQt4.QtCore import QMimeData, Qt, SIGNAL
@@ -858,7 +857,8 @@ to a cloze type first, via Edit>Change Note Type."""))
                 new = []
                 for attr in attrs:
                     sattr = attr.strip()
-                    if sattr and sattr not in ("font-style: normal", "font-weight: normal"):
+                    if sattr and sattr not in \
+                            ("font-style: normal", "font-weight: normal"):
                         new.append(sattr)
                 doc.span['style'] = ";".join(new)
             # filter out implicit formatting from webkit
@@ -1137,19 +1137,21 @@ class EditorWebView(AnkiWebView):
         html = mime.html()
         newMime = QMimeData()
         if self.strip and not html.startswith("<!--anki-->"):
-            # special case for google images: if after stripping there's no text
-            # and there are image links, we'll paste those as html instead
+            # special case for google images: if after stripping
+            # there's no text and there are image links, we'll paste
+            # those as html instead
             if not stripHTML(html).strip():
                 newHtml = ""
                 mid = self.editor.note.mid
                 for url in self.editor.mw.col.media.filesInStr(
-                    mid, html, includeRemote=True):
+                        mid, html, includeRemote=True):
                     newHtml += self.editor.urlToLink(url)
                 if not newHtml and mime.hasImage():
                     return self._processImage(mime)
                 newMime.setHtml(newHtml)
             else:
-                # use .text() if available so newlines are preserved; otherwise strip
+                # use .text() if available so newlines are preserved;
+                # otherwise strip
                 if mime.hasText():
                     return self._processText(mime)
                 else:

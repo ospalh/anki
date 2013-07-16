@@ -127,7 +127,7 @@ order by due""" % self._deckLimit(), self.today, self.today + days - 1))
             if card.odid and card.queue == 2:
                 return 4
             conf = self._lrnConf(card)
-            if card.type in (0,1) or len(conf['delays']) > 1:
+            if card.type in (0, 1) or len(conf['delays']) > 1:
                 return 3
             return 2
         elif card.queue == 2:
