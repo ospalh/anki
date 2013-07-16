@@ -4,7 +4,6 @@
 
 import os
 import re
-import shutil
 import sys
 import unicodedata
 import urllib
@@ -106,66 +105,39 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
     ##########################################################################
 
     def addFile(self, opath):
-        """
-        Return name of a file in the media dir with the content of opath.
+        return self.writeData(opath, open(opath, "rb").read())
 
-        Copy opath to the media dir, and return the new filename.
-        If the same name exists, compare checksums and just return the
-        name when they match.
-        This function avoids new names that differ only in
-        capitalization or are Unicode equivalents of existing media
-        files.
-        """
-        mdir = self.dir()
+    def writeData(self, opath, data):
+        # NB. This now has the upper/lower case Linux to Windows
+        # problem again. Oh, well.
+        #
+        # if fname is a full path, use only the basename
+        fname = os.path.basename(opath)
         # remove any dangerous characters
-        base = re.sub(r"[][<>:/\\&?\"\|]", "", os.path.basename(opath))
-        # Check against normalized, lowercase versions to avoid
-        # problems with name clasches.
-        normalized_base = unicodedata.normalize('NFKD', base).lower()
-        dst = os.path.join(mdir, base)
-        normalized_media_files = [unicodedata.normalize('NFKD', base).lower()
-                                  for fn in os.listdir(mdir)]
-        #  if it doesn't exist, copy it directly
-        if not normalized_base in normalized_media_files:
-            shutil.copyfile(opath, dst)
-            return base
-        # if it's identical, reuse
-        if self.filesIdentical(opath, dst):
-            return base
-        # otherwise, find a unique name
+        base = self.stripIllegal(fname)
         (root, ext) = os.path.splitext(base)
 
         def repl(match):
             n = int(match.group(1))
             return " (%d)" % (n + 1)
         # find the first available name
+        csum = checksum(data)
         while True:
-            path = os.path.join(mdir, root + ext)
+            fname = root + ext
+            path = os.path.join(self.dir(), fname)
             # if it doesn't exist, copy it directly
-            normalized_base = unicodedata.normalize(
-                'NFKD', root + ext).lower()
-            if not normalized_base in normalized_media_files:
-                shutil.copyfile(opath, path)
-                return os.path.basename(os.path.basename(path))
+            if not os.path.exists(path):
+                open(path, "wb").write(data)
+                return fname
             # if it's identical, reuse
-            if self.filesIdentical(opath, path):
-                return os.path.basename(path)
+            if checksum(open(path, "rb").read()) == csum:
+                return fname
             # otherwise, increment the index in the filename
             reg = " \((\d+)\)$"
-            if not re.search(reg, root, flags=re.UNICODE):
+            if not re.search(reg, root):
                 root = root + " (1)"
             else:
-                root = re.sub(reg, repl, root, flags=re.UNICODE)
-
-    def filesIdentical(self, path1, path2):
-        "True if files are the same."
-        try:
-            # The try is needed now as the real file name may be an
-            # uppercase version of path2.
-            return (checksum(open(path1, "rb").read()) ==
-                    checksum(open(path2, "rb").read()))
-        except IOError:
-            return False
+                root = re.sub(reg, repl, root)
 
     # String manipulation
     ##########################################################################
@@ -318,16 +290,11 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
         finished = False
         meta = None
         media = []
-        sizecnt = 0
         # get meta info first
-        assert z.getinfo("_meta").file_size < 100000
         meta = json.loads(z.read("_meta"))
         nextUsn = int(z.read("_usn"))
         # then loop through all files
         for i in z.infolist():
-            # check for zip bombs
-            sizecnt += i.file_size
-            assert sizecnt < 100 * 1024 * 1024
             if i.filename == "_meta" or i.filename == "_usn":
                 # ignore previously-retrieved meta
                 continue
@@ -338,9 +305,6 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
                 data = z.read(i)
                 csum = checksum(data)
                 name = meta[i.filename]
-                # can we store the file on this system?
-                if self.illegal(name):
-                    continue
                 # save file
                 open(name, "wb").write(data)
                 # update db
@@ -358,15 +322,16 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
             self.syncMod()
         return finished
 
-    def illegal(self, f):
-        if isWin:
-            for c in f:
-                if c in "<>:\"/\\|?*^":
-                    return True
-        elif isMac:
-            for c in f:
-                if c in ":\\/":
-                    return True
+    # Illegal characters
+    ##########################################################################
+
+    _illegalCharReg = re.compile(r'[][><:"/?*^\\|\0]')
+
+    def stripIllegal(self, str):
+        return re.sub(self._illegalCharReg, "", str)
+
+    def hasIllegal(self, str):
+        return not not re.search(self._illegalCharReg, str)
 
     # Media syncing - bundling zip files to send to server
     ##########################################################################
@@ -575,12 +540,7 @@ create table log (fname text primary key, type int);
             if f.lower() == "thumbs.db":
                 continue
             # and files with invalid chars
-            bad = False
-            for c in "\0", "/", "\\", ":":
-                if c in f:
-                    bad = True
-                    break
-            if bad:
+            if self.hasIllegal(f):
                 continue
             # empty files are invalid; clean them up and continue
             if not os.path.getsize(f):

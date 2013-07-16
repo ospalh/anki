@@ -227,10 +227,13 @@ where lastIvl >= 21 and id > ?"""+lim, (self.col.sched.dayCutoff-86400)*1000)
         xaxis = dict(tickDecimals=0, min=-0.5)
         if end is not None:
             xaxis['max'] = end-0.5
-        txt += self._graph(id="due", data=data,
-                           ylabel2=_("Cumulative Cards"), conf=dict(
-                xaxis=xaxis, yaxes=[dict(min=0), dict(
-                    min=0, tickDecimals=0, position="right")]))
+        txt += self._graph(
+            id="due", data=data, ylabel2=_("Cumulative Cards"),
+            conf=dict(
+                xaxis=xaxis,
+                yaxes=[
+                    dict(min=0),
+                    dict(min=0, tickDecimals=0, position="right")]))
         txt += self._dueInfo(tot, len(totd)*chunk)
         return txt
 
@@ -809,7 +812,7 @@ font-weight: bold;
 
 <td>
 <center><div id=%(id)sLegend></div></center>
-<div id="%(id)s" style="width:%(w)s; height:%(h)s;"></div>
+<div id="%(id)s" style="width:%(w)spx; height:%(h)spx;"></div>
 </td>
 
 <td><div style="width: 150px; text-align: center; position:absolute;

@@ -170,6 +170,10 @@ def minimizeHTML(s):
 
 
 def entsToTxt(html):
+    # entitydefs defines nbsp as \xa0 instead of a standard space, so we
+    # replace it first
+    html = html.replace("&nbsp;", " ")
+
     def fixup(m):
         text = m.group(0)
         if text[:2] == "&#":
