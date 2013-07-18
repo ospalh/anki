@@ -854,6 +854,8 @@ to a cloze type first, via Edit>Change Note Type."""))
     ######################################################################
 
     def _filterHTML(self, html, localize=False):
+        if html.endswith('<br>'):
+            html = html[:-4]
         doc = BeautifulSoup(html)
         # remove implicit regular font style from outermost element
         if doc.span:
