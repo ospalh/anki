@@ -9,6 +9,7 @@ from PyQt4.QtGui import QDialog, QDialogButtonBox, QKeySequence, QMenu, \
 from anki.hooks import addHook, remHook
 from anki.lang import _
 from anki.sound import clearAudioQueue
+from anki.hooks import addHook, remHook, runHook
 from anki.utils import stripHTMLMedia, isMac
 from aqt.utils import addCloseShortcut, askUser, openHelp, restoreGeom, \
     saveGeom, shortcut, showWarning, tooltip
@@ -126,6 +127,7 @@ class AddCards(QDialog):
             a = m.addAction(_("Edit %s") % txt)
             a.connect(a, SIGNAL("triggered()"),
                       lambda nid=nid: self.editHistory(nid))
+        runHook("AddCards.onHistory", self, m)
         m.exec_(self.historyButton.mapToGlobal(QPoint(0, 0)))
 
     def editHistory(self, nid):

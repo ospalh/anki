@@ -3,6 +3,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import sys
+from anki.hooks import runHook
 
 from PyQt4.QtCore import pyqtSlot, QObject, Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QPainter
@@ -99,6 +100,7 @@ class AnkiWebView(QWebView):
         a = m.addAction(_("Copy"))
         a.connect(a, SIGNAL("triggered()"),
                   lambda: self.triggerPageAction(QWebPage.Copy))
+        runHook("AnkiWebView.contextMenuEvent", self, m)
         m.popup(QCursor.pos())
 
     def dropEvent(self, evt):
