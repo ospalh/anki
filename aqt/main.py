@@ -725,13 +725,6 @@ title="%s">%s</button>''' % (
         deck = self._selectedDeck()
         if not deck:
             return
-        if deck['dyn']:
-            showWarning(_("""\
-As cards are removed from a filtered deck as they are answered, viewing the \
-statistics of a filtered deck will only show you reviews for cards with \
-multiple steps. To get an accurate report, please empty the filtered deck \
-and check the statistics for a home deck instead."""))
-            return
         aqt.stats.DeckStats(self)
 
     def onPrefs(self):
@@ -928,7 +921,8 @@ will be lost. Continue?"""))
                 "Used on cards but missing from media folder:")
             report += "\n" + "\n".join(nohave)
         if not report:
-            report = _("No unused or missing files found.")
+            tooltip(_("No unused or missing files found."))
+            return
         # show report and offer to delete
         diag = QDialog(self)
         diag.setWindowTitle("Anki")

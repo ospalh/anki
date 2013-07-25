@@ -437,9 +437,16 @@ class Editor(object):
             ord = self.card.ord
         else:
             ord = 0
-        CardLayout(self.mw, self.note, ord=ord, parent=self.parentWindow,
+        # passing parentWindow leads to crash on windows at the moment
+        if isWin:
+            parent = None
+        else:
+            parent = self.parentWindow
+        CardLayout(self.mw, self.note, ord=ord, parent=parent,
                    addMode=self.addMode)
         self.loadNote()
+        if isWin:
+            self.parentWindow.activateWindow()
 
     # JS->Python bridge
     ######################################################################
@@ -829,6 +836,11 @@ to a cloze type first, via Edit>Change Note Type."""))
             # not a supported type; return link verbatim
         return
 
+    def isURL(self, s):
+        s = s.lower()
+        return (s.startswith("http://") or s.startswith("https://")
+                or s.startswith("ftp://"))
+
     def _retrieveURL(self, url):
         "Download file into media folder and return local filename or None."
         # urllib is picky with local file links
@@ -905,7 +917,7 @@ to a cloze type first, via Edit>Change Note Type."""))
             try:
                 if tag['src'].lower().startswith("file://"):
                     tag['src'] = os.path.basename(tag['src'])
-                if localize:
+                if localize and self.isURL(tag['src']):
                     # convert remote image links to local ones
                     fname = self.urlToFile(tag['src'])
                     if fname:
@@ -1018,17 +1030,17 @@ class EditorWebView(AnkiWebView):
         self._flagAnkiText()
 
     def onPaste(self):
-        mime = self.prepareClip()
+        self.mungeClip()
         self.triggerPageAction(QWebPage.Paste)
-        self.restoreClip(mime)
+        self.restoreClip()
 
     def mouseReleaseEvent(self, evt):
         if not isMac and not isWin and evt.button() == Qt.MidButton:
             # middle click on x11; munge the clipboard before standard
             # handling
-            mime = self.prepareClip(mode=QClipboard.Selection)
+            self.mungeClip(mode=QClipboard.Selection)
             AnkiWebView.mouseReleaseEvent(self, evt)
-            self.restoreClip(mime, mode=QClipboard.Selection)
+            self.restoreClip(mode=QClipboard.Selection)
         else:
             AnkiWebView.mouseReleaseEvent(self, evt)
 
@@ -1070,21 +1082,21 @@ class EditorWebView(AnkiWebView):
         self.eval("dropTarget.focus();")
         self.setFocus()
 
-    def prepareClip(self, mode=QClipboard.Clipboard):
+    def mungeClip(self, mode=QClipboard.Clipboard):
         clip = self.editor.mw.app.clipboard()
         mime = clip.mimeData(mode=mode)
         self.saveClip(mode=mode)
         mime = self._processMime(mime)
         clip.setMimeData(mime, mode=mode)
+        return mime
 
-    def restoreClip(self, mime, mode=QClipboard.Clipboard):
-        if not mime:
-            return
+    def restoreClip(self, mode=QClipboard.Clipboard):
         clip = self.editor.mw.app.clipboard()
-        clip.setMimeData(mime, mode=mode)
+        clip.setMimeData(self.savedClip, mode=mode)
 
     def saveClip(self, mode):
-        # we don't own the clipboard object, so we need to copy it
+        # We don't own the clipboard object, so we need to copy it or
+        # we'll crash
         mime = self.editor.mw.app.clipboard().mimeData(mode=mode)
         n = QMimeData()
         if mime.hasText():
@@ -1095,7 +1107,7 @@ class EditorWebView(AnkiWebView):
             n.setUrls(mime.urls())
         if mime.hasImage():
             n.setImageData(mime.imageData())
-        return n
+        self.savedClip = n
 
     def _processMime(self, mime):
         # print "html=%s image=%s urls=%s txt=%s" % (
@@ -1127,18 +1139,16 @@ class EditorWebView(AnkiWebView):
 
     def _processText(self, mime):
         txt = unicode(mime.text())
-        l = txt.lower()
         html = None
         # if the user is pasting an image or sound link, convert it to local
-        if l.startswith("http://") or l.startswith("https://") \
-                or l.startswith("file://"):
+        if self.editor.isURL(txt):
             txt = txt.split("\r\n")[0]
             html = self.editor.urlToLink(txt)
         new = QMimeData()
         if html:
             new.setHtml(html)
         else:
-            new.setText(mime.text())
+            new.setText(txt)
         return new
 
     def _processHtml(self, mime):
@@ -1205,4 +1215,5 @@ class EditorWebView(AnkiWebView):
         a.connect(a, SIGNAL("triggered()"), self.onCopy)
         a = m.addAction(_("Paste"))
         a.connect(a, SIGNAL("triggered()"), self.onPaste)
+        runHook("EditorWebView.contextMenuEvent", self, m)
         m.popup(QCursor.pos())

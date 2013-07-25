@@ -204,9 +204,22 @@ documentation for information on using a flash drive.""")
             if not QMessageBox.Yes == new_db_button:
                 raise Exception("User canceled database creation.")
         self.db = DB(path, text=str)
-        self.db.execute("""
+
+        def recover():
+            # if we can't load profile, start with a new one
+            os.rename(path, path+".broken")
+            QMessageBox.warning(
+                None, "Preferences Corrupt", """\
+Anki's prefs.db file was corrupt and has been recreated. If you were \
+using multiple profiles, please add them back using the same names \
+to recover your cards.""")
+        try:
+            self.db.execute("""
 create table if not exists profiles
 (name text primary key, data text not null);""")
+        except:
+            recover()
+            return self._loadMeta()
         if not new:
             # load previously created
             try:
@@ -215,8 +228,7 @@ create table if not exists profiles
                         "select data from profiles where name = '_global'"))
                 return
             except:
-                # if we can't load profile, start with a new one
-                os.rename(path, path + ".broken")
+                recover()
                 return self._loadMeta()
         # create a default global profile
         self.meta = metaConf.copy()
