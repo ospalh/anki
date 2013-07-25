@@ -201,13 +201,15 @@ documentation for information on using a flash drive.""")
         path = os.path.join(self.base, "prefs.db")
         new = not os.path.exists(path)
         self.db = DB(path, text=str)
+
         def recover():
             # if we can't load profile, start with a new one
             os.rename(path, path+".broken")
             QMessageBox.warning(
                 None, "Preferences Corrupt", """\
-Anki's prefs.db file was corrupt and has been recreated. If you were using multiple \
-profiles, please add them back using the same names to recover your cards.""")
+Anki's prefs.db file was corrupt and has been recreated. If you were \
+using multiple profiles, please add them back using the same names \
+to recover your cards.""")
         try:
             self.db.execute("""
 create table if not exists profiles

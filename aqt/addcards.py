@@ -6,10 +6,9 @@ from PyQt4.QtCore import QPoint, Qt, SIGNAL
 from PyQt4.QtGui import QDialog, QDialogButtonBox, QKeySequence, QMenu, \
     QPushButton
 
-from anki.hooks import addHook, remHook
+from anki.hooks import addHook, remHook, runHook
 from anki.lang import _
 from anki.sound import clearAudioQueue
-from anki.hooks import addHook, remHook, runHook
 from anki.utils import stripHTMLMedia, isMac
 from aqt.utils import addCloseShortcut, askUser, openHelp, restoreGeom, \
     saveGeom, shortcut, showWarning, tooltip

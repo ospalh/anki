@@ -435,9 +435,9 @@ class Editor(object):
             ord = 0
         # passing parentWindow leads to crash on windows at the moment
         if isWin:
-            parent=None
+            parent = None
         else:
-            parent=self.parentWindow
+            parent = self.parentWindow
         CardLayout(self.mw, self.note, ord=ord, parent=parent,
                    addMode=self.addMode)
         self.loadNote()
@@ -830,9 +830,8 @@ to a cloze type first, via Edit>Change Note Type."""))
 
     def isURL(self, s):
         s = s.lower()
-        return (s.startswith("http://")
-            or s.startswith("https://")
-            or s.startswith("ftp://"))
+        return (s.startswith("http://") or s.startswith("https://")
+                or s.startswith("ftp://"))
 
     def _retrieveURL(self, url):
         "Download file into media folder and return local filename or None."
@@ -1023,7 +1022,7 @@ class EditorWebView(AnkiWebView):
         self._flagAnkiText()
 
     def onPaste(self):
-        mime = self.mungeClip()
+        self.mungeClip()
         self.triggerPageAction(QWebPage.Paste)
         self.restoreClip()
 
@@ -1031,7 +1030,7 @@ class EditorWebView(AnkiWebView):
         if not isMac and not isWin and evt.button() == Qt.MidButton:
             # middle click on x11; munge the clipboard before standard
             # handling
-            mime = self.mungeClip(mode=QClipboard.Selection)
+            self.mungeClip(mode=QClipboard.Selection)
             AnkiWebView.mouseReleaseEvent(self, evt)
             self.restoreClip(mode=QClipboard.Selection)
         else:
@@ -1088,7 +1087,8 @@ class EditorWebView(AnkiWebView):
         clip.setMimeData(self.savedClip, mode=mode)
 
     def saveClip(self, mode):
-        # we don't own the clipboard object, so we need to copy it or we'll crash
+        # We don't own the clipboard object, so we need to copy it or
+        # we'll crash
         mime = self.editor.mw.app.clipboard().mimeData(mode=mode)
         n = QMimeData()
         if mime.hasText():
