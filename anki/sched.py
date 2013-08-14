@@ -1160,7 +1160,8 @@ bear in mind that the more new cards you introduce, the higher
 your short-term review workload will become.""").replace("\n", " "))
         if self.haveBuried():
             line.append(_("""\
-Some related or buried cards were delayed until tomorrow.""").replace("\n", " "))
+Some related or buried cards were delayed until tomorrow.""").replace(
+                "\n", " "))
         if self.haveCustomStudy and not self.col.decks.current()['dyn']:
             line.append(_("""\
 To study outside of the normal schedule, click the Custom Study button
@@ -1183,7 +1184,8 @@ below."""))
     def haveBuried(self):
         sdids = ids2str(self.col.decks.active())
         cnt = self.col.db.scalar(
-            "select 1 from cards where queue = -2 and did in %s limit 1" % sdids)
+            "select 1 from cards where queue = -2 and did in %s limit 1"
+            % sdids)
         return not not cnt
 
     # Next time reports
@@ -1272,7 +1274,8 @@ update cards set queue=-2,mod=?,usn=? where id in """+ids2str(cids),
         conf = self._newConf(card)
         buryNew = conf.get("bury", True)
         # loop through and remove from queues
-        for cid,queue in self.col.db.execute("""
+        for cid, queue in self.col.db.execute(
+                """
 select id, queue from cards where nid=? and id!=?
 and (queue=0 or (queue=2 and due<=?))""",
                 card.nid, card.id, self.today):
@@ -1293,7 +1296,8 @@ and (queue=0 or (queue=2 and due<=?))""",
             queue = "(queue = 0 or %s)" % queue
         # then bury
         self.col.db.execute(
-            "update cards set queue=-2,mod=?,usn=? where id in "+ids2str(toBury),
+            "update cards set queue=-2,mod=?,usn=? where id in " + ids2str(
+                toBury),
             intTime(), self.col.usn())
 
     # Resetting

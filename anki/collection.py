@@ -80,7 +80,7 @@ class _Collection(object):
         (self.crt,
          self.mod,
          self.scm,
-         self.dty, # no longer used
+         self.dty,  # no longer used
          self._usn,
          self.ls,
          self.conf,

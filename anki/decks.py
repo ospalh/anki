@@ -69,7 +69,7 @@ defaultConf = {
         'perDay': 100,
         'ease4': 1.3,
         'fuzz': 0.05,
-        'minSpace': 1, # not currently used
+        'minSpace': 1,  # not currently used
         'ivlFct': 1,
         'maxIvl': 36500,
     },
