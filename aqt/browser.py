@@ -1100,8 +1100,10 @@ where id in %s""" % ids2str(sf))
             "select did from cards where id = ?", cids[0])
         current = self.mw.col.decks.get(did)['name']
         ret = StudyDeck(
-            self.mw, current=current, accept=_("Move Cards"),
-            title=_("Change Deck"), help="browse", parent=self)
+            self.mw, accept=_("Move Cards"), title=_("Change Deck"),
+            help="browse", parent=self)
+        # Removed “current” from the call. I usually want to move to
+        # one of the top decks.
         if not ret.name:
             return
         did = self.col.decks.id(ret.name)
