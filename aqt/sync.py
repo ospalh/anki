@@ -95,7 +95,9 @@ automatically."""))
             self.pm.profile['syncKey'] = args[0]
             self.pm.save()
         elif evt == "offline":
-            tooltip(_("Syncing failed; internet offline."))
+            # tooltip(_("Syncing failed; internet offline."))
+            # tooltip(_("Fog over the Channel. Continent isolated."))
+            tooltip(_("Syncing failed. Unable to find the server."))
         elif evt == "upbad":
             self._didFullUp = False
             self._checkFailed()
