@@ -50,6 +50,9 @@ class DeckBrowser(object):
             self.mw.onImport()
         elif cmd == "lots":
             openHelp("using-decks-appropriately")
+        elif cmd == "disinter":
+            self.mw.col.sched.unburyCards()
+            self.mw.reset()
         elif cmd == "hidelots":
             self.mw.pm.profile['hideDeckLotsMsg'] = True
             self.refresh()
@@ -434,9 +437,11 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
     def _drawButtons(self):
         links = [
             ["", "shared", _("Get Shared")],
-            ["", "create", _("Create Deck")],
+            # ["", "create", _("Create Deck")],
             ["Ctrl+I", "import", _("Import File")],
         ]
+        if self.mw.col.sched.haveBuried():
+            links.append(["Ctrl+T", "disinter", _("Disinter")])
         buf = ""
         for b in links:
             if b[0]:
