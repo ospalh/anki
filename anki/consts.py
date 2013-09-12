@@ -36,6 +36,7 @@ DYN_LAPSES = 4
 DYN_ADDED = 5
 DYN_DUE = 6
 DYN_REVADDED = 7
+DYN_DUEPRIORITY = 8
 
 # model types
 MODEL_STD = 0
@@ -70,11 +71,14 @@ def alignmentLabels():
 
 
 def dynOrderLabels():
-    return {0: _("Oldest seen first"),
-            1: _("Random"),
-            2: _("Increasing intervals"),
-            3: _("Decreasing intervals"),
-            4: _("Most lapses"),
-            5: _("Order added"),
-            6: _("Order due"),
-            7: _("Latest added first")}
+    return {
+        0: _("Oldest seen first"),
+        1: _("Random"),
+        2: _("Increasing intervals"),
+        3: _("Decreasing intervals"),
+        4: _("Most lapses"),
+        5: _("Order added"),
+        6: _("Order due"),
+        7: _("Latest added first"),
+        8: _("Relative overdueness"),
+        }

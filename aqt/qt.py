@@ -8,6 +8,11 @@
 
 import os
 
+try:
+    sip.setdestroyonexit(False)
+except:
+    # missing in older versions
+    pass
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
