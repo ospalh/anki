@@ -8,7 +8,7 @@ import re
 from anki.consts import MODEL_CLOZE, MODEL_STD
 from anki.hooks import runHook
 from anki.lang import _
-from anki.utils import fieldChecksum, ids2str, intTime, joinFields, json, \
+from anki.utils import checksum, ids2str, intTime, joinFields, json, \
     splitFields
 
 # Models
@@ -477,9 +477,7 @@ update notes set flds=:flds,mid=:mid,mod=:m,usn=:u where id = :nid""", d)
             s += f['name']
         for t in m['tmpls']:
             s += t['name']
-            s += t['qfmt']
-            s += t['afmt']
-        return fieldChecksum(s)
+        return checksum(s)
 
     # Required field/text cache
     ##########################################################################

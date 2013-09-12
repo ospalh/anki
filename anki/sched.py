@@ -9,9 +9,10 @@ import itertools
 import random
 import time
 
-from anki.consts import DYN_ADDED, DYN_BIGINT, DYN_DUE, DYN_LAPSES, \
-    DYN_OLDEST, DYN_RANDOM, DYN_REVADDED, DYN_SMALLINT, NEW_CARDS_DISTRIBUTE, \
-    NEW_CARDS_DUE, NEW_CARDS_FIRST, NEW_CARDS_LAST, NEW_CARDS_RANDOM
+from anki.consts import DYN_ADDED, DYN_BIGINT, DYN_DUE, DYN_DUEPRIORITY, \
+    DYN_LAPSES, DYN_OLDEST, DYN_RANDOM, DYN_REVADDED, DYN_SMALLINT, \
+    NEW_CARDS_DISTRIBUTE, NEW_CARDS_DUE, NEW_CARDS_FIRST, NEW_CARDS_LAST, \
+    NEW_CARDS_RANDOM
 from anki.hooks import runHook
 from anki.lang import _
 from anki.utils import ids2str, intTime, fmtTimeSpan
@@ -139,9 +140,9 @@ order by due""" % self._deckLimit(), self.today, self.today + days - 1))
     def unburyCards(self):
         "Unbury cards."
         self.col.conf['lastUnburied'] = self.today
-        self.col.setMod()
         self.col.db.execute(
-            "update cards set queue = type where queue = -2")
+            "update cards set mod=?,usn=?,queue=type where queue = -2",
+            intTime(), self.col.usn())
 
     # Rev/lrn/time daily stats
     ##########################################################################
@@ -982,6 +983,10 @@ due = odue, odue = 0, odid = 0, usn = ?, mod = ? where %s""" % lim,
             t = "n.id desc"
         elif o == DYN_DUE:
             t = "c.due"
+        elif o == DYN_DUEPRIORITY:
+            t = """(case when queue=2 and due <= %d \
+then (ivl / cast(%d-due+0.001 as real)) else 10000+due end)""" % (
+                self.today, self.today)
         else:
             # if we don't understand the term, default to due order
             t = "c.due"
