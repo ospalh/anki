@@ -80,5 +80,4 @@ def dynOrderLabels():
         5: _("Order added"),
         6: _("Order due"),
         7: _("Latest added first"),
-        8: _("Relative overdueness"),
-        }
+        8: _("Relative overdueness")}

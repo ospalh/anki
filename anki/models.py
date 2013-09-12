@@ -8,7 +8,7 @@ import re
 from anki.consts import MODEL_CLOZE, MODEL_STD
 from anki.hooks import runHook
 from anki.lang import _
-from anki.utils import fieldChecksum, ids2str, intTime, joinFields, json, \
+from anki.utils import checksum, ids2str, intTime, joinFields, json, \
     splitFields
 
 # Models
@@ -574,7 +574,7 @@ update notes set flds=:flds,mid=:mid,mod=:m,usn=:u where id = :nid""", d)
             if fname not in map:
                 continue
             ord = map[fname][0]
-            ords.update([int(m)-1 for m in re.findall(
+            ords.update([int(c_ord) - 1 for c_ord in re.findall(
                 "{{c(\d+)::.+?}}", sflds[ord])])
         if -1 in ords:
             ords.remove(-1)

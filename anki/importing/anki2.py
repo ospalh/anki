@@ -108,11 +108,12 @@ class Anki2Importer(Importer):
                                 note[6].replace("\x1f", ",")
                             ))
         if dupes:
-            up = len(update)
+            # up = len(update)
             self.log.append(_("Updated %(a)d of %(b)d existing notes.") % dict(
                 a=len(update), b=dupes))
             if dupesIgnored:
-                self.log.append(_("Some updates were ignored because note type has changed:"))
+                self.log.append(_("Some updates were ignored because note "
+                                  "type has changed:"))
                 self.log.extend(dupesIgnored)
         # export info for calling code
         self.dupes = dupes

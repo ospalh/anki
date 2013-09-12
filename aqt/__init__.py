@@ -6,6 +6,11 @@ sip.setapi('QString', 2)
 sip.setapi('QVariant', 2)
 sip.setapi('QUrl', 2)
 
+try:
+    sip.setdestroyonexit(False)
+except:
+    # missing in older versions
+    pass
 
 import __builtin__
 import atexit
