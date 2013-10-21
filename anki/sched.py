@@ -10,7 +10,13 @@ import random
 import time
 
 #from anki.cards import Card
+from anki.consts import DYN_ADDED, DYN_BIGINT, DYN_DUE, DYN_DUEPRIORITY, \
+    DYN_LAPSES, DYN_OLDEST, DYN_RANDOM, DYN_REVADDED, DYN_SMALLINT, \
+    NEW_CARDS_DISTRIBUTE, NEW_CARDS_DUE, NEW_CARDS_FIRST, NEW_CARDS_LAST, \
+    NEW_CARDS_RANDOM
+from anki.hooks import runHook
 from anki.utils import ids2str, intTime, fmtTimeSpan
+from anki.lang import _
 
 # queue types: 0=new/cram, 1=lrn, 2=rev, 3=day lrn, -1=suspended, -2=buried
 # revlog types: 0=lrn, 1=rev, 2=relrn, 3=cram
@@ -148,11 +154,11 @@ order by due""" % self._deckLimit(), self.today, self.today + days - 1))
     def unburyCardsForDeck(self):
         sids = ids2str(self.col.decks.active())
         self.col.log(
-            self.col.db.list("select id from cards where queue = -2 and did in %s"
-                             % sids))
-        self.col.db.execute(
-            "update cards set mod=?,usn=?,queue=type where queue = -2 and did in %s"
-            % sids, intTime(), self.col.usn())
+            self.col.db.list(
+                "select id from cards where queue = -2 and did in %s" % sids))
+        self.col.db.execute("""\
+update cards set mod=?,usn=?,queue=type where queue = -2 and did in %s"""
+                            % sids, intTime(), self.col.usn())
 
     # Rev/lrn/time daily stats
     ##########################################################################
@@ -1179,7 +1185,8 @@ bear in mind that the more new cards you introduce, the higher
 your short-term review workload will become.""").replace("\n", " "))
         if self.haveBuried():
             if self.haveCustomStudy:
-                now = " " +  _("To see them now, click the Unbury button below.")
+                now = " " + _(
+                    "To see them now, click the Unbury button below.")
             else:
                 now = ""
             line.append(_("""\
@@ -1324,9 +1331,9 @@ and (queue=0 or (queue=2 and due<=?))""",
                     pass
         # then bury
         if toBury:
-            self.col.db.execute(
-                "update cards set queue=-2,mod=?,usn=? where id in "+ids2str(toBury),
-                intTime(), self.col.usn())
+            self.col.db.execute("""\
+update cards set queue=-2,mod=?,usn=? where id in """ + ids2str(toBury),
+                                intTime(), self.col.usn())
             self.col.log(toBury)
 
     # Resetting
@@ -1334,9 +1341,9 @@ and (queue=0 or (queue=2 and due<=?))""",
 
     def forgetCards(self, ids):
         "Put cards at the end of the new queue."
-        self.col.db.execute(
-            "update cards set type=0,queue=0,ivl=0,due=0,factor=? where odid=0 "
-            "and queue >= 0 and id in "+ids2str(ids), 2500)
+        self.col.db.execute("""\
+update cards set type=0,queue=0,ivl=0,due=0,factor=?
+where odid=0 and queue >= 0 and id in """ + ids2str(ids), 2500)
         pmax = self.col.db.scalar(
             "select max(due) from cards where type=0") or 0
         # takes care of mod + usn

@@ -2,11 +2,14 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from __future__ import division
+from cStringIO import StringIO
+import errno
+import gc
+import httplib
+import httplib2
 import socket
 import time
 import traceback
-import gc
-
 
 from PyQt4.QtCore import QObject, Qt, QThread, SIGNAL
 from PyQt4.QtGui import QDialog, QDialogButtonBox, QGridLayout, QLabel, \
@@ -168,9 +171,13 @@ AnkiWeb is under maintenance. Please try again in a few minutes.""")
             return _("""\
 AnkiWeb is too busy at the moment. Please try again in a few minutes.""")
         elif "code: 504" in err:
-            return _("504 gateway timeout error received. Please try temporarily disabling your antivirus.")
+            return _("""\
+504 gateway timeout error received. Please try temporarily disabling \
+your antivirus.""")
         elif "code: 409" in err:
-            return _("Only one client can access AnkiWeb at a time. If a previous sync failed, please try again in a few minutes.")
+            return _("""\
+Only one client can access AnkiWeb at a time. If a previous sync failed, \
+please try again in a few minutes.""")
         elif "10061" in err or "10013" in err:
             return _("""\
 Antivirus or firewall software is preventing Anki from connecting to \

@@ -390,6 +390,7 @@ def invalidFilename(str, dirsep=True):
     elif (dirsep or not isWin) and "\\" in str:
         return "\\"
 
+
 def platDesc():
     # we may get an interrupted system call, so try this in a loop
     n = 0

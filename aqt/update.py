@@ -1,7 +1,6 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import platform
 import time
 import urllib
 import urllib2
@@ -10,9 +9,8 @@ from PyQt4.QtCore import QThread, SIGNAL
 from PyQt4.QtGui import QMessageBox, QPushButton
 
 from anki.lang import _
-from anki.utils import json, isWin, isMac
+from anki.utils import json, platDesc
 from aqt.utils import openLink
-from anki.utils import json, isWin, isMac, platDesc
 from aqt.utils import showText
 import aqt
 

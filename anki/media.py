@@ -2,20 +2,20 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+from cStringIO import StringIO
 import os
 import re
+import send2trash
 import sys
 import unicodedata
 import urllib
 import zipfile
-import send2trash
 
 from anki.consts import MEDIA_ADD, MEDIA_REM, MODEL_CLOZE, SYNC_ZIP_COUNT, \
     SYNC_ZIP_SIZE
 from anki.db import DB
 from anki.latex import mungeQA
 from anki.utils import checksum, isWin, isMac, json
-
 
 
 class MediaManager(object):
@@ -205,7 +205,8 @@ class MediaManager(object):
         mdir = self.dir()
         # gather all media references in NFC form
         allRefs = set()
-        for nid, mid, flds in self.col.db.execute("select id, mid, flds from notes"):
+        for nid, mid, flds in self.col.db.execute(
+                "select id, mid, flds from notes"):
             noteRefs = self.filesInStr(mid, flds)
             # check the refs are in NFC
             for f in noteRefs:

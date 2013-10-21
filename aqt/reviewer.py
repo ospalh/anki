@@ -4,6 +4,7 @@
 
 from __future__ import division
 import HTMLParser
+import cgi
 import difflib
 import re
 import unicodedata as ucd

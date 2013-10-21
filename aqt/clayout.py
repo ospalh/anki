@@ -12,10 +12,9 @@ from PyQt4.QtWebKit import QWebPage
 from anki.consts import MODEL_CLOZE
 from anki.lang import _, ngettext
 from anki.sound import playFromText, clearAudioQueue
-from anki.utils import joinFields
 from aqt.utils import saveGeom, restoreGeom, getBase, mungeQA,\
     showInfo, askUser, getOnlyText, \
-     showWarning, openHelp
+    showWarning, openHelp
 from anki.utils import isMac, isWin, joinFields
 from aqt.webview import AnkiWebView
 import anki.js
@@ -145,7 +144,7 @@ class CardLayout(QDialog):
         cards = self.mm.tmplUseCount(self.model, idx)
         cards = ngettext("%d card", "%d cards", cards) % cards
         msg = (_("Delete the '%(a)s' card type, and its %(b)s?") %
-                dict(a=self.model['tmpls'][idx]['name'], b=cards))
+               dict(a=self.model['tmpls'][idx]['name'], b=cards))
         if not askUser(msg):
             return
         if not self.mm.remTemplate(self.model, self.cards[idx].template()):

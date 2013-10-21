@@ -8,7 +8,8 @@ from PyQt4.QtGui import QAbstractItemView, QDialog, QDialogButtonBox, \
 
 from anki.lang import _
 import aqt
-from aqt.utils import showInfo, openHelp, getOnlyText, shortcut, restoreGeom, saveGeom
+from aqt.utils import getOnlyText, openHelp, restoreGeom, saveGeom, shortcut, \
+    showInfo
 from anki.hooks import addHook, remHook
 
 

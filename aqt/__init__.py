@@ -1,6 +1,5 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-import getpass
 
 import sip
 sip.setapi('QString', 2)
@@ -15,27 +14,26 @@ except:
 
 import __builtin__
 import atexit
+import getpass
 import gettext
 import locale
 import optparse
 import os
 import sys
-import optparse
 import tempfile
 from PyQt4.QtCore import QCoreApplication, QEvent, QIODevice, \
-    QSharedMemory, QTranslator, Qt, SIGNAL
+    QTranslator, Qt, SIGNAL
 from PyQt4.QtGui import QApplication, QMessageBox
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 
-import anki.lang
+from anki import version as _version
 from anki.consts import HELP_SITE
 from anki.lang import langDir
 from anki.utils import isMac
 from aqt.qt import qtmajor, qtminor
 import anki.lang
-from anki import version as _version
 
-appVersion=_version
+appVersion = _version
 appWebsite = "http://ankisrs.net/"
 appChanges = "http://ankisrs.net/docs/changes.html"
 appDonate = "http://ankisrs.net/support/"

@@ -14,11 +14,10 @@ from PyQt4.QtGui import QAbstractItemView, QBrush, QColor, QComboBox, \
     QLabel, QMainWindow, QMenu, QPalette, QShortcut, QTreeWidgetItem, \
     QVBoxLayout, QWidget
 from PyQt4.QtWebKit import QWebPage
-from anki.lang import ngettext
+from anki.lang import _, ngettext
 
 from anki.consts import MODEL_CLOZE
 from anki.hooks import runHook, addHook, remHook
-from anki.lang import _, ngettext
 from anki.utils import fmtTimeSpan, ids2str, stripHTMLMedia, isWin, intTime, \
     isMac
 from aqt.toolbar import Toolbar
@@ -712,10 +711,10 @@ by clicking on one on the left."""))
             if len(self.model.activeCols) < 2:
                 return showInfo(_("You must have at least one column."))
             self.model.activeCols.remove(type)
-            adding=False
+            adding = False
         else:
             self.model.activeCols.append(type)
-            adding=True
+            adding = True
         # sorted field may have been hidden
         self.setSortIndicator()
         self.setColumnSizes()

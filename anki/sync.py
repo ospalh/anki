@@ -2,12 +2,15 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import urllib
-import os
-import sys
-import gzip
-import random
 from cStringIO import StringIO
+import gzip
+import httplib2
+import os
+import random
+import sys
+import urllib
+
+from anki.consts import REM_CARD, REM_NOTE, SYNC_URL, SYNC_VER
 from anki.db import DB
 from anki.utils import ids2str, intTime, json, isWin, isMac, platDesc, checksum
 from hooks import runHook
@@ -630,8 +633,10 @@ class RemoteServer(HttpSyncer):
 
     def meta(self):
         ret = self.req(
-            "meta", StringIO(json.dumps(dict(
-                v=SYNC_VER, cv="ankidesktop,%s,%s"%(anki.version, platDesc())))),
+            "meta",
+            StringIO(json.dumps(dict(
+                v=SYNC_VER, cv="ankidesktop,%s,%s" % (
+                    anki.version, platDesc())))),
             badAuthRaises=False)
         if not ret:
             # invalid auth

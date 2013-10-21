@@ -796,9 +796,9 @@ to a cloze type first, via Edit>Change Note Type."""))
         try:
             file = getAudio(self.widget)
         except Exception, e:
-            showWarning(_(
-                "Couldn't record audio. Have you installed lame and sox?") +
-                        "\n\n" + repr(str(e)))
+            showWarning(
+                _("Couldn't record audio. Have you installed lame and sox?") +
+                "\n\n" + repr(str(e)))
             return
         self.addMedia(file)
 
@@ -830,16 +830,15 @@ to a cloze type first, via Edit>Change Note Type."""))
 
     def isURL(self, s):
         s = s.lower()
-        return (s.startswith("http://")
-            or s.startswith("https://")
-            or s.startswith("ftp://")
-            or s.startswith("file://"))
+        return s.startswith("http://") or s.startswith("https://") \
+            or s.startswith("ftp://") or s.startswith("file://")
 
     def _retrieveURL(self, url):
         "Download file into media folder and return local filename or None."
-        # urllib doesn't understand percent-escaped utf8, but requires things like
-        # '#' to be escaped. we don't try to unquote the incoming URL, because
-        # we should only be receiving file:// urls from url mime, which is unquoted
+        # urllib doesn't understand percent-escaped utf8, but requires
+        # things like '#' to be escaped. we don't try to unquote the
+        # incoming URL, because we should only be receiving file://
+        # urls from url mime, which is unquoted
         if url.lower().startswith("file://"):
             url = url.replace("%", "%25")
             url = url.replace("#", "%23")

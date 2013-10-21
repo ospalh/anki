@@ -520,6 +520,7 @@ def fieldNames(col, downcase=True):
 ##########################################################################
 # returns array of ("dupestr", [nids])
 
+
 def findDupes(col, fieldName, search=""):
     # limit search to notes with applicable field name
     if search:

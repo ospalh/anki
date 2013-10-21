@@ -45,10 +45,6 @@ import aqt.toolbar
 import aqt.update
 import aqt.webview
 
-from aqt.utils import  restoreGeom, showInfo, showWarning,\
-    restoreState, getOnlyText, askUser, applyStyles, showText, tooltip, \
-    openHelp, openLink, checkInvalidFilename
-
 # Todo: check
 if isMac:
     from PyQt4.QtGui import qt_mac_set_menubar_icons
@@ -95,7 +91,8 @@ class AnkiQt(QMainWindow):
                     "syncing and add-on loading."))
         # were we given a file to import?
         if args and args[0]:
-            self.onAppMsg(unicode(args[0], sys.getfilesystemencoding(), "ignore"))
+            self.onAppMsg(
+                unicode(args[0], sys.getfilesystemencoding(), "ignore"))
         # Load profile in a timer so we can let the window finish init and not
         # close on profile load error.
         self.progress.timer(10, self.setupProfile, False)
@@ -894,7 +891,8 @@ Difference to correct time: %s.""") % diffText
             return pprint.pformat(x)
         path, num, fn, y = traceback.extract_stack(
             limit=4+kwargs.get("stack", 0))[0]
-        buf = u"[%s] %s:%s(): %s" % (intTime(), os.path.basename(path), fn,
+        buf = u"[%s] %s:%s(): %s" % (
+            intTime(), os.path.basename(path), fn,
             ", ".join([customRepr(x) for x in args]))
         lpath = re.sub("\.anki2$", ".log", self.pm.collectionPath())
         open(lpath, "ab").write(buf.encode("utf8") + "\n")
