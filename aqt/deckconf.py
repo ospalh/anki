@@ -1,8 +1,9 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-from anki.consts import NEW_CARDS_RANDOM
+from operator import itemgetter
 
+from anki.consts import NEW_CARDS_RANDOM
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QDialog, QDialogButtonBox, QMenu
 
@@ -10,7 +11,6 @@ import aqt
 from anki.lang import _, ngettext
 from aqt.utils import askUser, getOnlyText, openHelp, showInfo, showWarning, \
     tooltip
-from operator import itemgetter
 
 
 class DeckConf(QDialog):
@@ -194,6 +194,7 @@ current deck, please add a new options group first.""")
         f.fi1.setValue(c['ivlFct'] * 100)
         f.maxIvl.setValue(c['maxIvl'])
         f.revplim.setText(self.parentLimText('rev'))
+        f.buryRev.setChecked(c.get("bury", True))
         # lapse
         c = self.conf['lapse']
         f.lapSteps.setText(self.listToUser(c['delays']))
@@ -275,6 +276,7 @@ current deck, please add a new options group first.""")
         c['ease4'] = f.easyBonus.value() / 100.0
         c['ivlFct'] = f.fi1.value() / 100.0
         c['maxIvl'] = f.maxIvl.value()
+        c['bury'] = f.buryRev.isChecked()
         # lapse
         c = self.conf['lapse']
         self.updateList(c, 'delays', f.lapSteps, minSize=0)

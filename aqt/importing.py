@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
@@ -171,7 +172,7 @@ you can enter it here. Use \\t to represent tab."""),
             return
         except Exception, e:
             msg = _("Import failed.\n")
-            err = unicode(e)
+            err = repr(str(e))
             if "1-character string" in err:
                 msg += err
             else:
@@ -301,7 +302,7 @@ def importFile(mw, file):
             showUnicodeWarning()
             return
         except Exception, e:
-            msg = unicode(e)
+            msg = repr(str(e))
             if msg == "unknownFormat":
                 if file.endswith(".anki2"):
                     showWarning(_("""\
@@ -340,11 +341,12 @@ failed. Please try again, and if the problem persists, please try again \
 with a different browser.""")
             showWarning(msg)
         except Exception, e:
-            if "invalidFile" in unicode(e):
+            err = repr(str(e))
+            if "invalidFile" in err:
                 msg = _("""\
 Invalid file. Please restore from backup.""")
                 showWarning(msg)
-            elif "readonly" in unicode(e):
+            elif "readonly" in err:
                 showWarning(_("""\
 Unable to import from a read-only file."""))
             else:

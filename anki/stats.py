@@ -11,6 +11,7 @@ from anki.lang import _, ngettext
 from anki.utils import fmtTimeSpan, ids2str
 import anki.js
 
+
 # Card stats
 ##########################################################################
 
@@ -61,6 +62,8 @@ class CardStats(object):
         self.addLine(_("Card Type"), c.template()['name'])
         self.addLine(_("Note Type"), c.model()['name'])
         self.addLine(_("Deck"), self.col.decks.name(c.did))
+        self.addLine(_("Note ID"), c.nid)
+        self.addLine(_("Card ID"), c.id)
         self.txt += "</table>"
         return self.txt
 

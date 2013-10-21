@@ -20,12 +20,14 @@ import locale
 import optparse
 import os
 import sys
+import optparse
 import tempfile
 from PyQt4.QtCore import QCoreApplication, QEvent, QIODevice, \
     QSharedMemory, QTranslator, Qt, SIGNAL
 from PyQt4.QtGui import QApplication, QMessageBox
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 
+import anki.lang
 from anki.consts import HELP_SITE
 from anki.lang import langDir
 from anki.utils import isMac
@@ -182,6 +184,7 @@ class AnkiApp(QApplication):
             sys.stderr.write(sock.errorString())
             return
         buf = sock.readAll()
+        buf = unicode(buf, sys.getfilesystemencoding(), "ignore")
         self.emit(SIGNAL("appMsg"), buf)
         sock.disconnectFromServer()
 

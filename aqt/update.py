@@ -53,7 +53,7 @@ class LatestVersionFinder(QThread):
             self.emit(SIGNAL("newVerAvail"), resp['ver'])
         diff = resp['time'] - time.time()
         if abs(diff) > 300:
-            self.emit(SIGNAL("clockIsOff"))
+            self.emit(SIGNAL("clockIsOff"), diff)
 
 
 def askAndUpdate(mw, ver):

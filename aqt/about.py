@@ -30,25 +30,22 @@ system. It's free and open source.")
     abouttext += '<p>' + _("Version %s") % appVersion + '<br>'
     abouttext += ("Qt %s PyQt %s<br>") % (QT_VERSION_STR, PYQT_VERSION_STR)
     abouttext += (_("<a href='%s'>Visit website</a>") % aqt.appWebsite) + \
-        "</span>"
-    abouttext += '<p>' + _("""\
-Written by Damien Elmes, with patches, translation, testing and design \
-from:<p>%(cont)s """) % {'cont': u"""\
-Aaron Harsh, Ádám Szegi, Alex Fraser, Andreas Klauer, Andrew Wright,
-Bernhard Ibertsberger, Charlene Barina, Christian Krause, Christian
-Rusche, David Smith, Dave Druelinger, Dotan Cohen, Emilio Wuerges,
-Emmanuel Jarri, Frank Harper, Gregor Skumavc, H. Mijail, Ian Lewis,
-Immanuel Asmus, Iroiro, Jarvik7, Jin Eun-Deok, Jo Nakashima, Johanna
-Lindh, Kieran Clancy, LaC, Laurent Steffan, Luca Ban, Luciano
-Esposito, Marco Giancotti, Marcus Rubeus, Mari Egami, Michael Jürges,
-Mark Wilbur, Matthew Duggan, Matthew Holtz, Meelis Vasser, Michael
-Keppler, Michael Montague, Michael Penkov, Michal Čadil, Morteza
-Salehi, Nathanael Law, Nick Cook, Niklas Laxström, Nguyễn Hào Khôi,
-Norbert Nagold, Ole Guldberg, Pcsl88, Petr Michalec, Piotr Kubowicz,
-Richard Colley, Roland Sieker, Samson Melamed, Stefaan De Pooter,
-Silja Ijas, Snezana Lukic, Susanna Björverud, Sylvain Durand, Tacutu,
-Timm Preetz, Timo Paulssen, Ursus, Victor Suba, Xtru %s 黃文龍 """
-                         % _("<!--about diag--> and")}
+"</span>"
+    abouttext += '<p>' + _("Written by Damien Elmes, with patches, translation,\
+ testing and design from:<p>%(cont)s") % {'cont': u"""Aaron Harsh, Ádám Szegi,
+Alex Fraser, Andreas Klauer, Andrew Wright, Bernhard Ibertsberger, Charlene Barina,
+Christian Krause, Christian Rusche, David Smith, Dave Druelinger, Dotan Cohen,
+Emilio Wuerges, Emmanuel Jarri, Frank Harper, Gregor Skumavc, H. Mijail,
+Ian Lewis, Immanuel Asmus, Iroiro, Jarvik7,
+Jin Eun-Deok, Jo Nakashima, Johanna Lindh, Kieran Clancy, LaC, Laurent Steffan,
+Luca Ban, Luciano Esposito, Marco Giancotti, Marcus Rubeus, Mari Egami, Michael Jürges, Mark Wilbur,
+Matthew Duggan, Matthew Holtz, Meelis Vasser, Michael Keppler, Michael
+Montague, Michael Penkov, Michal Čadil, Morteza Salehi, Nathanael Law, Nick Cook, Niklas
+Laxström, Nguyễn Hào Khôi, Norbert Nagold, Ole Guldberg,
+Pcsl88, Petr Michalec, Piotr Kubowicz, Richard Colley, Roland Sieker,
+Samson Melamed, Stefaan De Pooter, Silja Ijas, Snezana Lukic, Susanna Björverud, Sylvain Durand,
+Tacutu, Timm Preetz, Timo Paulssen, Ursus, Victor Suba, Volodymyr Goncharenko, Xtru %s 黃文龍
+"""% _("<!--about diag--> and")}
     abouttext += '<p>' + _("""\
 The icons were obtained from various sources; please see the Anki source
 for credits.""")

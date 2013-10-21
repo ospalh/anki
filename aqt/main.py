@@ -15,9 +15,9 @@ from PyQt4.QtGui import QAction, QDialog, QDialogButtonBox, QFontInfo, \
     QKeySequence, QMainWindow, QPushButton, QShortcut, QStyleFactory, \
     QTextEdit, QVBoxLayout
 from PyQt4.QtWebKit import QWebSettings
-
 from anki import Collection
 from anki.utils import ids2str, intTime, isMac, isWin, splitFields
+
 from anki.hooks import runHook, addHook
 from anki.lang import _, ngettext
 from aqt.deckbrowser import DeckBrowser
@@ -45,7 +45,9 @@ import aqt.toolbar
 import aqt.update
 import aqt.webview
 
-# QtConfig = pyqtconfig.Configuration()
+from aqt.utils import  restoreGeom, showInfo, showWarning,\
+    restoreState, getOnlyText, askUser, applyStyles, showText, tooltip, \
+    openHelp, openLink, checkInvalidFilename
 
 # Todo: check
 if isMac:
@@ -93,7 +95,7 @@ class AnkiQt(QMainWindow):
                     "syncing and add-on loading."))
         # were we given a file to import?
         if args and args[0]:
-            self.onAppMsg(unicode(args[0], "utf8", "ignore"))
+            self.onAppMsg(unicode(args[0], sys.getfilesystemencoding(), "ignore"))
         # Load profile in a timer so we can let the window finish init and not
         # close on profile load error.
         self.progress.timer(10, self.setupProfile, False)
@@ -300,7 +302,8 @@ attempting to import."""))
             showWarning("""\
 Your collection is corrupt. Please see the manual for \
 how to restore from a backup.""")
-            return self.unloadProfile()
+            self.unloadProfile()
+            raise
         self.hideSchemaMsg = False
         self.progress.setupDB(self.col.db)
         self.maybeEnableUndo()
@@ -823,16 +826,24 @@ title="%s">%s</button>''' % (
     def newMsg(self, data):
         aqt.update.showMessages(self, data)
 
-    def clockIsOff(self):
-        showWarning("""\
+    def clockIsOff(self, diff):
+        diffText = ngettext("%s second", "%s seconds", diff)
+        warn = _("""\
 In order to ensure your collection works correctly when moved between \
-devices, Anki requires the system clock to be set correctly. Your system \
-clock appears to be wrong by more than 5 minutes.
+devices, Anki requires your computer's internal clock to be set correctly. \
+The internal clock can be wrong even if your system is showing the correct \
+local time.
 
-This can be because the \
-clock is slow or fast, because the date is set incorrectly, or because \
-the timezone or daylight savings information is incorrect. Please correct \
-the problem and restart Anki.""")
+Please go to the time settings on your computer and check the following:
+
+- AM/PM
+- Clock drift
+- Day, month and year
+- Timezone
+- Daylight savings
+
+Difference to correct time: %s.""") % diffText
+        showWarning(warn)
         self.app.closeAllWindows()
 
     # Count refreshing
@@ -854,6 +865,7 @@ the problem and restart Anki.""")
     def setupHooks(self):
         addHook("modSchema", self.onSchemaMod)
         addHook("remNotes", self.onRemNotes)
+        addHook("log", self.onLog)
 
     # Log note deletion
     ##########################################################################
@@ -871,6 +883,23 @@ the problem and restart Anki.""")
                 f.write(
                     ("\t".join([str(id), str(mid)] + fields)).encode("utf8"))
                 f.write("\n")
+
+    # Debug logging
+    ##########################################################################
+
+    def onLog(self, args, kwargs):
+        def customRepr(x):
+            if isinstance(x, basestring):
+                return x
+            return pprint.pformat(x)
+        path, num, fn, y = traceback.extract_stack(
+            limit=4+kwargs.get("stack", 0))[0]
+        buf = u"[%s] %s:%s(): %s" % (intTime(), os.path.basename(path), fn,
+            ", ".join([customRepr(x) for x in args]))
+        lpath = re.sub("\.anki2$", ".log", self.pm.collectionPath())
+        open(lpath, "ab").write(buf.encode("utf8") + "\n")
+        if os.environ.get("LOG"):
+            print buf
 
     # Schema modifications
     ##########################################################################
@@ -1079,6 +1108,8 @@ will be lost. Continue?"""))
         elif isWin:
             # make sure ctypes is bundled
             from ctypes import windll, wintypes
+            _dummy = windll
+            _dummy = wintypes
 
     def maybeHideAccelerators(self, tgt=None):
         if not self.hideMenuAccels:
