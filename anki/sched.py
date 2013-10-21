@@ -26,6 +26,7 @@ class Scheduler(object):
     name = "std"
     haveCustomStudy = True
     _spreadRev = True
+    _burySiblingsOnAnswer = True
 
     def __init__(self, col):
         self.col = col
@@ -42,6 +43,8 @@ class Scheduler(object):
             self.reset()
         card = self._getCard()
         if card:
+            if not self._burySiblingsOnAnswer:
+                self._burySiblings(card)
             self.reps += 1
             card.startTimer()
             return card
@@ -58,7 +61,8 @@ class Scheduler(object):
     def answerCard(self, card, ease):
         assert ease >= 1 and ease <= 4
         self.col.markReview(card)
-        self._burySiblings(card)
+        if self._burySiblingsOnAnswer:
+            self._burySiblings(card)
         card.reps += 1
         # former is for logging new cards, latter also covers filt. decks
         card.wasNew = card.type == 0
@@ -143,6 +147,11 @@ order by due""" % self._deckLimit(), self.today, self.today + days - 1))
         self.col.db.execute(
             "update cards set mod=?,usn=?,queue=type where queue = -2",
             intTime(), self.col.usn())
+
+    def unburyCardsForDeck(self):
+        self.col.db.execute(
+            "update cards set mod=?,usn=?,queue=type where queue = -2 and did in %s"
+            % ids2str(self.col.decks.active()), intTime(), self.col.usn())
 
     # Rev/lrn/time daily stats
     ##########################################################################
@@ -1069,6 +1078,7 @@ did = ?, queue = %s, due = ?, mod = ?, usn = ? where id = ?""" % queue, data)
             # original deck
             ints=oconf['new']['ints'],
             initialFactor=oconf['new']['initialFactor'],
+            bury=oconf['new'].get("bury", True),
             # overrides
             delays=delays,
             separate=conf['separate'],
@@ -1164,9 +1174,12 @@ reached. You can increase the limit in the options, but please
 bear in mind that the more new cards you introduce, the higher
 your short-term review workload will become.""").replace("\n", " "))
         if self.haveBuried():
+            if self.haveCustomStudy:
+                now = " " +  _("To see them now, click the Unbury button below.")
+            else:
+                now = ""
             line.append(_("""\
-Some related or buried cards were delayed until tomorrow.""").replace(
-                "\n", " "))
+Some related or buried cards were delayed until a later session.""")+now)
         if self.haveCustomStudy and not self.col.decks.current()['dyn']:
             line.append(_("""\
 To study outside of the normal schedule, click the Custom Study button
@@ -1298,7 +1311,6 @@ and (queue=0 or (queue=2 and due<=?))""",
                     self._newQueue.remove(cid)
                 except ValueError:
                     pass
-            queue = "(queue = 0 or %s)" % queue
         # then bury
         self.col.db.execute(
             "update cards set queue=-2,mod=?,usn=? where id in " + ids2str(
@@ -1310,9 +1322,9 @@ and (queue=0 or (queue=2 and due<=?))""",
 
     def forgetCards(self, ids):
         "Put cards at the end of the new queue."
-        self.col.db.execute("""\
-update cards set type=0,queue=0,ivl=0,odue=0,due=0,factor=? \
-where id in {ids}""".format(ids=ids2str(ids)), 2500)
+        self.col.db.execute(
+            "update cards set type=0,queue=0,ivl=0,due=0,factor=? where odid=0 "
+            "and queue >= 0 and id in "+ids2str(ids), 2500)
         pmax = self.col.db.scalar(
             "select max(due) from cards where type=0") or 0
         # takes care of mod + usn
@@ -1330,7 +1342,8 @@ where id in {ids}""".format(ids=ids2str(ids)), 2500)
         self.removeLrn(ids)
         self.col.db.executemany("""
 update cards set type=2,queue=2,ivl=:ivl,due=:due,
-usn=:usn, mod=:mod, factor=:fact where id=:id and odid=0""", d)
+usn=:usn, mod=:mod, factor=:fact where id=:id and odid=0 and queue >=0""",
+                                d)
 
     def resetCards(self, ids):
         "Completely reset cards for export."

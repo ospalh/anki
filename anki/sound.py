@@ -35,8 +35,8 @@ def hasSound(text):
 
 ##########################################################################
 
-processingSrc = "rec.wav"
-processingDst = "rec.mp3"
+processingSrc = u"rec.wav"
+processingDst = u"rec.mp3"
 processingChain = []
 recFiles = []
 
@@ -309,7 +309,7 @@ class PyAudioRecorder(_Recorder):
 
     def file(self):
         if self.encode:
-            tgt = "rec%d.mp3" % time.time()
+            tgt = u"rec%d.mp3" % time.time()
             os.rename(processingDst, tgt)
             return tgt
         else:

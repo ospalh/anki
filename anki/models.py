@@ -10,6 +10,7 @@ from anki.hooks import runHook
 from anki.lang import _
 from anki.utils import checksum, ids2str, intTime, joinFields, json, \
     splitFields
+import time
 
 # Models
 ##########################################################################
@@ -168,8 +169,16 @@ select id from cards where nid in (select id from notes where mid = ?)""",
         self.setCurrent(m)
         self.save(m)
 
+    def ensureNameUnique(self, m):
+        for mcur in self.all():
+            if (mcur['name'] == m['name'] and
+                mcur['id'] != m['id']):
+                    m['name'] += "-" + checksum(str(time.time()))[:5]
+                    break
+
     def update(self, m):
         "Add or update an existing model. Used for syncing and merging."
+        self.ensureNameUnique(m)
         self.models[str(m['id'])] = m
         # mark registry changed, but don't bump mod time
         self.save()

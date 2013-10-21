@@ -518,7 +518,7 @@ def fieldNames(col, downcase=True):
 
 # Find duplicates
 ##########################################################################
-
+# returns array of ("dupestr", [nids])
 
 def findDupes(col, fieldName, search=""):
     # limit search to notes with applicable field name
@@ -546,6 +546,7 @@ def findDupes(col, fieldName, search=""):
         if ord is None:
             continue
         val = flds[ord]
+        val = stripHTMLMedia(val)
         # empty does not count as duplicate
         if not val:
             continue
