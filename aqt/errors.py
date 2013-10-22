@@ -49,8 +49,8 @@ class ErrorHandler(QObject):
     def tempFolderMsg(self):
         return _("""\
 The permissions on your system's temporary folder are incorrect, and Anki is \
-not able to correct them automatically. Please search for 'temp folder' in the \
-Anki manual for more information.""")
+not able to correct them automatically. Please search for 'temp folder' in \
+the Anki manual for more information.""")
 
     def onTimeout(self):
         error = cgi.escape(self.pool)

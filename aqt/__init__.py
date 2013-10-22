@@ -13,7 +13,6 @@ except:
     pass
 
 import __builtin__
-import atexit
 import getpass
 import gettext
 import locale
@@ -40,13 +39,13 @@ appDonate = "http://ankisrs.net/support/"
 appShared = "https://ankiweb.net/shared/"
 appUpdate = "https://ankiweb.net/update/desktop"
 appHelpSite = HELP_SITE
-mw = None # set on init
+mw = None  # set on init
 
 moduleDir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
 
 try:
-    import aqt.forms
-except ImportError, e:
+    import aqt.forms  # Dummy import to get the warning if it fails.
+except ImportError as e:
     if "forms" in str(e):
         print "If you're running from git, did you run build_ui.sh?"
         print

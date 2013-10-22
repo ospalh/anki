@@ -50,6 +50,7 @@ if isMac:
     from PyQt4.QtGui import qt_mac_set_menubar_icons
 import anki.db
 
+
 class AnkiQt(QMainWindow):
     def __init__(self, app, profileManager, args):
         QMainWindow.__init__(self)
