@@ -1,3 +1,4 @@
+# -*- coding: utf-8 ; mode: python -*-
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
@@ -12,6 +13,7 @@ except:
     # missing in older versions
     pass
 
+from distutils.version import StrictVersion
 import __builtin__
 import atexit
 import gettext
@@ -20,20 +22,20 @@ import optparse
 import os
 import sys
 import tempfile
+
 from PyQt4.QtCore import QCoreApplication, QEvent, QIODevice, \
-    QTranslator, Qt, SIGNAL
+    QSharedMemory, QTranslator, Qt, QT_VERSION_STR, SIGNAL
 from PyQt4.QtGui import QApplication, QMessageBox
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 
-from anki import version as _version
-from aqt.profiles import default_base
+from anki import version as version_
 from anki.consts import HELP_SITE
 from anki.lang import langDir
-from anki.utils import isMac
-from aqt.qt import qtmajor, qtminor
+from anki.utils import isMac, isWin
+from aqt.profiles import default_base
 import anki.lang
 
-appVersion = _version
+appVersion = version_
 appWebsite = "http://ankisrs.net/"
 appChanges = "http://ankisrs.net/docs/changes.html"
 appDonate = "http://ankisrs.net/support/"
@@ -135,11 +137,9 @@ class AnkiApp(QApplication):
 
     # Single instance support on Win32/Linux
     ##################################################
-
-
     TMOUT = 5000
 
-    def __init__(self, argv):
+    def __init__(self, argv, key_path):
         QApplication.__init__(self, argv)
         self._argv = argv
         self.key = os.path.join(key_path, 'ipc')

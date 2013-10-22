@@ -502,10 +502,12 @@ onkeypress="_typeAnsPress();">""", buf)
             return u"<span class=typeGood>{0}</span>".format(cgi.escape(s))
 
         def bad(s):
-            return u"<span class=typeBad>{0}</span>".format(vspace(cgi.escape(s)))
+            return u"<span class=typeBad>{0}</span>".format(
+                vspace(cgi.escape(s)))
 
         def missed(s):
-            return u"<span class=typeMissed>{0}</span>".format(vspace(cgi.escape(s)))
+            return u"<span class=typeMissed>{0}</span>".format(
+                vspace(cgi.escape(s)))
         if given == correct:
             res = u"<span class=allgood>{0}</span>".format(good(given))
         else:
