@@ -803,10 +803,10 @@ to a cloze type first, via Edit>Change Note Type."""))
     def onRecSound(self):
         try:
             file = getAudio(self.widget)
-        except Exception, e:
+        except Exception as e:
             showWarning(
                 _("Couldn't record audio. Have you installed lame and sox?") +
-                "\n\n" + unicode(e))
+                "\n\n" + repr(str(e)))
             return
         self.addMedia(file)
 
@@ -838,23 +838,26 @@ to a cloze type first, via Edit>Change Note Type."""))
 
     def isURL(self, s):
         s = s.lower()
-        return (s.startswith("http://") or s.startswith("https://")
-                or s.startswith("ftp://"))
+        return s.startswith("http://") or s.startswith("https://") \
+            or s.startswith("ftp://") or s.startswith("file://")
 
     def _retrieveURL(self, url):
         "Download file into media folder and return local filename or None."
-        # urllib is picky with local file links
+        # urllib doesn't understand percent-escaped utf8, but requires
+        # things like '#' to be escaped. we don't try to unquote the
+        # incoming URL, because we should only be receiving file://
+        # urls from url mime, which is unquoted
         if url.lower().startswith("file://"):
             url = url.replace("%", "%25")
             url = url.replace("#", "%23")
-            # fetch it into a temporary folder
+        # fetch it into a temporary folder
         self.mw.progress.start(
             immediate=True, parent=self.parentWindow)
         try:
             req = urllib2.Request(url, None, {
                 'User-Agent': 'Mozilla/5.0 (compatible; Anki)'})
             filecontents = urllib2.urlopen(req).read()
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             showWarning(_("An error occurred while opening %s") % e)
             return
         finally:
@@ -1119,16 +1122,20 @@ class EditorWebView(AnkiWebView):
         # print "text", mime.text()
         if mime.hasHtml():
             return self._processHtml(mime)
-        elif mime.hasText():
-            return self._processText(mime)
         elif mime.hasUrls():
             return self._processUrls(mime)
+        elif mime.hasText():
+            return self._processText(mime)
         elif mime.hasImage():
             return self._processImage(mime)
         else:
             # nothing
             return QMimeData()
 
+    # when user is dragging a file from a file manager on any platform, the
+    # url type should be set, and it is not URL-encoded. on a mac no text type
+    # is returned, and on windows the text type is not returned in cases like
+    # "foo's bar.jpg"
     def _processUrls(self, mime):
         url = mime.urls()[0].toString()
         # chrome likes to give us the URL twice with a \n
@@ -1139,6 +1146,10 @@ class EditorWebView(AnkiWebView):
             mime.setHtml(link)
         return mime
 
+    # if the user has used 'copy link location' in the browser, the clipboard
+    # will contain the URL as text, and no URLs or HTML. the URL will already
+    # be URL-encoded, and shouldn't be a file:// url unless they're browsing
+    # locally, which we don't support
     def _processText(self, mime):
         txt = unicode(mime.text())
         html = None

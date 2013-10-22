@@ -53,6 +53,7 @@ class _Collection(object):
     def __init__(self, db, server=False):
         self.db = db
         self.path = db._path
+        self.log(self.path, anki.version)
         self.server = server
         self._lastSave = time.time()
         self.clearUndo()
@@ -187,22 +188,30 @@ crt=?, mod=?, scm=?, dty=?, usn=?, ls=?, conf=?""",
 
     def beforeUpload(self):
         "Called before a full upload."
-        tbls = "notes", "cards", "revlog", "graves"
+        tbls = "notes", "cards", "revlog"
         for t in tbls:
             self.db.execute("update %s set usn=0 where usn=-1" % t)
+        # we can save space by removing the log of deletions
+        self.db.execute("delete from graves")
         self._usn += 1
         self.models.beforeUpload()
         self.tags.beforeUpload()
         self.decks.beforeUpload()
         self.modSchema()
         self.ls = self.scm
+        # ensure db is compacted before upload
+        self.db.execute("vacuum")
+        self.db.execute("analyze")
         self.close()
 
     # Object creation helpers
     ##########################################################################
 
-    def getCard(self, id):
-        return anki.cards.Card(self, id)
+    def getCard(self, id, log=True):
+        c = anki.cards.Card(self, id)
+        if log:
+            self.log(c, stack=1)
+        return c
 
     def getNote(self, id):
         return anki.notes.Note(self, id=id)
@@ -765,3 +774,9 @@ and queue = 0""", intTime(), self.usn())
         self.db.execute("vacuum")
         self.db.execute("analyze")
         self.lock()
+
+    # Logging
+    ##########################################################################
+
+    def log(self, *args, **kwargs):
+        runHook("log", args, kwargs)

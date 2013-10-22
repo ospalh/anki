@@ -2,14 +2,14 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+from cStringIO import StringIO
 import os
 import re
+import send2trash
 import sys
 import unicodedata
 import urllib
 import zipfile
-import send2trash
-from cStringIO import StringIO
 
 from anki.consts import MEDIA_ADD, MEDIA_REM, MODEL_CLOZE, SYNC_ZIP_COUNT, \
     SYNC_ZIP_SIZE
@@ -54,10 +54,10 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
         except OSError:
             # cwd doesn't exist
             self._oldcwd = None
-        os.chdir(self._dir)
-        # Two variables that are used during syncs on Macs.
-        self._problem_files = None
-        self._all_media_files = None
+        try:
+            os.chdir(self._dir)
+        except OSError:
+            raise Exception("invalidTempFolder")
         # change database
         self.connect()
 
@@ -103,6 +103,7 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
 
     # Adding media
     ##########################################################################
+    # opath must be in unicode
 
     def addFile(self, opath):
         return self.writeData(opath, open(opath, "rb").read())
@@ -113,6 +114,9 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
         #
         # if fname is a full path, use only the basename
         fname = os.path.basename(opath)
+        # make sure we write it in NFC form (on mac will autoconvert to NFD),
+        # and return an NFC-encoded reference
+        fname = unicodedata.normalize("NFC", fname)
         # remove any dangerous characters
         base = self.stripIllegal(fname)
         (root, ext) = os.path.splitext(base)
@@ -214,16 +218,20 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
     def check(self, local=None):
         "Return (missingFiles, unusedFiles)."
         mdir = self.dir()
-        # generate card q/a and look through all references
-        normrefs = {}
-
-        def norm(s):
-            if isinstance(s, unicode) and isMac:
-                return unicodedata.normalize('NFD', s)
-            return s
-        for f in self.allMedia():
-            normrefs[norm(f)] = True
-        # loop through directory and find unused & missing media
+        # gather all media references in NFC form
+        allRefs = set()
+        for nid, mid, flds in self.col.db.execute(
+                "select id, mid, flds from notes"):
+            noteRefs = self.filesInStr(mid, flds)
+            # check the refs are in NFC
+            for f in noteRefs:
+                # if they're not, we'll need to fix them first
+                if f != unicodedata.normalize("NFC", f):
+                    self._normalizeNoteRefs(nid)
+                    noteRefs = self.filesInStr(mid, flds)
+                    break
+            allRefs.update(noteRefs)
+        # loop through media folder
         unused = []
         if local is None:
             files = os.listdir(mdir)
@@ -231,28 +239,38 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
             files = local
         for file in files:
             if not local:
-                path = os.path.join(mdir, file)
-                if not os.path.isfile(path):
+                if not os.path.isfile(file):
                     # ignore directories
                     continue
-                if file.startswith("_"):
-                    # leading _ says to ignore file
-                    continue
-            nfile = norm(file)
-            if nfile not in normrefs:
+            if file.startswith("_"):
+                # leading _ says to ignore file
+                continue
+            nfcFile = unicodedata.normalize("NFC", file)
+            # we enforce NFC fs encoding on non-macs; on macs we'll have gotten
+            # NFD so we use the above variable for comparing references
+            if not isMac and local:
+                if file != nfcFile:
+                    # delete if we already have the NFC form, otherwise rename
+                    if os.path.exists(nfcFile):
+                        os.unlink(file)
+                    else:
+                        os.rename(file, nfcFile)
+                    file = nfcFile
+            # compare
+            if nfcFile not in allRefs:
                 unused.append(file)
             else:
-                del normrefs[nfile]
-        nohave = [x for x in normrefs.keys() if not x.startswith("_")]
+                allRefs.discard(nfcFile)
+        nohave = [x for x in allRefs if not x.startswith("_")]
         return (nohave, unused)
 
-    def allMedia(self):
-        "Return a set of all referenced filenames."
-        files = set()
-        for mid, flds in self.col.db.execute("select mid, flds from notes"):
-            for f in self.filesInStr(mid, flds):
-                files.add(f)
-        return files
+    def _normalizeNoteRefs(self, nid):
+        note = self.col.getNote(nid)
+        for c, fld in enumerate(note.fields):
+            nfc = unicodedata.normalize("NFC", fld)
+            if nfc != fld:
+                note.fields[c] = nfc
+        note.flush()
 
     # Copying on import
     ##########################################################################
@@ -305,6 +323,13 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
                 data = z.read(i)
                 csum = checksum(data)
                 name = meta[i.filename]
+                if not isinstance(name, unicode):
+                    name = unicode(name, "utf8")
+                # normalize name for platform
+                if isMac:
+                    name = unicodedata.normalize("NFD", name)
+                else:
+                    name = unicodedata.normalize("NFC", name)
                 # save file
                 open(name, "wb").write(data)
                 # update db
@@ -349,9 +374,6 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
         cur = self.db.execute(
             "select fname from log where type = ?", MEDIA_ADD)
         fnames = []
-        # Clear the list from a possible last sync.
-        self._problem_files = None
-        self._all_media_files = None
         while 1:
             fname = cur.fetchone()
             if not fname:
@@ -359,10 +381,11 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
                 z.writestr("_finished", "")
                 break
             fname = fname[0]
-            ufname = self._unnormalize(fname)
+            # we add it as a one-element array simply to make
+            # the later forgetAdded() call easier
             fnames.append([fname])
             z.write(fname, str(cnt))
-            files[str(cnt)] = ufname
+            files[str(cnt)] = unicodedata.normalize("NFC", fname)
             sz += os.path.getsize(fname)
             if sz > SYNC_ZIP_SIZE or cnt > SYNC_ZIP_COUNT:
                 break
@@ -376,90 +399,6 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
             return
         self.db.executemany("delete from log where fname = ?", fnames)
         self.db.commit()
-
-    def _build_problem_file_dict(self):
-        """
-        Build a dict of all problem files in the collection.
-
-        Go through the media in the collection, and for each file
-        where the file name is different on a Mac, add the file name
-        in the collection to a dict with the Mac file name as a key,
-        so we can look it up later.
-
-        (I see no way around going through the collection in one
-        way or another, as there is basically no other way to see
-        if any given normalized Unicode string has been changed
-        from an unnormalized form. Think of re-arranged combining
-        marks. See http://unicode.org/reports/tr15/,  for a cabinet
-        of normalization horrors. (Version Unicode 6.2.0))
-        """
-        # Create an empty dict.
-        print('debug, start building nfd dict')
-        import time
-        st = time.clock()
-        self._problem_files = dict()
-        print ('checking {} files'.format(len(self._all_media_files)))
-        for fic in self._all_media_files:
-            fic_n = unicodedata.normalize('NFD', fic)
-            if fic_n != fic:
-                print(u'{0} is not {1}'.format(fic_n, fic).encode('utf-8'))
-                self._problem_files[fic_n] = fic
-        print('debug, finished building nfd dict. Took {0}'.format(
-              time.clock() - st))
-
-    def _unnormalize(self, fn):
-        """Return the file name we should send during sync."""
-        # On Macs we have, or may have, a problem. The file names
-        # we get in this function have been Unicode-normalized
-        # (into NFD form). While we stay on a Mac, there is no
-        # problem, but when we sync, have to fix this. The name of
-        # the file on disk is not necessarily the same as what is
-        # used in the collection, so try to find what is used in
-        # the collection.
-        # Two quick checks:
-        if not isMac:
-        # if False:  # Testing. Obiously.
-            # No problem, we stored file name is the file name to
-            # use.
-            return fn
-        if isinstance(fn, str):
-            # No problem, the file name is the normalized file
-            # name for sure.
-            return fn
-        # Still here, we have to look in the collection.
-        if self._all_media_files is None:
-            self._all_media_files = self.allMedia()
-        # There are two rather quck ways:
-        if fn in self._all_media_files:
-            # The file is used decomposed in the
-            # collection. Typical case if the user added it
-            # through a file dialog (i think).
-            return fn
-        fn_nfc = unicodedata.normalize('NFC', fn)
-        if fn_nfc in self._all_media_files:
-            # The file is in the collection normalized. This may
-            # happen quite often when the user typed in the file
-            # name. It may also happen when some other bit of software
-            # did't care about Unicode equivalence. (See my (ospalh's)
-            # audio downloader add-on for an example of that..) (NFC
-            # normalized strings are nicer. The text may also look
-            # nicer. Never mind the dictionary meaning of equivalence,
-            # it is often rendered differently.)
-            return fn_nfc
-        # Yikes! Looks like we really have to normalize the whole
-        # collection.
-        if self._problem_files is None:
-            # N.B.: We check for None instead of "if not
-            # problem_files:" so we don't rebuild an empty dict
-            # over and over again.
-            self._build_problem_file_dict()
-        try:
-            print(u'fn {0}'.format(fn).encode('utf-8'))
-            print(
-                u'pf[fn] {0}'.format(self._problem_files[fn]).encode('utf-8'))
-            return self._problem_files[fn]
-        except KeyError:
-            return fn
 
     # Tracking changes (private)
     ##########################################################################

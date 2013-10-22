@@ -1,7 +1,6 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import platform
 import time
 import urllib
 import urllib2
@@ -10,7 +9,7 @@ from PyQt4.QtCore import QThread, SIGNAL
 from PyQt4.QtGui import QMessageBox, QPushButton
 
 from anki.lang import _
-from anki.utils import json, isWin, isMac
+from anki.utils import json, platDesc
 from aqt.utils import openLink
 from aqt.utils import showText
 import aqt
@@ -24,27 +23,8 @@ class LatestVersionFinder(QThread):
         self.config = main.pm.meta
 
     def _data(self):
-        # we may get an interrupted system call, so try this in a loop
-        n = 0
-        theos = "unknown"
-        while n < 100:
-            n += 1
-            try:
-                system = platform.system()
-                if isMac:
-                    theos = "mac:%s" % (platform.mac_ver()[0])
-                elif isWin:
-                    theos = "win:%s" % (platform.win32_ver()[0])
-                elif system == "Linux":
-                    dist = platform.dist()
-                    theos = "lin:%s:%s" % (dist[0], dist[1])
-                else:
-                    theos = system
-                break
-            except:
-                continue
         d = {"ver": aqt.appVersion,
-             "os": theos,
+             "os": platDesc(),
              "id": self.config['id'],
              "lm": self.config['lastMsg'],
              "crt": self.config['created']}
@@ -71,7 +51,7 @@ class LatestVersionFinder(QThread):
             self.emit(SIGNAL("newVerAvail"), resp['ver'])
         diff = resp['time'] - time.time()
         if abs(diff) > 300:
-            self.emit(SIGNAL("clockIsOff"))
+            self.emit(SIGNAL("clockIsOff"), diff)
 
 
 def askAndUpdate(mw, ver):

@@ -11,6 +11,7 @@ from anki.lang import _, ngettext
 from anki.utils import fmtTimeSpan, ids2str
 import anki.js
 
+
 # Card stats
 ##########################################################################
 
@@ -61,6 +62,8 @@ class CardStats(object):
         self.addLine(_("Card Type"), c.template()['name'])
         self.addLine(_("Note Type"), c.model()['name'])
         self.addLine(_("Deck"), self.col.decks.name(c.did))
+        self.addLine(_("Note ID"), c.nid)
+        self.addLine(_("Card ID"), c.id)
         self.txt += "</table>"
         return self.txt
 
@@ -366,8 +369,10 @@ group by day order by day""" % (self._limit(), lim),
             tot *= 60
         self._line(i, _("Average for days studied"), self._avgDay(
             tot, studied, unit))
-        self._line(i, _("If you studied every day"), self._avgDay(
-            tot, period, unit))
+        if studied != period:
+            # don't display if you did study every day
+            self._line(i, _("If you studied every day"), self._avgDay(
+                tot, period, unit))
         if total and tot:
             perMin = total / float(tot)
             perMin = ngettext(

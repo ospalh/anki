@@ -49,7 +49,7 @@ class TextImporter(NoteImporter):
                     continue
                 note = self.noteFromFields(row)
                 notes.append(note)
-        except (csv.Error), e:
+        except (csv.Error) as e:
             log.append(_("Aborted: %s") % str(e))
         self.log = log
         self.ignored = ignored

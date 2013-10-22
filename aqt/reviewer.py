@@ -4,6 +4,7 @@
 
 from __future__ import division
 import HTMLParser
+import cgi
 import difflib
 import re
 import unicodedata as ucd
@@ -298,8 +299,10 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             self.replayAudio()
         elif key == "*":
             self.onMark()
-        elif key == "-":
+        elif key == "=":
             self.onBuryNote()
+        elif key == "-":
+            self.onBuryCard()
         elif key == "!":
             self.onSuspend()
         elif key == "@":
@@ -496,13 +499,13 @@ onkeypress="_typeAnsPress();">""", buf)
             return re.sub(u'\s', u'␣', s, flags=re.UNICODE)
 
         def good(s):
-            return u"<span class=typeGood>{0}</span>".format(s)
+            return u"<span class=typeGood>{0}</span>".format(cgi.escape(s))
 
         def bad(s):
-            return u"<span class=typeBad>{0}</span>".format(vspace(s))
+            return u"<span class=typeBad>{0}</span>".format(vspace(cgi.escape(s)))
 
         def missed(s):
-            return u"<span class=typeMissed>{0}</span>".format(vspace(s))
+            return u"<span class=typeMissed>{0}</span>".format(vspace(cgi.escape(s)))
         if given == correct:
             res = u"<span class=allgood>{0}</span>".format(good(given))
         else:
@@ -734,7 +737,8 @@ onclick='py.link("ease{e}");'>{t}</button></td>'''.format(
     def showContextMenu(self):
         opts = [
             [_("Mark Note"), "*", self.onMark],
-            [_("Bury Note"), "-", self.onBuryNote],
+            [_("Bury Card"), "-", self.onBuryCard],
+            [_("Bury Note"), "=", self.onBuryNote],
             [_("Suspend Card"), "@", self.onSuspendCard],
             [_("Suspend Note"), "!", self.onSuspend],
             [_("Delete Note"), "Delete", self.onDelete],
@@ -798,6 +802,12 @@ onclick='py.link("ease{e}");'>{t}</button></td>'''.format(
             "Note and its %d card deleted.",
             "Note and its %d cards deleted.",
             cnt) % cnt)
+
+    def onBuryCard(self):
+        self.mw.checkpoint(_("Bury"))
+        self.mw.col.sched.buryCards([self.card.id])
+        self.mw.reset()
+        tooltip(_("Card buried."))
 
     def onBuryNote(self):
         self.mw.checkpoint(_("Bury"))

@@ -19,6 +19,7 @@ import tempfile
 import time
 
 from anki.lang import _, ngettext
+import platform
 
 # We require python >=2.6 elsewhere. Remove check for Python x.4.
 
@@ -142,19 +143,24 @@ def fmtFloat(float_value, point=1):
 
 # HTML
 ##############################################################################
+reStyle = re.compile("(?s)<style.*?>.*?</style>")
+reScript = re.compile("(?s)<script.*?>.*?</script>")
+reTag = re.compile("<.*?>")
+reEnts = re.compile("&#?\w+;")
+reMedia = re.compile("<img[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>")
 
 
 def stripHTML(s):
-    s = re.sub("(?s)<style.*?>.*?</style>", "", s)
-    s = re.sub("(?s)<script.*?>.*?</script>", "", s)
-    s = re.sub("<.*?>", "", s)
+    s = reStyle.sub("", s)
+    s = reScript.sub("", s)
+    s = reTag.sub("", s)
     s = entsToTxt(s)
     return s
 
 
 def stripHTMLMedia(s):
     "Strip HTML but keep media filenames"
-    s = re.sub("<img[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>", " \\1 ", s)
+    s = reMedia.sub(" \\1 ", s)
     return stripHTML(s)
 
 
@@ -192,7 +198,7 @@ def entsToTxt(html):
             except KeyError:
                 pass
         return text  # leave as is
-    return re.sub("&#?\w+;", fixup, html)
+    return reEnts.sub(fixup, html)
 
 # IDs
 ##############################################################################
@@ -378,3 +384,26 @@ def invalidFilename(str, dirsep=True):
         return "/"
     elif (dirsep or not isWin) and "\\" in str:
         return "\\"
+
+
+def platDesc():
+    # we may get an interrupted system call, so try this in a loop
+    n = 0
+    theos = "unknown"
+    while n < 100:
+        n += 1
+        try:
+            system = platform.system()
+            if isMac:
+                theos = "mac:%s" % (platform.mac_ver()[0])
+            elif isWin:
+                theos = "win:%s" % (platform.win32_ver()[0])
+            elif system == "Linux":
+                dist = platform.dist()
+                theos = "lin:%s:%s" % (dist[0], dist[1])
+            else:
+                theos = system
+            break
+        except:
+            continue
+    return theos

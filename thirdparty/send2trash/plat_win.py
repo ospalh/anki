@@ -6,6 +6,7 @@
 
 from ctypes import windll, Structure, byref, c_uint
 from ctypes.wintypes import HWND, UINT, LPCWSTR, BOOL
+import os
 import os.path as op
 
 shell32 = windll.shell32
@@ -35,6 +36,7 @@ FOF_ALLOWUNDO = 64
 FOF_NOERRORUI = 1024
 
 def send2trash(path):
+    opath = path
     if not isinstance(path, unicode):
         path = unicode(path, u'mbcs')
     if not op.isabs(path):
@@ -50,6 +52,7 @@ def send2trash(path):
     fileop.lpszProgressTitle = None
     result = SHFileOperationW(byref(fileop))
     if result:
-        msg = u"Couldn't perform operation. Error code: %d" % result
-        raise OSError(msg)
-
+        # user's system is broken, just delete
+        os.unlink(opath)
+        #msg = u"Couldn't perform operation. Error code: %d" % result
+        #raise OSError(msg)

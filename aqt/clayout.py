@@ -3,6 +3,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
+
 from PyQt4.QtCore import QPoint, Qt, SIGNAL, SLOT
 from PyQt4.QtGui import QDialog, QDialogButtonBox, QFont, QHBoxLayout, \
     QLabel, QMenu, QPushButton, QTabWidget, QVBoxLayout, QWidget
@@ -11,9 +12,10 @@ from PyQt4.QtWebKit import QWebPage
 from anki.consts import MODEL_CLOZE
 from anki.lang import _, ngettext
 from anki.sound import playFromText, clearAudioQueue
-from anki.utils import joinFields
-from aqt.utils import askUser, getBase, getOnlyText, isMac, isWin, mungeQA, \
-    openHelp, restoreGeom, saveGeom, showInfo, showWarning
+from aqt.utils import saveGeom, restoreGeom, getBase, mungeQA,\
+    showInfo, askUser, getOnlyText, \
+    showWarning, openHelp
+from anki.utils import isMac, isWin, joinFields
 from aqt.webview import AnkiWebView
 import anki.js
 import aqt
@@ -141,8 +143,8 @@ class CardLayout(QDialog):
             return showInfo(_("At least one card type is required."))
         cards = self.mm.tmplUseCount(self.model, idx)
         cards = ngettext("%d card", "%d cards", cards) % cards
-        msg = _("Delete the '%(a)s' card type, and its %(b)s?" %
-                dict(a=self.model['tmpls'][idx]['name'], b=cards))
+        msg = (_("Delete the '%(a)s' card type, and its %(b)s?") %
+               dict(a=self.model['tmpls'][idx]['name'], b=cards))
         if not askUser(msg):
             return
         if not self.mm.remTemplate(self.model, self.cards[idx].template()):

@@ -95,7 +95,7 @@ class ExportDialog(QDialog):
             try:
                 f = open(file, "wb")
                 f.close()
-            except (OSError, IOError), e:
+            except (OSError, IOError) as e:
                 showWarning(_("Couldn't save file: %s") % unicode(e))
             else:
                 os.unlink(file)

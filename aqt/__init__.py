@@ -12,7 +12,6 @@ except:
     # missing in older versions
     pass
 
-from distutils.version import StrictVersion
 import __builtin__
 import atexit
 import gettext
@@ -22,17 +21,19 @@ import os
 import sys
 import tempfile
 from PyQt4.QtCore import QCoreApplication, QEvent, QIODevice, \
-    QSharedMemory, QTranslator, Qt, QT_VERSION_STR, SIGNAL
+    QTranslator, Qt, SIGNAL
 from PyQt4.QtGui import QApplication, QMessageBox
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 
+from anki import version as _version
 from aqt.profiles import default_base
 from anki.consts import HELP_SITE
 from anki.lang import langDir
-from anki.utils import isMac, isWin
+from anki.utils import isMac
+from aqt.qt import qtmajor, qtminor
 import anki.lang
 
-appVersion = "2.0.12"
+appVersion = _version
 appWebsite = "http://ankisrs.net/"
 appChanges = "http://ankisrs.net/docs/changes.html"
 appDonate = "http://ankisrs.net/support/"
@@ -44,7 +45,7 @@ mw = None  # set on init
 moduleDir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
 
 try:
-    import aqt.forms  # Unused. Just here as a test.
+    import aqt.forms  # Dummy import to get the warning if it fails.
 except ImportError as e:
     if "forms" in str(e):
         print "If you're running from git, did you run build_ui.sh?"
@@ -134,11 +135,11 @@ class AnkiApp(QApplication):
 
     # Single instance support on Win32/Linux
     ##################################################
-    # Now single instance per base dir support. RAS 2012-08-24, 2013-01-05
+
 
     TMOUT = 5000
 
-    def __init__(self, argv, key_path):
+    def __init__(self, argv):
         QApplication.__init__(self, argv)
         self._argv = argv
         self.key = os.path.join(key_path, 'ipc')
@@ -177,11 +178,13 @@ class AnkiApp(QApplication):
         sock = QLocalSocket(self)
         sock.connectToServer(self.key, QIODevice.WriteOnly)
         if not sock.waitForConnected(self.TMOUT):
-            raise Exception("existing instance not responding")
+            # first instance or previous instance dead
+            return False
         sock.write(txt)
         if not sock.waitForBytesWritten(self.TMOUT):
             raise Exception("existing instance not emptying")
         sock.disconnectFromServer()
+        return True
 
     def onRecv(self):
         sock = self._srv.nextPendingConnection()
@@ -189,6 +192,8 @@ class AnkiApp(QApplication):
             sys.stderr.write(sock.errorString())
             return
         buf = sock.readAll()
+        # buf = unicode(buf, sys.getfilesystemencoding(), "ignore")
+        buf = unicode(buf, "utf8", "ignore")
         self.emit(SIGNAL("appMsg"), buf)
         sock.disconnectFromServer()
 
@@ -233,12 +238,18 @@ def run():
     if not opts.base:
         opts.base = default_base()
     try:
-        opts.base = unicode(opts.base, sys.getfilesystemencoding())
+        # opts.base = unicode(opts.base, sys.getfilesystemencoding())
+        # using sys.getfilesystemencoding() does *not* work on
+        # windows, at least not with my python. The function returns
+        # "mbcs", and you can’t really encode into that.
+        opts.base = unicode(opts.base, "utf8")
     except TypeError:
         # Already unicode.
         pass
     opts.base = os.path.abspath(opts.base)
-    opts.profile = unicode(opts.profile or "", sys.getfilesystemencoding())
+    # opts.profile = unicode(opts.profile or "", sys.getfilesystemencoding())
+    opts.profile = unicode(opts.profile or "", "utf8")
+
     # on osx we'll need to add the qt plugins to the search path
     if isMac and getattr(sys, 'frozen', None):
         rd = os.path.abspath(moduleDir + "/../../..")

@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
@@ -169,9 +170,9 @@ you can enter it here. Use \\t to represent tab."""),
         except UnicodeDecodeError:
             showUnicodeWarning()
             return
-        except Exception, e:
+        except Exception as e:
             msg = _("Import failed.\n")
-            err = unicode(e)
+            err = repr(str(e))
             if "1-character string" in err:
                 msg += err
             else:
@@ -300,8 +301,8 @@ def importFile(mw, file):
         except UnicodeDecodeError:
             showUnicodeWarning()
             return
-        except Exception, e:
-            msg = unicode(e)
+        except Exception as e:
+            msg = repr(str(e))
             if msg == "unknownFormat":
                 if file.endswith(".anki2"):
                     showWarning(_("""\
@@ -318,8 +319,15 @@ from a backup, please see the 'Backups' section of the user manual."""))
             mw.progress.finish()
         ImportDialog(mw, importer)
     else:
-        # if it's an apkg, we need to ask whether to import/replace
+        # if it's an apkg/zip, first test it's a valid file
         if importer.__class__.__name__ == "AnkiPackageImporter":
+            z = zipfile.ZipFile(importer.file)
+            try:
+                z.getinfo("collection.anki2")
+            except:
+                showWarning(_("The provided file is not a valid .apkg file."))
+                return
+            # we need to ask whether to import/replace
             if not setupApkgImport(mw, importer):
                 return
         mw.progress.start(immediate=True)
@@ -332,12 +340,13 @@ error from a file downloaded from AnkiWeb, chances are that your download \
 failed. Please try again, and if the problem persists, please try again \
 with a different browser.""")
             showWarning(msg)
-        except Exception, e:
-            if "invalidFile" in unicode(e):
+        except Exception as e:
+            err = repr(str(e))
+            if "invalidFile" in err:
                 msg = _("""\
 Invalid file. Please restore from backup.""")
                 showWarning(msg)
-            elif "readonly" in unicode(e):
+            elif "readonly" in err:
                 showWarning(_("""\
 Unable to import from a read-only file."""))
             else:

@@ -3,11 +3,13 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import re
+import sre_constants
+
 from .utils import fieldChecksum, ids2str, intTime, joinFields, \
     splitFields, stripHTMLMedia
 from .consts import MODEL_CLOZE
 from anki.hooks import runHook
-import sre_constants
+
 
 # Find
 ##########################################################################
@@ -260,7 +262,9 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """ + preds
                 return "queue in (1, 3)"
             return "type = %d" % n
         elif val == "suspended":
-            return "c.queue in (-1, -2)"
+            return "c.queue = -1"
+        elif val == "buried":
+            return "c.queue = -2"
         elif val == "due":
             return """
 (c.queue in (2,3) and c.due <= %d) or
@@ -518,6 +522,7 @@ def fieldNames(col, downcase=True):
 
 # Find duplicates
 ##########################################################################
+# returns array of ("dupestr", [nids])
 
 
 def findDupes(col, fieldName, search=""):
@@ -546,6 +551,7 @@ def findDupes(col, fieldName, search=""):
         if ord is None:
             continue
         val = flds[ord]
+        val = stripHTMLMedia(val)
         # empty does not count as duplicate
         if not val:
             continue

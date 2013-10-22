@@ -1,10 +1,10 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import sys
+import cgi
 
 from PyQt4.QtCore import QObject, QTimer, SIGNAL
-import cgi
-import sys
 
 from anki.lang import _
 from aqt.utils import showText, showWarning
@@ -46,6 +46,12 @@ class ErrorHandler(QObject):
         self.timer.setSingleShot(True)
         self.timer.start()
 
+    def tempFolderMsg(self):
+        return _("""\
+The permissions on your system's temporary folder are incorrect, and Anki is \
+not able to correct them automatically. Please search for 'temp folder' in \
+the Anki manual for more information.""")
+
     def onTimeout(self):
         error = cgi.escape(self.pool)
         self.pool = ""
@@ -59,6 +65,8 @@ class ErrorHandler(QObject):
         if "no default output" in error:
             return showWarning(_("""Please connect a microphone, and ensure \
  other programs are not using the audio device."""))
+        if "invalidTempFolder" in error:
+            return showWarning(self.tempFolderMsg())
         stdText = _("""\
 An error occurred. It may have been caused by a harmless bug, <br>
 or your deck may have a problem.

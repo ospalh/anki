@@ -6,17 +6,22 @@ from cStringIO import StringIO
 import gzip
 import httplib2
 import os
+import random
 import sys
 import urllib
 
 from anki.consts import REM_CARD, REM_NOTE, SYNC_URL, SYNC_VER
 from anki.db import DB
-from anki.utils import ids2str, intTime, json, isWin, isMac
+from anki.utils import ids2str, intTime, json, isWin, isMac, platDesc, checksum
 from hooks import runHook
+import anki
 
 # syncing vars
-HTTP_TIMEOUT = 30
+HTTP_TIMEOUT = 90
 HTTP_PROXY = None
+
+# badly named; means no retries
+httplib2.RETRIES = 1
 
 try:
     # httplib2 >=0.7.7
@@ -98,26 +103,54 @@ class Syncer(object):
         self.server = server
 
     def sync(self):
-        "Returns 'noChanges', 'fullSync', or 'success'."
+        "Returns 'noChanges', 'fullSync', 'success', etc"
+        self.syncMsg = ""
+        self.uname = ""
         # if the deck has any pending changes, flush them first and bump mod
         # time
         self.col.save()
         # step 1: login & metadata
         runHook("sync", "login")
-        ret = self.server.meta()
-        if not ret:
+        meta = self.server.meta()
+        self.col.log("rmeta", meta)
+        if not meta:
             return "badAuth"
-        self.rmod, rscm, self.maxUsn, rts, self.mediaUsn = ret
-        self.lmod, lscm, self.minUsn, lts, dummy = self.meta()
+        rscm = meta['scm']
+        rts = meta['ts']
+        self.rmod = meta['mod']
+        self.maxUsn = meta['usn']
+        self.mediaUsn = meta['musn']
+        self.syncMsg = meta['msg']
+        # this is a temporary measure to address the problem of users
+        # forgetting which email address they've used - it will be removed
+        # when enough time has passed
+        self.uname = meta.get("uname", "")
+        # server requested abort?
+        if not meta['cont']:
+            return "serverAbort"
+        else:
+            # don't abort, but ui should show message after sync finishes
+            # and require confirmation if it's non-empty
+            pass
+        meta = self.meta()
+        self.col.log("lmeta", meta)
+        self.lmod = meta['mod']
+        self.minUsn = meta['usn']
+        lscm = meta['scm']
+        lts = meta['ts']
         if abs(rts - lts) > 300:
+            self.col.log("clock off")
             return "clockOff"
         if self.lmod == self.rmod:
+            self.col.log("no changes")
             return "noChanges"
         elif lscm != rscm:
+            self.col.log("schema diff")
             return "fullSync"
         self.lnewer = self.lmod > self.rmod
         # step 1.5: check collection is valid
         if not self.col.basicCheck():
+            self.col.log("basic check")
             return "basicCheckFailed"
         # step 2: deletions
         runHook("sync", "meta")
@@ -134,6 +167,7 @@ class Syncer(object):
         while 1:
             runHook("sync", "stream")
             chunk = self.server.chunk()
+            self.col.log("server chunk", chunk)
             self.applyChunk(chunk=chunk)
             if chunk['done']:
                 break
@@ -142,6 +176,7 @@ class Syncer(object):
         while 1:
             runHook("sync", "stream")
             chunk = self.chunk()
+            self.col.log("client chunk", chunk)
             self.server.applyChunk(chunk=chunk)
             if chunk['done']:
                 break
@@ -162,7 +197,15 @@ class Syncer(object):
         return "success"
 
     def meta(self):
-        return (self.col.mod, self.col.scm, self.col._usn, intTime(), None)
+        return dict(
+            mod=self.col.mod,
+            scm=self.col.scm,
+            usn=self.col._usn,
+            ts=intTime(),
+            musn=0,
+            msg="",
+            cont=True
+        )
 
     def changes(self):
         "Bundle up small objects."
@@ -450,6 +493,7 @@ from notes where %s""" % d)
         for r in data:
             if r[0] not in lmods or lmods[r[0]] < r[modIdx]:
                 update.append(r)
+        self.col.log(table, data)
         return update
 
     def mergeCards(self, cards):
@@ -500,6 +544,7 @@ class HttpSyncer(object):
 
     def __init__(self, hkey=None, con=None):
         self.hkey = hkey
+        self.skey = checksum(str(random.random()))[:8]
         self.con = con or httpCon()
 
     def assertOk(self, resp):
@@ -523,6 +568,7 @@ class HttpSyncer(object):
         vars['c'] = 1 if comp else 0
         if hkey:
             vars['k'] = self.hkey
+            vars['s'] = self.skey
         for (key, value) in vars.items():
             buf.write(bdry + "\r\n")
             buf.write(
@@ -587,7 +633,10 @@ class RemoteServer(HttpSyncer):
 
     def meta(self):
         ret = self.req(
-            "meta", StringIO(json.dumps(dict(v=SYNC_VER))),
+            "meta",
+            StringIO(json.dumps(dict(
+                v=SYNC_VER, cv="ankidesktop,%s,%s" % (
+                    anki.version, platDesc())))),
             badAuthRaises=False)
         if not ret:
             # invalid auth
