@@ -48,7 +48,7 @@ import aqt.webview
 # Todo: check
 if isMac:
     from PyQt4.QtGui import qt_mac_set_menubar_icons
-
+import anki.db
 
 class AnkiQt(QMainWindow):
     def __init__(self, app, profileManager, args):
@@ -257,7 +257,12 @@ Are you sure?""")):
         self.activateWindow()
         self.raise_()
         # maybe sync (will load DB)
-        self.onSync(auto=True)
+        if self.pendingImport and os.path.basename(
+                self.pendingImport).startswith("backup-"):
+            # skip sync when importing a backup
+            self.loadCollection()
+        else:
+            self.onSync(auto=True)
         # import pending?
         if self.pendingImport:
             if self.pm.profile['key']:
@@ -294,11 +299,20 @@ attempting to import."""))
         self.hideSchemaMsg = True
         try:
             self.col = Collection(self.pm.collectionPath())
-        except:
+        except anki.db.Error:
             # move back to profile manager
             showWarning("""\
 Your collection is corrupt. Please see the manual for \
 how to restore from a backup.""")
+            self.unloadProfile()
+            raise
+        except Exception, e:
+            # the custom exception handler won't catch this if we immediately
+            # unload, so we have to manually handle it
+            if "invalidTempFolder" in repr(str(e)):
+                showWarning(self.errorHandler.tempFolderMsg())
+                self.unloadProfile()
+                return
             self.unloadProfile()
             raise
         self.hideSchemaMsg = False
@@ -319,7 +333,10 @@ how to restore from a backup.""")
                 return
             self.maybeOptimize()
             self.progress.start(immediate=True)
-            corrupt = self.col.db.scalar("pragma integrity_check") != "ok"
+            if os.getenv("ANKIDEV", 0):
+                corrupt = False
+            else:
+                corrupt = self.col.db.scalar("pragma integrity_check") != "ok"
             if corrupt:
                 showWarning(_("Your collection file appears to be corrupt. \
 This can happen when the file is copied or moved while Anki is open, or \
@@ -337,7 +354,7 @@ the manual for information on how to restore from an automatic backup."))
 
     def backup(self):
         nbacks = self.pm.profile['numBackups']
-        if not nbacks:
+        if not nbacks or os.getenv("ANKIDEV", 0):
             return
         dir = self.pm.backupFolder()
         path = self.pm.collectionPath()

@@ -291,8 +291,10 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             self.replayAudio()
         elif key == "*":
             self.onMark()
-        elif key == "-":
+        elif key == "=":
             self.onBuryNote()
+        elif key == "-":
+            self.onBuryCard()
         elif key == "!":
             self.onSuspend()
         elif key == "@":
@@ -695,7 +697,8 @@ function showAnswer(txt) {
     def showContextMenu(self):
         opts = [
             [_("Mark Note"), "*", self.onMark],
-            [_("Bury Note"), "-", self.onBuryNote],
+            [_("Bury Card"), "-", self.onBuryCard],
+            [_("Bury Note"), "=", self.onBuryNote],
             [_("Suspend Card"), "@", self.onSuspendCard],
             [_("Suspend Note"), "!", self.onSuspend],
             [_("Delete Note"), "Delete", self.onDelete],
@@ -756,6 +759,12 @@ function showAnswer(txt) {
             "Note and its %d card deleted.",
             "Note and its %d cards deleted.",
             cnt) % cnt)
+
+    def onBuryCard(self):
+        self.mw.checkpoint(_("Bury"))
+        self.mw.col.sched.buryCards([self.card.id])
+        self.mw.reset()
+        tooltip(_("Card buried."))
 
     def onBuryNote(self):
         self.mw.checkpoint(_("Bury"))
