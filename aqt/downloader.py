@@ -80,7 +80,7 @@ class Downloader(QThread):
         try:
             resp, cont = con.request(
                 aqt.appShared + "download/%d" % self.code)
-        except Exception, e:
+        except Exception as e:
             exc = traceback.format_exc()
             try:
                 self.error = unicode(e[0], "utf8", "ignore")

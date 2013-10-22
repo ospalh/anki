@@ -271,7 +271,7 @@ class PyAudioThreadedRecorder(threading.Thread):
         while not self.finish:
             try:
                 data = stream.read(chunk)
-            except IOError, e:
+            except IOError as e:
                 if e[1] == pyaudio.paInputOverflowed:
                     data = None
                 else:

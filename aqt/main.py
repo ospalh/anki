@@ -307,7 +307,7 @@ Your collection is corrupt. Please see the manual for \
 how to restore from a backup.""")
             self.unloadProfile()
             raise
-        except Exception, e:
+        except Exception as e:
             # the custom exception handler won't catch this if we immediately
             # unload, so we have to manually handle it
             if "invalidTempFolder" in repr(str(e)):

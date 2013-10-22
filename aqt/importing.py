@@ -170,7 +170,7 @@ you can enter it here. Use \\t to represent tab."""),
         except UnicodeDecodeError:
             showUnicodeWarning()
             return
-        except Exception, e:
+        except Exception as e:
             msg = _("Import failed.\n")
             err = repr(str(e))
             if "1-character string" in err:
@@ -301,7 +301,7 @@ def importFile(mw, file):
         except UnicodeDecodeError:
             showUnicodeWarning()
             return
-        except Exception, e:
+        except Exception as e:
             msg = repr(str(e))
             if msg == "unknownFormat":
                 if file.endswith(".anki2"):
@@ -340,7 +340,7 @@ error from a file downloaded from AnkiWeb, chances are that your download \
 failed. Please try again, and if the problem persists, please try again \
 with a different browser.""")
             showWarning(msg)
-        except Exception, e:
+        except Exception as e:
             err = repr(str(e))
             if "invalidFile" in err:
                 msg = _("""\

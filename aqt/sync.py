@@ -353,7 +353,7 @@ class SyncThread(QThread):
         # run sync and check state
         try:
             ret = self.client.sync()
-        except Exception, e:
+        except Exception as e:
             log = traceback.format_exc()
             try:
                 err = unicode(e[0], "utf8", "ignore")
@@ -480,7 +480,7 @@ def _conn_request(self, conn, request_uri, method, body, headers):
         except httplib2.ssl_SSLError:
             conn.close()
             raise
-        except socket.error, e:
+        except socket.error as e:
             err = 0
             if hasattr(e, 'args'):
                 err = getattr(e, 'args')[0]

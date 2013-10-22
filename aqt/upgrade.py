@@ -274,12 +274,12 @@ class UpgradeThread(QThread):
         # try to copy over dropbox media first
         try:
             self.maybeCopyFromCustomFolder(path)
-        except Exception, e:
+        except Exception as e:
             imp.log.append(repr(str(e)))
         # then run the import
         try:
             imp.run()
-        except Exception, e:
+        except Exception as e:
             if repr(str(e)) == "invalidFile":
                 # already logged
                 pass

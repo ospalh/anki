@@ -795,7 +795,7 @@ to a cloze type first, via Edit>Change Note Type."""))
     def onRecSound(self):
         try:
             file = getAudio(self.widget)
-        except Exception, e:
+        except Exception as e:
             showWarning(
                 _("Couldn't record audio. Have you installed lame and sox?") +
                 "\n\n" + repr(str(e)))
@@ -849,7 +849,7 @@ to a cloze type first, via Edit>Change Note Type."""))
             req = urllib2.Request(url, None, {
                 'User-Agent': 'Mozilla/5.0 (compatible; Anki)'})
             filecontents = urllib2.urlopen(req).read()
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             showWarning(_("An error occurred while opening %s") % e)
             return
         finally:
