@@ -222,6 +222,9 @@ def run():
         rd = os.path.abspath(moduleDir + "/../../..")
         QCoreApplication.setLibraryPaths([rd])
 
+    if isMac:
+        QFont.insertSubstitution(".Lucida Grande UI", "Lucida Grande")
+
     # create the app
     app = AnkiApp(sys.argv)
     QCoreApplication.setApplicationName("Anki")
