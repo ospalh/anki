@@ -255,6 +255,9 @@ def run():
         rd = os.path.abspath(moduleDir + "/../../..")
         QCoreApplication.setLibraryPaths([rd])
 
+    if isMac:
+        QFont.insertSubstitution(".Lucida Grande UI", "Lucida Grande")
+
     # create the app
     # The opts.base is only used to attach to the shared memory at
     # this time.
