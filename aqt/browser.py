@@ -55,7 +55,7 @@ class DataModel(QAbstractTableModel):
     def getCard(self, index):
         id = self.cards[index.row()]
         if not id in self.cardObjs:
-            self.cardObjs[id] = self.col.getCard(id, log=False)
+            self.cardObjs[id] = self.col.getCard(id)
         return self.cardObjs[id]
 
     def refreshNote(self, note):
