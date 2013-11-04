@@ -298,6 +298,7 @@ attempting to import."""))
 
     def loadCollection(self):
         self.hideSchemaMsg = True
+        self._openLog()
         try:
             self.col = Collection(self.pm.collectionPath())
         except anki.db.Error:
@@ -903,6 +904,8 @@ Difference to correct time: %s.""") % diffText
     ##########################################################################
 
     def onLog(self, args, kwargs):
+        if not self._logHnd:
+            return
         def customRepr(x):
             if isinstance(x, basestring):
                 return x
@@ -912,10 +915,14 @@ Difference to correct time: %s.""") % diffText
         buf = u"[%s] %s:%s(): %s" % (
             intTime(), os.path.basename(path), fn,
             ", ".join([customRepr(x) for x in args]))
-        lpath = re.sub("\.anki2$", ".log", self.pm.collectionPath())
-        open(lpath, "ab").write(buf.encode("utf8") + "\n")
+        self._logHnd.write(buf.encode("utf8") + "\n")
+        self._logHnd.flush()
         if os.environ.get("ANKIDEV"):
             print buf
+
+    def _openLog(self):
+        lpath = re.sub("\.anki2$", ".log", self.pm.collectionPath())
+        self._logHnd = open(lpath, "ab")
 
     # Schema modifications
     ##########################################################################
