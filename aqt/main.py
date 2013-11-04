@@ -906,6 +906,7 @@ Difference to correct time: %s.""") % diffText
     def onLog(self, args, kwargs):
         if not self._logHnd:
             return
+
         def customRepr(x):
             if isinstance(x, basestring):
                 return x
