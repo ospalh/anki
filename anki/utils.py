@@ -17,8 +17,10 @@ import sys
 import tempfile
 import time
 
-from anki.lang import _, ngettext
 import platform
+
+from anki.lang import _, ngettext
+
 
 if sys.version_info[1] < 5:
     def format_string(a, b):
@@ -27,6 +29,14 @@ if sys.version_info[1] < 5:
 
 try:
     import simplejson as json
+    # make sure simplejson's loads() always returns unicode
+    # we don't try to support .load()
+    origLoads = json.loads
+    def loads(s, *args, **kwargs):
+        if not isinstance(s, unicode):
+            s = unicode(s, "utf8")
+        return origLoads(s, *args, **kwargs)
+    json.loads = loads
 except ImportError:
     import json
 
