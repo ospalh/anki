@@ -3,8 +3,8 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import os
-import re
 import pprint
+import re
 import signal
 import sys
 import traceback
@@ -57,6 +57,8 @@ class AnkiQt(QMainWindow):
         self.state = "startup"
         aqt.mw = self
         self.app = app
+        from anki.collection import _Collection
+        _Collection.debugLog = True
         if isWin:
             self._xpstyle = QStyleFactory.create("WindowsXP")
             self.app.setStyle(self._xpstyle)
@@ -298,7 +300,6 @@ attempting to import."""))
 
     def loadCollection(self):
         self.hideSchemaMsg = True
-        self._openLog()
         try:
             self.col = Collection(self.pm.collectionPath())
         except anki.db.Error:
@@ -881,7 +882,6 @@ Difference to correct time: %s.""") % diffText
     def setupHooks(self):
         addHook("modSchema", self.onSchemaMod)
         addHook("remNotes", self.onRemNotes)
-        addHook("log", self.onLog)
 
     # Log note deletion
     ##########################################################################
@@ -899,31 +899,6 @@ Difference to correct time: %s.""") % diffText
                 f.write(
                     ("\t".join([str(id), str(mid)] + fields)).encode("utf8"))
                 f.write("\n")
-
-    # Debug logging
-    ##########################################################################
-
-    def onLog(self, args, kwargs):
-        if not self._logHnd:
-            return
-
-        def customRepr(x):
-            if isinstance(x, basestring):
-                return x
-            return pprint.pformat(x)
-        path, num, fn, y = traceback.extract_stack(
-            limit=4+kwargs.get("stack", 0))[0]
-        buf = u"[%s] %s:%s(): %s" % (
-            intTime(), os.path.basename(path), fn,
-            ", ".join([customRepr(x) for x in args]))
-        self._logHnd.write(buf.encode("utf8") + "\n")
-        self._logHnd.flush()
-        if os.environ.get("ANKIDEV"):
-            print buf
-
-    def _openLog(self):
-        lpath = re.sub("\.anki2$", ".log", self.pm.collectionPath())
-        self._logHnd = open(lpath, "ab")
 
     # Schema modifications
     ##########################################################################

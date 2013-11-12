@@ -18,13 +18,23 @@ import sys
 import tempfile
 import time
 
-from anki.lang import _, ngettext
 import platform
+
+from anki.lang import _, ngettext
+
 
 # We require python >=2.6 elsewhere. Remove check for Python x.4.
 
 try:
     import simplejson as json
+    # make sure simplejson's loads() always returns unicode
+    # we don't try to support .load()
+    origLoads = json.loads
+    def loads(s, *args, **kwargs):
+        if not isinstance(s, unicode):
+            s = unicode(s, "utf8")
+        return origLoads(s, *args, **kwargs)
+    json.loads = loads
 except ImportError:
     import json
 

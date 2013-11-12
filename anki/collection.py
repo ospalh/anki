@@ -2,12 +2,15 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+import pprint
+import re
 import copy
 import datetime
 import os
 import random
 # import stat
 import time
+import traceback
 
 from anki.consts import HELP_SITE, MODEL_CLOZE, MODEL_STD, \
     NEW_CARDS_DISTRIBUTE, NEW_CARDS_DUE, REM_CARD, REM_NOTE
@@ -50,9 +53,12 @@ defaultConf = {
 
 class _Collection(object):
 
+    debugLog = False
+
     def __init__(self, db, server=False):
         self.db = db
         self.path = db._path
+        self._openLog()
         self.log(self.path, anki.version)
         self.server = server
         self._lastSave = time.time()
@@ -776,4 +782,25 @@ and queue = 0""", intTime(), self.usn())
     ##########################################################################
 
     def log(self, *args, **kwargs):
-        runHook("log", args, kwargs)
+        if not self.debugLog:
+            return
+        def customRepr(x):
+            if isinstance(x, basestring):
+                return x
+            return pprint.pformat(x)
+        path, num, fn, y = traceback.extract_stack(
+            limit=2+kwargs.get("stack", 0))[0]
+        buf = u"[%s] %s:%s(): %s" % (intTime(), os.path.basename(path), fn,
+                                     ", ".join([customRepr(x) for x in args]))
+        self._logHnd.write(buf.encode("utf8") + "\n")
+        if os.environ.get("ANKIDEV"):
+            print buf
+
+    def _openLog(self):
+        if not self.debugLog:
+            return
+        lpath = re.sub("\.anki2$", ".log", self.path)
+        self._logHnd = open(lpath, "ab")
+
+    def _closeLog(self):
+        self._logHnd = None
