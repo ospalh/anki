@@ -30,7 +30,7 @@ if arch[1] == "ELF":
     sys.path.insert(0, os.path.join(ext, "py2.%d-%s" % (
         sys.version_info[1], arch[0][0:2])))
 
-version="2.0.17" # build scripts grep this line, so preserve formatting
+version="2.0.18" # build scripts grep this line, so preserve formatting
 
 __version__ = version
 # We’ve been told to not touch the “version” above, so add the
