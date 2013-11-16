@@ -22,7 +22,7 @@ import sys
 import tempfile
 from PyQt4.QtCore import QCoreApplication, QEvent, QIODevice, \
     QTranslator, Qt, SIGNAL
-from PyQt4.QtGui import QApplication, QMessageBox
+from PyQt4.QtGui import QApplication, QFont, QMessageBox
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 
 from anki import version as _version

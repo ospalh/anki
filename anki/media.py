@@ -15,7 +15,7 @@ from anki.consts import MEDIA_ADD, MEDIA_REM, MODEL_CLOZE, SYNC_ZIP_COUNT, \
     SYNC_ZIP_SIZE
 from anki.db import DB
 from anki.latex import mungeQA
-from anki.utils import checksum, isWin, isMac, json
+from anki.utils import checksum, isMac, isWin, json
 
 
 class MediaManager(object):
@@ -235,7 +235,8 @@ class MediaManager(object):
                 # leading _ says to ignore file
                 continue
             if not isinstance(file, unicode):
-                invalid.append(unicode(file, sys.getfilesystemencoding(), "replace"))
+                invalid.append(
+                    unicode(file, sys.getfilesystemencoding(), "replace"))
                 continue
             nfcFile = unicodedata.normalize("NFC", file)
             # we enforce NFC fs encoding on non-macs; on macs we'll have gotten

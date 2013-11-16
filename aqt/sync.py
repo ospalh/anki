@@ -21,13 +21,8 @@ from anki.hooks import addHook, remHook, runHook
 from anki.lang import _
 from anki.sync import FullSyncer, MediaSyncer, RemoteMediaServer, \
     RemoteServer, Syncer
-from aqt.utils import askUserDialog, showText, showWarning, tooltip
+from aqt.utils import askUserDialog, showInfo, showText, showWarning, tooltip
 import aqt
-from anki import Collection
-from anki.sync import Syncer, RemoteServer, FullSyncer, MediaSyncer, \
-    RemoteMediaServer
-from anki.hooks import addHook, remHook
-from aqt.utils import tooltip, askUserDialog, showWarning, showText, showInfo
 
 
 # Sync manager
@@ -74,6 +69,7 @@ class SyncManager(QObject):
             showText(self.thread.syncMsg)
         if self.thread.uname:
             self.pm.profile['syncUser'] = self.thread.uname
+
         def delayedInfo():
             if self._didFullUp and not self._didError:
                 showInfo(_("""\
@@ -93,7 +89,7 @@ automatically."""))
                 b=self.recvBytes // 1024)))
 
     def onEvent(self, evt, *args):
-        pu = self.mw.progress.update
+        # pu = self.mw.progress.update
         if evt == "badAuth":
             tooltip(
                 _("AnkiWeb ID or password was incorrect; please try again."),
@@ -112,7 +108,8 @@ automatically."""))
             self._didFullUp = False
             self._checkFailed()
         elif evt == "sync":
-            m = None; t = args[0]
+            m = None
+            t = args[0]
             if t == "login":
                 m = _("Syncing...")
             elif t == "upload":
@@ -132,7 +129,7 @@ Please visit AnkiWeb, upgrade your deck, then try again."""))
                 self._updateLabel()
         elif evt == "error":
             self._didError = True
-            showText(_("Syncing failed:\n%s")%
+            showText(_("Syncing failed:\n%s") %
                      self._rewriteError(args[0]))
         elif evt == "clockOff":
             self._clockOff()
@@ -173,21 +170,27 @@ Please upgrade to the latest version of Anki.""")
         # 502 is technically due to the server restarting, but we reuse the
         # error message
         elif "code: 502" in err:
-            return _("AnkiWeb is under maintenance. Please try again in a few minutes.")
+            return _(u"""\
+AnkiWeb is under maintenance. Please try again in a few minutes.""")
         elif "code: 503" in err:
             return _("""\
 AnkiWeb is too busy at the moment. Please try again in a few minutes.""")
         elif "code: 504" in err:
-            return _("504 gateway timeout error received. Please try temporarily disabling your antivirus.")
+            return _(u"""\
+504 gateway timeout error received. Please try temporarily disabling your \
+antivirus.""")
         elif "code: 409" in err:
-            return _("Only one client can access AnkiWeb at a time. If a previous sync failed, please try again in a few minutes.")
+            return _(u"""\
+Only one client can access AnkiWeb at a time. If a previous sync failed, \
+please try again in a few minutes.""")
         elif "10061" in err or "10013" in err:
-            return _(
-                "Antivirus or firewall software is preventing Anki from connecting to the internet.")
+            return _(u"""\
+Antivirus or firewall software is preventing Anki from connecting to the \
+internet.""")
         elif "Unable to find the server" in err:
-            return _(
-                "Server not found. Either your connection is down, or antivirus/firewall "
-                "software is blocking Anki from connecting to the internet.")
+            return _(u"""\
+Server not found. Either your connection is down, or antivirus/firewall \
+software is blocking Anki from connecting to the internet.""")
         elif "code: 407" in err:
             return _("Proxy authentication required.")
         elif "code: 413" in err:
@@ -220,7 +223,7 @@ enter your details below.""") %
         passwd.setEchoMode(QLineEdit.Password)
         g.addWidget(passwd, 1, 1)
         vbox.addLayout(g)
-        bb = QDialogButtonBox(QDialogButtonBox.Ok|QDialogButtonBox.Cancel)
+        bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         bb.button(QDialogButtonBox.Ok).setAutoDefault(True)
         self.connect(bb, SIGNAL("accepted()"), d.accept)
         self.connect(bb, SIGNAL("rejected()"), d.reject)
@@ -249,10 +252,8 @@ any changes you have made on AnkiWeb or your other devices since the \
 last sync to this device will be lost.
 
 After all devices are in sync, future reviews and added cards can be merged \
-automatically."""),
-                [_("Upload to AnkiWeb"),
-                 _("Download from AnkiWeb"),
-                 _("Cancel")])
+automatically."""), [_("Upload to AnkiWeb"), _("Download from AnkiWeb"),
+                     _("Cancel")])
         diag.setDefault(2)
         ret = diag.run()
         if ret == _("Upload to AnkiWeb"):
@@ -273,11 +274,12 @@ Your collection is in an inconsistent state. Please run Tools>\
 Check Database, then sync again."""))
 
     def badUserPass(self):
-        aqt.preferences.Preferences(self, self.pm.profile).dialog.tabWidget.\
-                                         setCurrentIndex(1)
+        aqt.preferences.Preferences(
+            self, self.pm.profile).dialog.tabWidget. setCurrentIndex(1)
 
 # Sync thread
 ######################################################################
+
 
 class SyncThread(QThread):
 
@@ -304,16 +306,20 @@ class SyncThread(QThread):
         self.recvTotal = 0
         # throttle updates; qt doesn't handle lots of posted events well
         self.byteUpdate = time.time()
+
         def syncEvent(type):
             self.fireEvent("sync", type)
+
         def canPost():
             if (time.time() - self.byteUpdate) > 0.1:
                 self.byteUpdate = time.time()
                 return True
+
         def sendEvent(bytes):
             self.sentTotal += bytes
             if canPost():
                 self.fireEvent("send", self.sentTotal)
+
         def recvEvent(bytes):
             self.recvTotal += bytes
             if canPost():
@@ -459,11 +465,12 @@ def _incrementalSend(self, data):
 
 httplib.HTTPConnection.send = _incrementalSend
 
+
 # receiving in httplib2
 def _conn_request(self, conn, request_uri, method, body, headers):
     try:
         if conn.sock is None:
-          conn.connect()
+            conn.connect()
         conn.request(method, request_uri, body, headers)
     except socket.timeout:
         raise
@@ -480,7 +487,7 @@ def _conn_request(self, conn, request_uri, method, body, headers):
             err = getattr(e, 'args')[0]
         else:
             err = e.errno
-        if err == errno.ECONNREFUSED: # Connection refused
+        if err == errno.ECONNREFUSED:  # Connection refused
             raise
     except httplib.HTTPException:
         # Just because the server closed the connection doesn't apparently mean
