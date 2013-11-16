@@ -787,6 +787,7 @@ and queue = 0""", intTime(), self.usn())
     def log(self, *args, **kwargs):
         if not self._debugLog:
             return
+
         def customRepr(x):
             if isinstance(x, basestring):
                 return x
