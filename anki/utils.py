@@ -9,6 +9,7 @@ import htmlentitydefs
 import locale
 import math
 import os
+import platform
 import random
 import re
 import shutil
@@ -17,8 +18,6 @@ import subprocess
 import sys
 import tempfile
 import time
-
-import platform
 
 from anki.lang import _, ngettext
 
@@ -30,6 +29,7 @@ try:
     # make sure simplejson's loads() always returns unicode
     # we don't try to support .load()
     origLoads = json.loads
+
     def loads(s, *args, **kwargs):
         if not isinstance(s, unicode):
             s = unicode(s, "utf8")

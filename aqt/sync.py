@@ -11,6 +11,7 @@ import socket
 import time
 import traceback
 
+
 from PyQt4.QtCore import QObject, Qt, QThread, SIGNAL
 from PyQt4.QtGui import QDialog, QDialogButtonBox, QGridLayout, QLabel, \
     QLineEdit, QVBoxLayout
@@ -20,13 +21,12 @@ from anki.hooks import addHook, remHook, runHook
 from anki.lang import _
 from anki.sync import FullSyncer, MediaSyncer, RemoteMediaServer, \
     RemoteServer, Syncer
-from aqt.utils import askUserDialog, showText, showWarning, tooltip
+from aqt.utils import askUserDialog, showInfo, showText, showWarning, tooltip
 import aqt
 
 
 # Sync manager
 ######################################################################
-
 
 class SyncManager(QObject):
 
@@ -49,6 +49,7 @@ class SyncManager(QObject):
         # to avoid gui widgets being garbage collected in the worker thread,
         # run gc in advance
         self._didFullUp = False
+        self._didError = False
         gc.collect()
         # create the thread, setup signals and start running
         t = self.thread = SyncThread(
@@ -68,14 +69,17 @@ class SyncManager(QObject):
             showText(self.thread.syncMsg)
         if self.thread.uname:
             self.pm.profile['syncUser'] = self.thread.uname
-        if self._didFullUp:
-            showWarning(_("""\
+
+        def delayedInfo():
+            if self._didFullUp and not self._didError:
+                showInfo(_("""\
 Your collection was successfully uploaded to AnkiWeb.
 
 If you use any other devices, please sync them now, and choose \
 to download the collection you have just uploaded from this computer. \
 After doing so, future reviews and added cards will be merged \
 automatically."""))
+        self.mw.progress.timer(1000, delayedInfo, False)
 
     def _updateLabel(self):
         self.mw.progress.update(label="%s\n%s" % (
@@ -168,28 +172,27 @@ Please upgrade to the latest version of Anki.""")
         # 502 is technically due to the server restarting, but we reuse the
         # error message
         elif "code: 502" in err:
-            return _("""\
+            return _(u"""\
 AnkiWeb is under maintenance. Please try again in a few minutes.""")
         elif "code: 503" in err:
             return _("""\
 AnkiWeb is too busy at the moment. Please try again in a few minutes.""")
         elif "code: 504" in err:
-            return _("""\
-504 gateway timeout error received. Please try temporarily disabling \
-your antivirus.""")
+            return _(u"""\
+504 gateway timeout error received. Please try temporarily disabling your \
+antivirus.""")
         elif "code: 409" in err:
-            return _("""\
+            return _(u"""\
 Only one client can access AnkiWeb at a time. If a previous sync failed, \
 please try again in a few minutes.""")
         elif "10061" in err or "10013" in err:
-            return _("""\
-Antivirus or firewall software is preventing Anki from connecting to \
-the internet. """)
-        elif "Unable to find the server":
-            return _("""\
-Server not found. Either your connection is down, or \
-antivirus/firewall software is blocking Anki from connecting to the \
+            return _(u"""\
+Antivirus or firewall software is preventing Anki from connecting to the \
 internet.""")
+        elif "Unable to find the server" in err:
+            return _(u"""\
+Server not found. Either your connection is down, or antivirus/firewall \
+software is blocking Anki from connecting to the internet.""")
         elif "code: 407" in err:
             return _("Proxy authentication required.")
         elif "code: 413" in err:
@@ -251,10 +254,8 @@ any changes you have made on AnkiWeb or your other devices since the \
 last sync to this device will be lost.
 
 After all devices are in sync, future reviews and added cards can be merged \
-automatically."""),
-                             [_("Upload to AnkiWeb"),
-                              _("Download from AnkiWeb"),
-                              _("Cancel")])
+automatically."""), [_("Upload to AnkiWeb"), _("Download from AnkiWeb"),
+                     _("Cancel")])
         diag.setDefault(2)
         ret = diag.run()
         if ret == _("Upload to AnkiWeb"):
@@ -276,7 +277,7 @@ Check Database, then sync again."""))
 
     def badUserPass(self):
         aqt.preferences.Preferences(
-            self, self.pm.profile).dialog.tabWidget.setCurrentIndex(1)
+            self, self.pm.profile).dialog.tabWidget. setCurrentIndex(1)
 
 # Sync thread
 ######################################################################
@@ -356,7 +357,7 @@ class SyncThread(QThread):
         # run sync and check state
         try:
             ret = self.client.sync()
-        except Exception as e:
+        except Exception, e:
             log = traceback.format_exc()
             try:
                 err = unicode(e[0], "utf8", "ignore")
@@ -471,7 +472,7 @@ httplib.HTTPConnection.send = _incrementalSend
 def _conn_request(self, conn, request_uri, method, body, headers):
     try:
         if conn.sock is None:
-          conn.connect()
+            conn.connect()
         conn.request(method, request_uri, body, headers)
     except socket.timeout:
         raise
@@ -488,7 +489,7 @@ def _conn_request(self, conn, request_uri, method, body, headers):
             err = getattr(e, 'args')[0]
         else:
             err = e.errno
-        if err == errno.ECONNREFUSED: # Connection refused
+        if err == errno.ECONNREFUSED:  # Connection refused
             raise
     except httplib.HTTPException:
         # Just because the server closed the connection doesn't apparently mean

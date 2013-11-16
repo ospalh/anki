@@ -16,6 +16,7 @@ except:
 from distutils.version import StrictVersion
 import __builtin__
 import atexit
+import getpass
 import gettext
 import locale
 import optparse
@@ -25,13 +26,13 @@ import tempfile
 
 from PyQt4.QtCore import QCoreApplication, QEvent, QIODevice, \
     QSharedMemory, QTranslator, Qt, QT_VERSION_STR, SIGNAL
-from PyQt4.QtGui import QApplication, QMessageBox
+from PyQt4.QtGui import QApplication, QFont, QMessageBox
 from PyQt4.QtNetwork import QLocalServer, QLocalSocket
 
 from anki import version as version_
 from anki.consts import HELP_SITE
 from anki.lang import langDir
-from anki.utils import isMac, isWin
+from anki.utils checksum, import isMac, isWin
 from aqt.profiles import default_base
 import anki.lang
 

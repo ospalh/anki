@@ -13,18 +13,18 @@ from PyQt4.QtWebKit import QWebPage, QWebView
 import ctypes
 import os
 import re
+import urllib
 import urllib2
 
 from anki.hooks import runHook, runFilter
 from anki.lang import _
 from anki.utils import isMac, isWin, json, namedtmp, stripHTML, stripHTMLMedia
 from aqt.sound import getAudio
-from aqt.utils import getBase, getFile, openHelp, shortcut, showInfo, \
-    showWarning, tooltip
 from aqt.webview import AnkiWebView
-import anki.js
+from aqt.utils import shortcut, showInfo, showWarning, getBase, getFile, \
+    openHelp, tooltip
 import aqt
-import urllib
+import anki.js
 
 pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg")
 audio = ("wav", "mp3", "ogg", "flac", "mp4", "swf", "mov", "mpeg", "mkv")
@@ -270,15 +270,14 @@ document.onclick = function (evt) {
 
 </script></head><body>
 <div id="fields"></div>
-<div id="dupes"><a href="#" onclick="py.run('dupes');return false;">\
-%s</a></div>
+<div id="dupes">
+  <a href="#" onclick="py.run('dupes');return false;">%s</a>
+</div>
 </body></html>
 """
 
 
 # caller is responsible for resetting note on reset
-
-
 class Editor(object):
     def __init__(self, mw, widget, parentWindow, addMode=False):
         self.mw = mw
@@ -378,8 +377,7 @@ class Editor(object):
         b("text_bold", self.toggleBold, _("Ctrl+B"), _("Bold text (Ctrl+B)"),
           check=True)
         b("text_italic", self.toggleItalic, _("Ctrl+I"),
-          _("Italic text (Ctrl+I)"),
-          check=True)
+          _("Italic text (Ctrl+I)"), check=True)
         b("text_under", self.toggleUnderline, _("Ctrl+U"),
           _("Underline text (Ctrl+U)"), check=True)
         b("text_super", self.toggleSuper, _("Ctrl+Shift+="),
@@ -474,6 +472,7 @@ class Editor(object):
                 if runFilter(
                         "editFocusLost", False, self.note, self.currentField):
                     # something updated the note; schedule reload
+
                     def onUpdate():
                         self.stealFocus = True
                         self.loadNote()
@@ -708,7 +707,7 @@ class Editor(object):
         # check that the model is set up for cloze deletion
         if '{{cloze:' not in self.note.model()['tmpls'][0]['qfmt']:
             if self.addMode:
-                tooltip(_("""\
+                tooltip(_(u"""\
 Warning, cloze deletions will not work until you switch the type at the top \
 to Cloze."""))
             else:
@@ -803,10 +802,10 @@ to a cloze type first, via Edit>Change Note Type."""))
     def onRecSound(self):
         try:
             file = getAudio(self.widget)
-        except Exception as e:
+        except Exception, e:
             showWarning(
-                _("Couldn't record audio. Have you installed lame and sox?") +
-                "\n\n" + repr(str(e)))
+                _("Couldn't record audio. Have you installed lame and sox?")
+                + "\n\n" + repr(str(e)))
             return
         self.addMedia(file)
 
@@ -838,8 +837,8 @@ to a cloze type first, via Edit>Change Note Type."""))
 
     def isURL(self, s):
         s = s.lower()
-        return s.startswith("http://") or s.startswith("https://") \
-            or s.startswith("ftp://") or s.startswith("file://")
+        return (s.startswith("http://") or s.startswith("https://")
+                or s.startswith("ftp://") or s.startswith("file://"))
 
     def _retrieveURL(self, url):
         "Download file into media folder and return local filename or None."
@@ -857,7 +856,7 @@ to a cloze type first, via Edit>Change Note Type."""))
             req = urllib2.Request(url, None, {
                 'User-Agent': 'Mozilla/5.0 (compatible; Anki)'})
             filecontents = urllib2.urlopen(req).read()
-        except urllib2.URLError as e:
+        except urllib2.URLError, e:
             showWarning(_("An error occurred while opening %s") % e)
             return
         finally:
@@ -882,8 +881,8 @@ to a cloze type first, via Edit>Change Note Type."""))
                 new = []
                 for attr in attrs:
                     sattr = attr.strip()
-                    if sattr and sattr not in \
-                            ("font-style: normal", "font-weight: normal"):
+                    if sattr and sattr not in (
+                            "font-style: normal", "font-weight: normal"):
                         new.append(sattr)
                 doc.span['style'] = ";".join(new)
             # filter out implicit formatting from webkit
@@ -1035,6 +1034,7 @@ class EditorWebView(AnkiWebView):
         self._flagAnkiText()
 
     def onPaste(self):
+        # mime = self.mungeClip()
         self.mungeClip()
         self.triggerPageAction(QWebPage.Paste)
         self.restoreClip()
@@ -1043,6 +1043,7 @@ class EditorWebView(AnkiWebView):
         if not isMac and not isWin and evt.button() == Qt.MidButton:
             # middle click on x11; munge the clipboard before standard
             # handling
+            # mime = self.mungeClip(mode=QClipboard.Selection)
             self.mungeClip(mode=QClipboard.Selection)
             AnkiWebView.mouseReleaseEvent(self, evt)
             self.restoreClip(mode=QClipboard.Selection)
@@ -1052,7 +1053,8 @@ class EditorWebView(AnkiWebView):
     def focusInEvent(self, evt):
         window = False
         if evt.reason() in (Qt.ActiveWindowFocusReason, Qt.PopupFocusReason):
-            # editor area got focus again; need to tell js not to adjust cursor
+            # Editor area got focus again; need to tell js not to
+            # adjust cursor.
             self.eval("mouseDown++;")
             window = True
         AnkiWebView.focusInEvent(self, evt)
@@ -1101,7 +1103,7 @@ class EditorWebView(AnkiWebView):
 
     def saveClip(self, mode):
         # We don't own the clipboard object, so we need to copy it or
-        # we'll crash
+        # we'll crash.
         mime = self.editor.mw.app.clipboard().mimeData(mode=mode)
         n = QMimeData()
         if mime.hasText():
@@ -1168,7 +1170,7 @@ class EditorWebView(AnkiWebView):
         html = mime.html()
         newMime = QMimeData()
         if self.strip and not html.startswith("<!--anki-->"):
-            # special case for google images: if after stripping
+            # Special case for google images: if after stripping
             # there's no text and there are image links, we'll paste
             # those as html instead
             if not stripHTML(html).strip():
@@ -1181,7 +1183,7 @@ class EditorWebView(AnkiWebView):
                     return self._processImage(mime)
                 newMime.setHtml(newHtml)
             else:
-                # use .text() if available so newlines are preserved;
+                # Use .text() if available so newlines are preserved;
                 # otherwise strip
                 if mime.hasText():
                     return self._processText(mime)
@@ -1200,15 +1202,15 @@ class EditorWebView(AnkiWebView):
         uname = namedtmp("paste-%d" % im.cacheKey())
         if self.editor.mw.pm.profile.get("pastePNG", False):
             ext = ".png"
-            im.save(uname + ext, None, 50)
+            im.save(uname+ext, None, 50)
         else:
             ext = ".jpg"
-            im.save(uname + ext, None, 80)
+            im.save(uname+ext, None, 80)
         # invalid image?
-        if not os.path.exists(uname + ext):
+        if not os.path.exists(uname+ext):
             return QMimeData()
         mime = QMimeData()
-        mime.setHtml(self.editor._addMedia(uname + ext))
+        mime.setHtml(self.editor._addMedia(uname+ext))
         return mime
 
     def _flagAnkiText(self):
@@ -1218,6 +1220,7 @@ class EditorWebView(AnkiWebView):
         mime = clip.mimeData()
         if not mime.hasHtml():
             return
+        # html = mime.html()
         mime.setHtml("<!--anki-->" + mime.html())
 
     def contextMenuEvent(self, evt):

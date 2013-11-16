@@ -15,7 +15,7 @@ from anki.consts import MEDIA_ADD, MEDIA_REM, MODEL_CLOZE, SYNC_ZIP_COUNT, \
     SYNC_ZIP_SIZE
 from anki.db import DB
 from anki.latex import mungeQA
-from anki.utils import checksum, isWin, isMac, json
+from anki.utils import checksum, isMac, isWin, json
 
 
 class MediaManager(object):
@@ -233,6 +233,7 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
             allRefs.update(noteRefs)
         # loop through media folder
         unused = []
+        invalid = []
         if local is None:
             files = os.listdir(mdir)
         else:
@@ -244,6 +245,10 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
                     continue
             if file.startswith("_"):
                 # leading _ says to ignore file
+                continue
+            if not isinstance(file, unicode):
+                invalid.append(
+                    unicode(file, sys.getfilesystemencoding(), "replace"))
                 continue
             nfcFile = unicodedata.normalize("NFC", file)
             # we enforce NFC fs encoding on non-macs; on macs we'll have gotten
@@ -262,7 +267,7 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
             else:
                 allRefs.discard(nfcFile)
         nohave = [x for x in allRefs if not x.startswith("_")]
-        return (nohave, unused)
+        return (nohave, unused, invalid)
 
     def _normalizeNoteRefs(self, nid):
         note = self.col.getNote(nid)
@@ -356,6 +361,9 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
         return re.sub(self._illegalCharReg, "", str)
 
     def hasIllegal(self, str):
+        # a file that couldn't be decoded to unicode is considered invalid
+        if not isinstance(str, unicode):
+            return False
         return not not re.search(self._illegalCharReg, str)
 
     # Media syncing - bundling zip files to send to server

@@ -15,7 +15,7 @@ from anki.stdmodels import addBasicModel, addClozeModel, \
 from anki.utils import intTime, json
 
 
-def Collection(path, lock=True, server=False, sync=True):
+def Collection(path, lock=True, server=False, sync=True, log=False):
     "Open a new or existing collection. Path must be unicode."
     assert path.endswith(".anki2")
     path = os.path.abspath(path)
@@ -37,7 +37,7 @@ def Collection(path, lock=True, server=False, sync=True):
     else:
         db.execute("pragma synchronous = off")
     # add db to col and do any remaining upgrades
-    col = _Collection(db, server)
+    col = _Collection(db, server, log)
     if ver < SCHEMA_VERSION:
         _upgrade(col, ver)
     elif create:
