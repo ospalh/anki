@@ -1356,9 +1356,9 @@ update cards set queue=-2,mod=?,usn=? where id in """ + ids2str(toBury),
 
     def forgetCards(self, ids):
         "Put cards at the end of the new queue."
-        self.col.db.execute(
-            "update cards set type=0,queue=0,ivl=0,due=0,odue=0,factor=? where odid=0 "
-            "and queue >= 0 and id in "+ids2str(ids), 2500)
+        self.col.db.execute("""\
+update cards set type=0,queue=0,ivl=0,due=0,odue=0,factor=? \
+where odid=0 and queue >= 0 and id in """ + ids2str(ids), 2500)
         pmax = self.col.db.scalar(
             "select max(due) from cards where type=0") or 0
         # takes care of mod + usn

@@ -6,7 +6,9 @@ import pprint
 import time
 
 from anki.consts import MODEL_STD
+from anki.hooks import runHook
 from anki.utils import intTime, joinFields, timestampID
+
 
 # Cards
 ##########################################################################

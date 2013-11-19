@@ -752,8 +752,8 @@ select id from cards where odue > 0 and (type=1 or queue=2) and not odid""")
             problems.append(
                 ngettext("Fixed %d card with invalid properties.",
                          "Fixed %d cards with invalid properties.", cnt) % cnt)
-            self.db.execute("update cards set odue=0 where id in "+
-                ids2str(ids))
+            self.db.execute(
+                "update cards set odue=0 where id in " + ids2str(ids))
         # tags
         self.tags.registerNotes()
         # field cache
@@ -797,6 +797,7 @@ and queue = 0""", intTime(), self.usn())
     def log(self, *args, **kwargs):
         if not self._debugLog:
             return
+
         def customRepr(x):
             if isinstance(x, basestring):
                 return x
