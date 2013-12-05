@@ -4,6 +4,7 @@
 
 from cStringIO import StringIO
 import re
+import os
 import send2trash
 import sys
 import unicodedata

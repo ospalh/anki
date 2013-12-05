@@ -3,7 +3,6 @@
 
 from __future__ import division
 from cStringIO import StringIO
-import errno
 import gc
 import httplib
 import httplib2
@@ -472,7 +471,7 @@ def _conn_request(self, conn, request_uri, method, body, headers):
     for i in range(2):
         try:
             if conn.sock is None:
-              conn.connect()
+                conn.connect()
             conn.request(method, request_uri, body, headers)
         except socket.timeout:
             raise
@@ -483,7 +482,7 @@ def _conn_request(self, conn, request_uri, method, body, headers):
         except httplib2.ssl_SSLError:
             conn.close()
             raise
-        except socket.error, e:
+        except socket.error:
             conn.close()
             raise
         except httplib.HTTPException:

@@ -65,6 +65,7 @@ profileConf = dict(
     importMode=1,
 )
 
+
 class ProfileManager(object):
 
     def __init__(self, base=None, profile=None):
