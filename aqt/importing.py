@@ -86,7 +86,7 @@ class ImportDialog(QDialog):
         self.frm.allowHTML.setChecked(
             self.mw.pm.profile.get('allowHTML', True))
         self.frm.importMode.setCurrentIndex(
-            self.mw.pm.profile.get('importMode', 0))
+            self.mw.pm.profile.get('importMode', 1))
         self.exec_()
 
     def setupOptions(self):

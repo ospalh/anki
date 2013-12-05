@@ -163,6 +163,7 @@ crt=?, mod=?, scm=?, dty=?, usn=?, ls=?, conf=?""",
             self.db.close()
             self.db = None
             self.media.close()
+            self._closeLog()
 
     def reopen(self):
         "Reconnect to DB (after changing threads, etc)."
@@ -170,6 +171,7 @@ crt=?, mod=?, scm=?, dty=?, usn=?, ls=?, conf=?""",
         if not self.db:
             self.db = anki.db.DB(self.path)
             self.media.connect()
+            self._openLog()
 
     def rollback(self):
         self.db.rollback()
