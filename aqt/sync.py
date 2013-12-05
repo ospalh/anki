@@ -183,7 +183,7 @@ antivirus.""")
             return _(u"""\
 Only one client can access AnkiWeb at a time. If a previous sync failed, \
 please try again in a few minutes.""")
-        elif "10061" in err or "10013" in err:
+        elif "10061" in err or "10013" in err or "10053" in err:
             return _(u"""\
 Antivirus or firewall software is preventing Anki from connecting to the \
 internet.""")
@@ -467,54 +467,53 @@ httplib.HTTPConnection.send = _incrementalSend
 
 
 # receiving in httplib2
+# - retries only when keep-alive connection is closed
 def _conn_request(self, conn, request_uri, method, body, headers):
-    try:
-        if conn.sock is None:
-            conn.connect()
-        conn.request(method, request_uri, body, headers)
-    except socket.timeout:
-        raise
-    except socket.gaierror:
-        conn.close()
-        raise httplib2.ServerNotFoundError(
-            "Unable to find the server at %s" % conn.host)
-    except httplib2.ssl_SSLError:
-        conn.close()
-        raise
-    except socket.error, e:
-        err = 0
-        if hasattr(e, 'args'):
-            err = getattr(e, 'args')[0]
-        else:
-            err = e.errno
-        if err == errno.ECONNREFUSED:  # Connection refused
+    for i in range(2):
+        try:
+            if conn.sock is None:
+              conn.connect()
+            conn.request(method, request_uri, body, headers)
+        except socket.timeout:
             raise
-    except httplib.HTTPException:
-        # Just because the server closed the connection doesn't apparently mean
-        # that the server didn't send a response.
-        if conn.sock is None:
+        except socket.gaierror:
+            conn.close()
+            raise httplib2.ServerNotFoundError(
+                "Unable to find the server at %s" % conn.host)
+        except httplib2.ssl_SSLError:
             conn.close()
             raise
-    try:
-        response = conn.getresponse()
-    except (socket.error, httplib.HTTPException):
-        raise
-    else:
-        content = ""
-        if method == "HEAD":
-            response.close()
+        except socket.error, e:
+            conn.close()
+            raise
+        except httplib.HTTPException:
+            conn.close()
+            raise
+        try:
+            response = conn.getresponse()
+        except httplib.BadStatusLine:
+            print "retry bad line"
+            conn.close()
+            conn.connect()
+            continue
+        except (socket.error, httplib.HTTPException):
+            raise
         else:
-            buf = StringIO()
-            while 1:
-                data = response.read(CHUNK_SIZE)
-                if not data:
-                    break
-                buf.write(data)
-                runHook("httpRecv", len(data))
-            content = buf.getvalue()
-        response = httplib2.Response(response)
-        if method != "HEAD":
-            content = httplib2._decompressContent(response, content)
-    return (response, content)
+            content = ""
+            if method == "HEAD":
+                response.close()
+            else:
+                buf = StringIO()
+                while 1:
+                    data = response.read(CHUNK_SIZE)
+                    if not data:
+                        break
+                    buf.write(data)
+                    runHook("httpRecv", len(data))
+                content = buf.getvalue()
+            response = httplib2.Response(response)
+            if method != "HEAD":
+                content = httplib2._decompressContent(response, content)
+        return (response, content)
 
 httplib2.Http._conn_request = _conn_request
