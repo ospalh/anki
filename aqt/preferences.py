@@ -118,10 +118,11 @@ Not currently enabled; click the sync button in the main window to enable."""))
 
     def setupBackup(self):
         self.form.numBackups.setValue(self.prof['numBackups'])
-        self.form.compressBackups.setChecked(self.prof.get("compressBackups", True))
-        self.connect(self.form.openBackupFolder,
-                     SIGNAL("linkActivated(QString)"),
-                     self.onOpenBackup)
+        self.form.compressBackups.setChecked(
+            self.prof.get("compressBackups", True))
+        self.connect(
+            self.form.openBackupFolder, SIGNAL("linkActivated(QString)"),
+            self.onOpenBackup)
 
     def onOpenBackup(self):
         openFolder(self.mw.pm.backupFolder())

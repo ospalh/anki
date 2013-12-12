@@ -5,6 +5,7 @@
 from cStringIO import StringIO
 import gzip
 import httplib2
+import os
 import random
 import sys
 import urllib
