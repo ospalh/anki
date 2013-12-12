@@ -17,7 +17,6 @@ from PyQt4.QtGui import QAction, QDialog, QDialogButtonBox, QFontInfo, \
 from PyQt4.QtWebKit import QWebSettings
 from anki import Collection
 from anki.utils import ids2str, intTime, isMac, isWin, splitFields
-
 from anki.hooks import runHook, addHook
 from anki.lang import _, ngettext
 from aqt.deckbrowser import DeckBrowser
@@ -355,6 +354,10 @@ the manual for information on how to restore from an automatic backup."))
 
     def backup(self):
         nbacks = self.pm.profile['numBackups']
+        if self.pm.profile.get('compressBackups', True):
+            zipStorage = zipfile.ZIP_DEFLATED
+        else:
+            zipStorage = zipfile.ZIP_STORED
         if not nbacks or os.getenv("ANKIDEV", 0):
             return
         dir = self.pm.backupFolder()
@@ -375,7 +378,7 @@ the manual for information on how to restore from an automatic backup."))
             n = backups[-1][0] + 1
         # do backup
         newpath = os.path.join(dir, "backup-%d.apkg" % n)
-        z = zipfile.ZipFile(newpath, "w", zipfile.ZIP_DEFLATED)
+        z = zipfile.ZipFile(newpath, "w", zipStorage)
         z.write(path, "collection.anki2")
         z.writestr("media", "{}")
         z.close()
@@ -842,7 +845,7 @@ title="%s">%s</button>''' % (
         aqt.update.showMessages(self, data)
 
     def clockIsOff(self, diff):
-        diffText = ngettext("%s second", "%s seconds", diff)
+        diffText = ngettext("%s second", "%s seconds", diff) % diff
         warn = _("""\
 In order to ensure your collection works correctly when moved between \
 devices, Anki requires your computer's internal clock to be set correctly. \
