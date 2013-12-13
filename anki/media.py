@@ -395,7 +395,7 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
             z.write(fname, str(cnt))
             files[str(cnt)] = unicodedata.normalize("NFC", fname)
             sz += os.path.getsize(fname)
-            if sz > SYNC_ZIP_SIZE or cnt > SYNC_ZIP_COUNT:
+            if sz >= SYNC_ZIP_SIZE or cnt >= SYNC_ZIP_COUNT:
                 break
             cnt += 1
         z.writestr("_meta", json.dumps(files))

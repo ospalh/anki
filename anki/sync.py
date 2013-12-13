@@ -16,6 +16,7 @@ from anki.utils import ids2str, intTime, json, isWin, isMac, platDesc, checksum
 from hooks import runHook
 import anki
 
+
 # syncing vars
 HTTP_TIMEOUT = 90
 HTTP_PROXY = None
@@ -763,8 +764,8 @@ class MediaSyncer(object):
         # step 5: sanity check during beta testing
         # NOTE: when removing this, need to move server tidyup
         # back from sanity check to addFiles
-        s = self.server.mediaSanity()
         c = self.mediaSanity()
+        s = self.server.mediaSanity(client=c)
         self.col.log("mediaSanity", c, s)
         if c != s:
             # if the sanity check failed, force a resync
@@ -811,9 +812,9 @@ class RemoteMediaServer(HttpSyncer):
         return json.loads(
             self.req("addFiles", StringIO(zip), comp=0))
 
-    def mediaSanity(self):
+    def mediaSanity(self, **kw):
         return json.loads(
-            self.req("mediaSanity"))
+            self.req("mediaSanity", StringIO(json.dumps(kw))))
 
     def mediaList(self):
         return json.loads(
