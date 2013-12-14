@@ -238,6 +238,7 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
             files = os.listdir(mdir)
         else:
             files = local
+        renamedFiles = False
         for file in files:
             if not local:
                 if not os.path.isfile(file):
@@ -258,14 +259,20 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
                     # delete if we already have the NFC form, otherwise rename
                     if os.path.exists(nfcFile):
                         os.unlink(file)
+                        renamedFiles = True
                     else:
                         os.rename(file, nfcFile)
+                        renamedFiles = True
                     file = nfcFile
             # compare
             if nfcFile not in allRefs:
                 unused.append(file)
             else:
                 allRefs.discard(nfcFile)
+        # if we renamed any files to nfc format, we must rerun the check
+        # to make sure the renamed files are not marked as unused
+        if renamedFiles:
+            return self.check(local=local)
         nohave = [x for x in allRefs if not x.startswith("_")]
         return (nohave, unused, invalid)
 
@@ -395,7 +402,7 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
             z.write(fname, str(cnt))
             files[str(cnt)] = unicodedata.normalize("NFC", fname)
             sz += os.path.getsize(fname)
-            if sz > SYNC_ZIP_SIZE or cnt > SYNC_ZIP_COUNT:
+            if sz >= SYNC_ZIP_SIZE or cnt >= SYNC_ZIP_COUNT:
                 break
             cnt += 1
         z.writestr("_meta", json.dumps(files))
