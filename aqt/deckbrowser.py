@@ -132,8 +132,7 @@ body { margin: 1em; -webkit-user-select: none; }
 .collapse { color: #000; text-decoration:none; display:inline-block;
     width: 1em; }
 .filtered { color: #00a !important; }
-%(qtip)s
- """ % dict(width=_dragIndicatorBorderWidth, qtip=anki.js.qtip_css)
+ """ % dict(width=_dragIndicatorBorderWidth)
 
     _body = """
 <center>
@@ -191,28 +190,6 @@ body { margin: 1em; -webkit-user-select: none; }
         py.link("drag:" + draggedDeckId + "," + ontoDeckId);
     }
 
-    function add_qtips(){
-        $('td.duelrn').qtip({
-            tip:true,
-            position:{
-                target: 'mouse',
-                my: 'right center',
-                at: 'top left',
-                adjust: {x: -10, y: -10}
-            },
-            content: {
-                text: function() {
-                    var dls = $(this).attr('title').split(" ");
-                    return   '<font color=#007700>' + dls[0]
-                             + '</font> + <font color=#990000> '
-                             + dls[1] + '</font>';
-                }
-            },
-            show: 'mouseover',
-            hide: 'mouseout'
-
-        })
-    }
 </script>
 """
 
@@ -226,11 +203,10 @@ body { margin: 1em; -webkit-user-select: none; }
         self.web.stdHtml(
             self._body % dict(
                 tree=tree, stats=stats, countwarn=self._countWarn()),
-            css=css, js=anki.js.jquery + anki.js.ui + anki.js.qtip_js,
+            css=css, js=anki.js.jquery + anki.js.ui,
             loadCB=lambda ok:
                 self.web.page().mainFrame().setScrollPosition(op))
         self.web.key = "deckBrowser"
-        self.web.eval("add_qtips()")
         self._drawButtons()
 
     def _oldPos(self):
@@ -266,8 +242,8 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         if not nodes:
             return ""
         if depth == 0:
-            buf = """
-<tr><th colspan=5 align=left>%s</th><th class=count>%s</th>
+            buf = """\
+<tr><th colspan=5 align=left>%s</th><th class=count>%s</th>\
 <th class=count>%s</th><th class=count></th></tr>""" % (
                 _("Deck"), _("Due"), _("New"))
             buf += self._topLevelDragRow()
@@ -294,8 +270,6 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         prefix = u"⌄"
         if self.mw.col.decks.get(did)['collapsed']:
             prefix = u"➤"
-        # Don't add those. We show both in the qtip
-        # due += lrn
 
         def indent():
             return "&nbsp;" * 6 * depth
@@ -314,8 +288,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
             extraclass = "filtered"
         else:
             extraclass = ""
-        buf += """
-
+        buf += u"""\
         <td class=decktd colspan=5>%s%s<a class="deck %s"\
  href='open:%d'>%s</a></td>""" % (
             indent(), collapse, extraclass, did, name)
@@ -329,12 +302,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
             #     cnt = "1000+"
             # Also, use span with a sytle, not font.
             return '<span style="color: %s;">%s</span>' % (colour, cnt)
-        # New style, put due and lrn in qtip, sum in left column as
-        # before.
-        buf += """\
-<td align=right class="duelrn" title="%d %d">%s</td>\
-<td align=right>%s</td>""" % (
-            due, lrn,
+        buf += """<td align=right>%s</td><td align=right>%s</td>""" % (
             nonzeroColour(due + lrn, "#007700"),
             nonzeroColour(new, "#000099"))
         # options
