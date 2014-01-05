@@ -15,6 +15,13 @@ import anki.js
 import aqt
 
 
+def nonzero_color(cnt, colour):
+    """Color text."""
+    if not cnt:
+        colour = "#e0e0e0"
+    return '<span style="color: {};">{}</span>'.format(colour, cnt)
+
+
 class DeckBrowser(object):
 
     def __init__(self, mw):
@@ -128,7 +135,7 @@ tr.drag-hover td { border-bottom: %(width)s solid #aaa; }
 body { margin: 1em; -webkit-user-select: none; }
 .current { background-color: #e7e7e7; }
 .decktd { min-width: 15em; width: 100%%;}
-.count { width: 6em; text-align: right; }
+.count { text-align: right; padding-left: 0.75em;}
 .collapse { color: #000; text-decoration:none; display:inline-block;
     width: 1em; }
 .filtered { color: #00a !important; }
@@ -241,18 +248,47 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
     def _renderDeckTree(self, nodes, depth=0):
         if not nodes:
             return ""
+        sum_new = 0
+        sum_lrn = 0
+        sum_due = 0
         if depth == 0:
             buf = """\
-<tr><th align=left>%s</th><th class=count>%s</th>\
-<th class=count>%s</th><th class=count></th></tr>""" % (
-                _("Deck"), _("Due"), _("New"))
+<thead>
+  <tr>
+    <th align=left>{}</th>
+    <th class=count>{}</th>
+    <th class=count>{}</th>
+    <th class=count>{}</th>
+    <th class=count></th>
+  </tr>
+</thead>
+<tbody>
+""".format(_("Deck"), _("New"), _("Learn"), _("Due"))
             buf += self._topLevelDragRow()
         else:
             buf = ""
         for node in nodes:
+            dummy_name, dummy_did, due, lrn, new, dummy_children = node
+            sum_due += due
+            sum_lrn += lrn
+            sum_new += new
             buf += self._deckRow(node, depth, len(nodes))
         if depth == 0:
             buf += self._topLevelDragRow()
+            buf += u"""\
+</tbody>
+<tfoot>
+  <tr>
+    <th align=left>{}</th>
+    <th class=count>{}</th>
+    <th class=count>{}</th>
+    <th class=count>{}</th>
+    <th class=count>{}</th>
+  </tr>
+</tfoot>
+""".format(_(u"Sum"), nonzero_color(sum_new, "#007"),
+           nonzero_color(sum_lrn, "#900"), nonzero_color(sum_due, "#070"),
+           nonzero_color(sum_new + sum_lrn + sum_due, "black") )
         return buf
 
     def _deckRow(self, node, depth, cnt):
@@ -293,18 +329,11 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
  href='open:%d'>%s</a></td>""" % (
             indent(), collapse, extraclass, did, name)
         # due counts
-
-        def nonzeroColour(cnt, colour):
-            if not cnt:
-                colour = "#e0e0e0"
-            # Show even large numbers
-            # if cnt >= 1000:
-            #     cnt = "1000+"
-            # Also, use span with a sytle, not font.
-            return '<span style="color: %s;">%s</span>' % (colour, cnt)
-        buf += """<td align=right>%s</td><td align=right>%s</td>""" % (
-            nonzeroColour(due + lrn, "#007700"),
-            nonzeroColour(new, "#000099"))
+        buf += """<td align=right>{}</td><td align=right>{}</td>\
+<td align=right>{}</td>""".format(
+            nonzero_color(new, "#009"),
+            nonzero_color(lrn, "#900"),
+            nonzero_color(due, "#070"))
         # options
         buf += "<td align=right class=opts>%s</td></tr>" % self.mw.button(
             link="opts:%d" % did,
@@ -315,7 +344,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
 
     def _topLevelDragRow(self):
         return \
-            "<tr class='top-level-drag-row'><td colspan='4'>&nbsp;</td></tr>"
+            "<tr class='top-level-drag-row'><td colspan='6'>&nbsp;</td></tr>"
 
     def _dueImg(self, due, new):
         if due:
