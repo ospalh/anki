@@ -127,7 +127,7 @@ td { white-space: nowrap; }
 tr.drag-hover td { border-bottom: %(width)s solid #aaa; }
 body { margin: 1em; -webkit-user-select: none; }
 .current { background-color: #e7e7e7; }
-.decktd { min-width: 15em; }
+.decktd { min-width: 15em; width: 100%%;}
 .count { width: 6em; text-align: right; }
 .collapse { color: #000; text-decoration:none; display:inline-block;
     width: 1em; }
@@ -243,7 +243,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
             return ""
         if depth == 0:
             buf = """\
-<tr><th colspan=5 align=left>%s</th><th class=count>%s</th>\
+<tr><th align=left>%s</th><th class=count>%s</th>\
 <th class=count>%s</th><th class=count></th></tr>""" % (
                 _("Deck"), _("Due"), _("New"))
             buf += self._topLevelDragRow()
@@ -289,7 +289,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         else:
             extraclass = ""
         buf += u"""\
-        <td class=decktd colspan=5>%s%s<a class="deck %s"\
+        <td class=decktd>%s%s<a class="deck %s"\
  href='open:%d'>%s</a></td>""" % (
             indent(), collapse, extraclass, did, name)
         # due counts
@@ -315,7 +315,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
 
     def _topLevelDragRow(self):
         return \
-            "<tr class='top-level-drag-row'><td colspan='6'>&nbsp;</td></tr>"
+            "<tr class='top-level-drag-row'><td colspan='4'>&nbsp;</td></tr>"
 
     def _dueImg(self, due, new):
         if due:
