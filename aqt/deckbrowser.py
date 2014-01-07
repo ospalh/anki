@@ -252,7 +252,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         sum_lrn = 0
         sum_due = 0
         if depth == 0:
-            buf = """\
+            buf = u"""\
 <thead>
   <tr>
     <th align=left>{}</th>
@@ -263,7 +263,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
   </tr>
 </thead>
 <tbody>
-""".format(_("Deck"), _("New"), _("Learn"), _("Due"))
+""".format(_(u"Deck"), _(u"New"), _(u"Learn"), _(u"Due"))
             buf += self._topLevelDragRow()
         else:
             buf = ""
