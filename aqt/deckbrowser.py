@@ -135,7 +135,7 @@ tr.drag-hover td { border-bottom: %(width)s solid #aaa; }
 body { margin: 1em; -webkit-user-select: none; }
 .current { background-color: #e7e7e7; }
 .decktd { min-width: 15em; width: 100%%;}
-.count { text-align: right; padding-left: 0.75em;}
+.count { text-align: right; padding-left: 0.5em;}
 .collapse { color: #000; text-decoration:none; display:inline-block;
     width: 1em; }
 .filtered { color: #00a !important; }
