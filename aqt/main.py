@@ -297,15 +297,19 @@ attempting to import."""))
 
     def loadCollection(self):
         self.hideSchemaMsg = True
+        cpath = self.pm.collectionPath()
         try:
-            self.col = Collection(self.pm.collectionPath(), log=True)
+            self.col = Collection(cpath, log=True)
         except anki.db.Error:
-            # move back to profile manager
+            # warn user
             showWarning("""\
 Your collection is corrupt. Please see the manual for \
 how to restore from a backup.""")
-            self.unloadProfile()
-            raise
+            # move it out of the way so the profile can be used again
+            newpath = cpath+str(intTime())
+            os.rename(cpath, newpath)
+            # then close
+            sys.exit(1)
         except Exception as e:
             # the custom exception handler won't catch this if we immediately
             # unload, so we have to manually handle it

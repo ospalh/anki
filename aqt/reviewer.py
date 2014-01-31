@@ -438,7 +438,14 @@ Please run Tools>Empty Cards""")
             return txt
         matches = [noHint(m_txt) for m_txt in matches]
         if len(matches) > 1:
-            txt = ", ".join(matches)
+            arr = []
+            seen = {}
+            for m in matches:
+                if m in seen:
+                    continue
+                seen[m] = 1
+                arr.append(m)
+            txt = ", ".join(arr)
         else:
             txt = matches[0]
         return txt
