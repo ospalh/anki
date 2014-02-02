@@ -144,13 +144,36 @@ class SupermemoXmlImporter(NoteImporter):
         # In case of bad formated html you can import MinimalSoup
         # etc.. see btflsoup source code
         from BeautifulSoup import BeautifulStoneSoup as btflsoup
-        # my sm2004 also ecaped & char in escaped sequences.
-        s = re.sub(u'&amp;', u'&', s)
-        # unescaped solitary chars < or > that were ok for minidom
-        # confuse btfl soup
-        # s = re.sub(u'>',u'&gt;',s)
-        # s = re.sub(u'<',u'&lt;',s)
-        return unicode(btflsoup(s, convertEntities=btflsoup.HTML_ENTITIES))
+
+        #my sm2004 also ecaped & char in escaped sequences.
+        s = re.sub(u'&amp;',u'&',s)
+        #unescaped solitary chars < or > that were ok for minidom confuse btfl soup
+        #s = re.sub(u'>',u'&gt;',s)
+        #s = re.sub(u'<',u'&lt;',s)
+
+        return unicode(btflsoup(s, selfClosingTags=['br','hr','img','wbr'], convertEntities=btflsoup.HTML_ENTITIES))
+
+    def _afactor2efactor(self, af):
+        # Adapted from <http://www.supermemo.com/beta/xml/xml-core.htm>
+
+        # Ranges for A-factors and E-factors
+        af_min = 1.2
+        af_max = 6.9
+        ef_min = 1.3
+        ef_max = 3.3
+
+        # Sanity checks for the A-factor
+        if af < af_min:
+            af = af_min
+        elif af > af_max:
+            af = af_max
+
+        # Scale af to the range 0..1
+        af_scaled = (af - af_min) / (af_max - af_min)
+        # Rescale to the interval ef_min..ef_max
+        ef = ef_min + af_scaled * (ef_max - ef_min)
+
+        return ef
 
 ## DEFAULT IMPORTER METHODS
 
@@ -201,9 +224,9 @@ class SupermemoXmlImporter(NoteImporter):
             card.lapses = int(item.Lapses)
             card.reps = int(item.Repetitions) + int(item.Lapses)
             nextDue = tLastrep + (float(item.Interval) * 86400.0)
-            remDays = int((nextDue - time.time()) / 86400)
-            card.due = self.col.sched.today + remDays
-            card.factor = int(float(item.AFactor.replace(',', '.')) * 1000)
+            remDays = int((nextDue - time.time())/86400)
+            card.due = self.col.sched.today+remDays
+            card.factor = int(self._afactor2efactor(float(item.AFactor.replace(',','.')))*1000)
             note.cards[0] = card
 
         # categories & tags

@@ -4,6 +4,7 @@
 # http://www.gnu.org/licenses/agpl.html
 #
 # imports are all in this file to make moving to pyside easier in the future
+# fixme: make sure not to optimize imports on this file
 
 
 import os
@@ -23,10 +24,9 @@ def debug():
     pyqtRemoveInputHook()
     set_trace()
 
-if os.environ.get("DEBUG"):
-    import sys
-    import traceback
+import sys, traceback
 
+if os.environ.get("DEBUG"):
     def info(type, value, tb):
         from PyQt4.QtCore import pyqtRemoveInputHook
         for line in traceback.format_exception(type, value, tb):
