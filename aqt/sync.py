@@ -196,6 +196,8 @@ software is blocking Anki from connecting to the internet.""")
             return _("Proxy authentication required.")
         elif "code: 413" in err:
             return _("Your collection or a media file is too large to sync.")
+        elif "EOF occurred in violation of protocol" in err:
+            return _("Error establishing a secure connection. This is usually caused by filtering software, or problems with your ISP.")
         return err
 
     def _getUserPass(self):
