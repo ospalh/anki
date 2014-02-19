@@ -5,7 +5,8 @@
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QDialog, QDialogButtonBox
 
-from anki.consts import DYN_ADDED, DYN_DUE, DYN_OLDEST, DYN_RANDOM
+from anki.consts import DYN_ADDED, DYN_DUE, DYN_MAX_SIZE, DYN_OLDEST, \
+    DYN_RANDOM
 from anki.lang import _
 from aqt.utils import showInfo, showWarning
 import aqt
@@ -46,8 +47,11 @@ class CustomStudy(QDialog):
         c(f.radio6, s, lambda: self.onRadioChange(6))
 
     def onRadioChange(self, idx):
-        f = self.form; sp = f.spin
-        smin = 1; smax = DYN_MAX_SIZE; sval = 1
+        f = self.form
+        sp = f.spin
+        smin = 1
+        smax = DYN_MAX_SIZE
+        sval = 1
         post = _("cards")
         tit = ""
         spShow = True
@@ -145,7 +149,8 @@ class CustomStudy(QDialog):
             dyn['resched'] = True
         elif i == RADIO_PREVIEW:
             dyn['delays'] = None
-            dyn['terms'][0] = ['is:new added:%s'%spin, DYN_MAX_SIZE, DYN_OLDEST]
+            dyn['terms'][0] = [
+                'is:new added:%s' % spin, DYN_MAX_SIZE, DYN_OLDEST]
             dyn['resched'] = False
         elif i == RADIO_CRAM:
             dyn['delays'] = None

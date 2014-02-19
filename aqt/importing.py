@@ -21,6 +21,7 @@ import aqt.deckchooser
 import aqt.forms
 import aqt.modelchooser
 
+
 class ChangeMap(QDialog):
     def __init__(self, mw, model, current):
         QDialog.__init__(self, mw, Qt.Window)

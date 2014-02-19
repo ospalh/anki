@@ -146,9 +146,13 @@ button {
         self._bridge.setBridge(bridge)
 
     def setCanFocus(self, isCardViewer=False):
-        """Set flag to denote if this WebView should follow rules specific to
-        card display (e.g., allow context menu, copy/paste)"""
-        
+        """
+        Set up certain flags.
+
+        Set flag to denote if this WebView should follow rules
+        specific to card display (e.g., allow context menu,
+        copy/paste)
+        """
         self.isCardViewer = isCardViewer
         if self.isCardViewer:
             self.setFocusPolicy(Qt.WheelFocus)

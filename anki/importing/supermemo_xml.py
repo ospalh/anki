@@ -145,13 +145,16 @@ class SupermemoXmlImporter(NoteImporter):
         # etc.. see btflsoup source code
         from BeautifulSoup import BeautifulStoneSoup as btflsoup
 
-        #my sm2004 also ecaped & char in escaped sequences.
-        s = re.sub(u'&amp;',u'&',s)
-        #unescaped solitary chars < or > that were ok for minidom confuse btfl soup
+        # my sm2004 also ecaped & char in escaped sequences.
+        s = re.sub(u'&amp;', u'&', s)
+        # unescaped solitary chars < or > that were ok for minidom
+        # confuse btfl soup
         #s = re.sub(u'>',u'&gt;',s)
         #s = re.sub(u'<',u'&lt;',s)
 
-        return unicode(btflsoup(s, selfClosingTags=['br','hr','img','wbr'], convertEntities=btflsoup.HTML_ENTITIES))
+        return unicode(
+            btflsoup(s, selfClosingTags=['br', 'hr', 'img', ' wbr'],
+                     convertEntities=btflsoup.HTML_ENTITIES))
 
     def _afactor2efactor(self, af):
         # Adapted from <http://www.supermemo.com/beta/xml/xml-core.htm>
@@ -226,7 +229,9 @@ class SupermemoXmlImporter(NoteImporter):
             nextDue = tLastrep + (float(item.Interval) * 86400.0)
             remDays = int((nextDue - time.time())/86400)
             card.due = self.col.sched.today+remDays
-            card.factor = int(self._afactor2efactor(float(item.AFactor.replace(',','.')))*1000)
+            card.factor = int(
+                self._afactor2efactor(float(item.AFactor.replace(',', '.')))
+                * 1000)
             note.cards[0] = card
 
         # categories & tags

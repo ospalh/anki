@@ -783,7 +783,7 @@ by clicking on one on the left."""))
     def onTreeCollapse(self, item):
         if getattr(item, 'oncollapse', None):
             item.oncollapse()
-            
+
     def setFilter(self, *args):
         if len(args) == 1:
             txt = args[0]
@@ -852,7 +852,8 @@ by clicking on one on the left."""))
                     lambda g=g: self.mw.col.decks.collapseBrowser(g[1]))
                 item.setIcon(0, QIcon(":/icons/deck16.png"))
                 newhead = head + g[0] + "::"
-                collapsed = self.mw.col.decks.get(g[1]).get('browserCollapsed', False)
+                collapsed = self.mw.col.decks.get(g[1]).get(
+                    'browserCollapsed', False)
                 item.setExpanded(not collapsed)
                 fillGroups(item, g[5], newhead)
         fillGroups(root, grps)

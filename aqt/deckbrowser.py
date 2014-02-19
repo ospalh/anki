@@ -70,7 +70,7 @@ class DeckBrowser(object):
         key = unicode(evt.text())
 
     def _selDeck(self, did):
-        self.scrollPos =  self.web.page().mainFrame().scrollPosition()
+        self.scrollPos = self.web.page().mainFrame().scrollPosition()
         self.mw.col.decks.select(did)
         self.mw.onOverview()
 
