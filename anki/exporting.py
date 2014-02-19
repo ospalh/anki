@@ -2,8 +2,8 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import re
 import os
+import re
 import shutil
 import zipfile
 
@@ -39,9 +39,9 @@ class Exporter(object):
         self.count = len(cids)
         return cids
 
+
 # Cards as TSV
 ######################################################################
-
 
 class TextCardExporter(Exporter):
 
@@ -54,7 +54,6 @@ class TextCardExporter(Exporter):
 
     def doExport(self, file):
         ids = sorted(self.cardIds())
-        # The ids2str has no side effect, so take out redundant call
         # strids = ids2str(ids)
 
         def esc(s):
@@ -68,9 +67,9 @@ class TextCardExporter(Exporter):
             out += "\t" + esc(c.a()) + "\n"
         file.write(out.encode("utf-8"))
 
+
 # Notes as TSV
 ######################################################################
-
 
 class TextNoteExporter(Exporter):
 
@@ -104,10 +103,10 @@ where cards.id in %s)""" % ids2str(cardIds)):
         out = "\n".join(data)
         file.write(out.encode("utf-8"))
 
+
 # Anki decks
 ######################################################################
 # media files are stored in self.mediaFiles, but not exported.
-
 
 class AnkiExporter(Exporter):
 
@@ -144,14 +143,20 @@ class AnkiExporter(Exporter):
             data)
         # notes
         strnids = ids2str(nids.keys())
-        notedata = self.src.db.all("select * from notes where id in " +
-                                   strnids)
+        notedata = []
+        for row in self.src.db.all(
+                "select * from notes where id in "+strnids):
+            # remove system tags if not exporting scheduling info
+            if not self.includeSched:
+                row = list(row)
+                row[5] = self.removeSystemTags(row[5])
+            notedata.append(row)
         self.dst.db.executemany(
             "insert into notes values (?,?,?,?,?,?,?,?,?,?,?)",
             notedata)
         # models used by the notes
-        mids = self.dst.db.list("select distinct mid from notes where id in " +
-                                strnids)
+        mids = self.dst.db.list(
+            "select distinct mid from notes where id in " + strnids)
         # card history and revlog
         if self.includeSched:
             data = self.src.db.all(
@@ -217,9 +222,9 @@ class AnkiExporter(Exporter):
         # such as update the deck description
         pass
 
+
 # Packaged Anki decks
 ######################################################################
-
 
 class AnkiPackageExporter(AnkiExporter):
 
@@ -286,9 +291,9 @@ class AnkiPackageExporter(AnkiExporter):
         # is zipped up
         pass
 
+
 # Export modules
 ##########################################################################
-
 
 def exporters():
     def id(obj):

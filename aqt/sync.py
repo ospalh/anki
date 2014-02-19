@@ -189,7 +189,9 @@ please try again in a few minutes.""")
 Antivirus or firewall software is preventing Anki from connecting to the \
 internet.""")
         elif "10054" in err or "Broken pipe" in err:
-            return _("Connection timed out. Either your internet connection is experiencing problems, or you have a very large file in your media folder.")
+            return _("""\
+Connection timed out. Either your internet connection is experiencing \
+problems, or you have a very large file in your media folder.""")
         elif "Unable to find the server" in err:
             return _(u"""\
 Server not found. Either your connection is down, or antivirus/firewall \
@@ -198,6 +200,10 @@ software is blocking Anki from connecting to the internet.""")
             return _("Proxy authentication required.")
         elif "code: 413" in err:
             return _("Your collection or a media file is too large to sync.")
+        elif "EOF occurred in violation of protocol" in err:
+            return _("""\
+Error establishing a secure connection. This is usually caused by \
+filtering software, or problems with your ISP.""")
         return err
 
     def _getUserPass(self):

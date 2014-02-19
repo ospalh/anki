@@ -348,6 +348,8 @@ with a different browser.""")
                 msg = _("""\
 Invalid file. Please restore from backup.""")
                 showWarning(msg)
+            elif "invalidTempFolder" in err:
+                showWarning(mw.errorHandler.tempFolderMsg())
             elif "readonly" in err:
                 showWarning(_("""\
 Unable to import from a read-only file."""))

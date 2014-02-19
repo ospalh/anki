@@ -28,6 +28,7 @@ class DeckBrowser(object):
         self.mw = mw
         self.web = mw.web
         self.bottom = aqt.toolbar.BottomBar(mw, mw.bottomWeb)
+        self.scrollPos = QPoint(0, 0)
 
     def show(self):
         clearAudioQueue()
@@ -88,6 +89,7 @@ class DeckBrowser(object):
     def _selDeck(self, did=None):
         if not did:
             did = self.mw.col.conf['curDeck']
+        self.scrollPos = self.web.page().mainFrame().scrollPosition()
         self.mw.col.decks.select(did)
         # New, no overview
         self.mw.col.reset()
@@ -220,7 +222,7 @@ body { margin: 1em; -webkit-user-select: none; }
         if self.web.key == "deckBrowser":
             return self.web.page().mainFrame().scrollPosition()
         else:
-            return QPoint(0, 0)
+            return self.scrollPos
 
     def _renderStats(self):
         cards, thetime = self.mw.col.db.first("""

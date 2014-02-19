@@ -394,6 +394,8 @@ def invalidFilename(str, dirsep=True):
         return "/"
     elif (dirsep or not isWin) and "\\" in str:
         return "\\"
+    elif str.strip().startswith("."):
+        return "."
 
 
 def platDesc():

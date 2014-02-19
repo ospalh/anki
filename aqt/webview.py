@@ -53,7 +53,7 @@ class AnkiWebPage(QWebPage):
 
 class AnkiWebView(QWebView):
 
-    def __init__(self):
+    def __init__(self, canFocus=False):
         QWebView.__init__(self)
         self.setRenderHints(
             QPainter.TextAntialiasing |
@@ -73,6 +73,7 @@ class AnkiWebView(QWebView):
         # reset each time new html is set; used to detect if still in
         # same state
         self.key = None
+        self.setCanFocus(canFocus)
 
     def keyPressEvent(self, evt):
         if evt.matches(QKeySequence.Copy):
@@ -92,9 +93,7 @@ class AnkiWebView(QWebView):
         QWebView.keyReleaseEvent(self, evt)
 
     def contextMenuEvent(self, evt):
-        # lazy: only run in reviewer
-        import aqt
-        if aqt.mw.state != "review":
+        if not self.isCardViewer:
             return
         m = QMenu(self)
         a = m.addAction(_("Copy"))
@@ -148,6 +147,20 @@ button {
 
     def setBridge(self, bridge):
         self._bridge.setBridge(bridge)
+
+    def setCanFocus(self, isCardViewer=False):
+        """
+        Set up certain flags.
+
+        Set flag to denote if this WebView should follow rules
+        specific to card display (e.g., allow context menu,
+        copy/paste)
+        """
+        self.isCardViewer = isCardViewer
+        if self.isCardViewer:
+            self.setFocusPolicy(Qt.WheelFocus)
+        else:
+            self.setFocusPolicy(Qt.NoFocus)
 
     def eval(self, js):
         return self.page().mainFrame().evaluateJavaScript(js)

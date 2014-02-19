@@ -310,7 +310,7 @@ please see:
         name = obj[0]
         en = "Are you sure you wish to display Anki's interface in %s?"
         r = QMessageBox.question(
-            None, "Anki", en%name, QMessageBox.Yes | QMessageBox.No,
+            None, "Anki", en % name, QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No)
         if r != QMessageBox.Yes:
             return self._setDefaultLang()
