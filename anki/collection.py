@@ -512,15 +512,13 @@ where c.nid = n.id and c.id in %s group by nid""" % ids2str(cids)):
         afmt = afmt or template['afmt']
         for (type, format) in (("q", qfmt), ("a", afmt)):
             if type == "q":
-                format = format.replace(
-                    "{{cloze:", "{{cq:%d:" % (data[4] + 1))
-                format = format.replace(
-                    "<%cloze:", "<%%cq:%d:" % (data[4] + 1))
+                format = re.sub("{{(?!type:)(.*?)cloze:", r"{{\1cq-%d:" % (data[4]+1), format)
+                format = format.replace("<%cloze:", "<%%cq:%d:" % (
+                    data[4]+1))
             else:
-                format = format.replace(
-                    "{{cloze:", "{{ca:%d:" % (data[4] + 1))
-                format = format.replace(
-                    "<%cloze:", "<%%ca:%d:" % (data[4] + 1))
+                format = re.sub("{{(.*?)cloze:", r"{{\1ca-%d:" % (data[4]+1), format)
+                format = format.replace("<%cloze:", "<%%ca:%d:" % (
+                    data[4]+1))
                 fields['FrontSide'] = stripSounds(d['q'])
             fields = runFilter("mungeFields", fields, model, data, self)
             html = anki.template.render(format, fields)
@@ -610,13 +608,19 @@ where c.nid == f.id
             if self._undo[0] == 1:
                 old = self._undo[2]
             self.clearUndo()
-        self._undo = [1, _("Review"), old + [copy.copy(card)]]
+        wasLeech = card.note().hasTag("leech") or False
+        self._undo = [1, _("Review"), old + [copy.copy(card)], wasLeech]
 
     def _undoReview(self):
         data = self._undo[2]
+        wasLeech = self._undo[3]
         c = data.pop()
         if not data:
             self.clearUndo()
+        # remove leech tag if it didn't have it before
+        if not wasLeech and c.note().hasTag("leech"):
+            c.note().delTag("leech")
+            c.note().flush()
         # write old data
         c.flush()
         # and delete revlog entry

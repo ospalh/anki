@@ -387,6 +387,11 @@ class Browser(QMainWindow):
         self.onSearch()
         self.show()
 
+    def _headerKey(self):
+        if qtmajor >= 5:
+            return "editor2"
+        return "editor"
+
     def setupToolbar(self):
         self.toolbarWeb = AnkiWebView()
         self.toolbarWeb.setFixedHeight(32 + self.mw.fontHeightDelta)
@@ -474,7 +479,7 @@ class Browser(QMainWindow):
         self.editor.setNote(None)
         saveGeom(self, "editor")
         saveState(self, "editor")
-        saveHeader(self.form.tableView.horizontalHeader(), "editor")
+        saveHeader(self.form.tableView.horizontalHeader(), self._headerKey())
         self.col.conf['activeCols'] = self.model.activeCols
         self.col.setMod()
         self.hide()
@@ -639,7 +644,7 @@ class Browser(QMainWindow):
         if not isWin:
             vh.hide()
             hh.show()
-        restoreHeader(hh, "editor")
+        restoreHeader(hh, self._headerKey())
         hh.setHighlightSections(False)
         hh.setMinimumSectionSize(50)
         hh.setMovable(True)
