@@ -213,8 +213,8 @@ body { margin: 1em; -webkit-user-select: none; }
             self._body % dict(
                 tree=tree, stats=stats, countwarn=self._countWarn()),
             css=css, js=anki.js.jquery + anki.js.ui,
-            loadCB=lambda ok:
-                self.web.page().mainFrame().setScrollPosition(op))
+            loadCB=lambda ok: self.web.page().mainFrame().setScrollPosition(
+                op))
         self.web.key = "deckBrowser"
         self._drawButtons()
 
@@ -451,7 +451,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
         if isMac:
             size = 28
         else:
-            size = 36 + self.mw.fontHeightDelta * 3
+            size = 38 + self.mw.fontHeightDelta * 3
         self.bottom.web.setFixedHeight(size)
         self.bottom.web.setLinkHandler(self._linkHandler)
 

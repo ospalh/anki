@@ -222,6 +222,9 @@ class AnkiExporter(Exporter):
         # such as update the deck description
         pass
 
+    def removeSystemTags(self, tags):
+        return self.src.tags.remFromStr("marked leech", tags)
+
 
 # Packaged Anki decks
 ######################################################################

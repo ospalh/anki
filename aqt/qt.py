@@ -8,6 +8,9 @@
 
 
 import os
+import sys
+import traceback
+
 from distutils.version import StrictVersion
 
 from PyQt4.QtCore import *
@@ -23,8 +26,6 @@ def debug():
     from pdb import set_trace
     pyqtRemoveInputHook()
     set_trace()
-
-import sys, traceback
 
 if os.environ.get("DEBUG"):
     def info(type, value, tb):

@@ -68,7 +68,7 @@ class Card(object):
          self.odid,
          self.flags,
          self.data) = self.col.db.first(
-             "select * from cards where id = ?", self.id)
+            "select * from cards where id = ?", self.id)
         self._qa = None
         self._note = None
 
