@@ -186,7 +186,7 @@ documentation for information on using a flash drive.""")
 
     def _defaultBase(self):
         if isWin:
-            if False: #qtmajor >= 5:
+            if False:  # qtmajor >= 5:
                 loc = QStandardPaths.writeableLocation(
                     QStandardPaths.DocumentsLocation)
             else:

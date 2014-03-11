@@ -41,10 +41,9 @@ class TextImporter(NoteImporter):
                     if row:
                         log.append(_(
                             "'%(row)s' had %(num1)d fields, "
-                            "expected %(num2)d") % {
-                                "row": u" ".join(row),
-                                "num1": len(row),
-                                "num2": self.numFields})
+                            "expected %(num2)d") % {"row": u" ".join(row),
+                                                    "num1": len(row),
+                                                    "num2": self.numFields})
                         ignored += 1
                     continue
                 note = self.noteFromFields(row)

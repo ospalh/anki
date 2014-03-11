@@ -151,8 +151,8 @@ body { margin: 1em; -webkit-user-select: none; }
             self._body % dict(
                 tree=tree, stats=stats, countwarn=self._countWarn()),
             css=css, js=anki.js.jquery+anki.js.ui,
-            loadCB=lambda ok:
-                self.web.page().mainFrame().setScrollPosition(op))
+            loadCB=lambda ok: self.web.page().mainFrame().setScrollPosition(
+                op))
         self.web.key = "deckBrowser"
         self._drawButtons()
 

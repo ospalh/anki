@@ -20,6 +20,7 @@ from anki.consts import MODEL_CLOZE
 from anki.hooks import runHook, addHook, remHook
 from anki.utils import fmtTimeSpan, ids2str, stripHTMLMedia, isWin, intTime, \
     isMac
+from aqt.qt import qtmajor
 from aqt.toolbar import Toolbar
 from aqt.utils import applyStyles, askUser, getBase, getTag,  mungeQA, \
     openHelp, restoreGeom, restoreHeader, restoreSplitter, restoreState, \
@@ -580,8 +581,10 @@ class Browser(QMainWindow):
             ngettext(
                 "Browser (%(cur)d card shown; %(sel)s)",
                 "Browser (%(cur)d cards shown; %(sel)s)",
-                cur) % {"cur": cur, "sel": ngettext(
-                    "%d selected", "%d selected", selected) % selected})
+                cur)
+            % {"cur": cur,
+               "sel": ngettext("%d selected", "%d selected", selected)
+               % selected})
         return selected
 
     def onReset(self):
@@ -1357,12 +1360,11 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
         finally:
             self.model.endReset()
             self.mw.progress.finish()
-        showInfo(ngettext(
-            "%(a)d of %(b)d note updated",
-            "%(a)d of %(b)d notes updated", len(sf)) % {
-                'a': changed,
-                'b': len(sf),
-            })
+        showInfo(
+            ngettext(
+                "%(a)d of %(b)d note updated",
+                "%(a)d of %(b)d notes updated", len(sf))
+            % {'a': changed, 'b': len(sf)})
 
     def onFindReplaceHelp(self):
         openHelp("findreplace")

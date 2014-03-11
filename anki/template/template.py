@@ -160,9 +160,9 @@ class Template(object):
         """Render a tag without escaping it."""
         txt = get_or_attr(context, tag_name)
         if txt is not None:
-            # some field names could have colons in them
-            # avoid interpreting these as field modifiers
-            # better would probably be to put some restrictions on field names
+            # Some field names could have colons in them avoid
+            # interpreting these as field modifiers better would
+            # probably be to put some restrictions on field names
             return txt
 
         # field modifiers
@@ -171,18 +171,20 @@ class Template(object):
         if len(parts) == 1 or parts[0] == '':
             return '{unknown field %s}' % tag_name
         else:
-            mods, tag = parts[:-1], parts[-1] #py3k has *mods, tag = parts
+            mods, tag = parts[:-1], parts[-1]  # py3k has *mods, tag = parts
 
         txt = get_or_attr(context, tag)
-        
-        #Since 'text:' and other mods can affect html on which Anki relies to
-        #process clozes, we need to make sure clozes are always
-        #treated after all the other mods, regardless of how they're specified
-        #in the template, so that {{cloze:text: == {{text:cloze:
-        #For type:, we return directly since no other mod than cloze (or other
-        #pre-defined mods) can be present and those are treated separately
+
+        # Since 'text:' and other mods can affect html on which Anki
+        # relies to process clozes, we need to make sure clozes are
+        # always treated after all the other mods, regardless of how
+        # they're specified in the template, so that {{cloze:text: ==
+        # {{text:cloze:
+        # For type:, we return directly since no other mod than cloze
+        # (or other pre-defined mods) can be present and those are
+        # treated separately
         mods.reverse()
-        mods.sort(key=lambda s: not s=="type")
+        mods.sort(key=lambda s: not s == "type")
 
         for mod in mods:
             # built-in modifiers
@@ -190,17 +192,18 @@ class Template(object):
                 # strip html
                 txt = stripHTML(txt) if txt else ""
             elif mod == 'type':
-                # type answer field; convert it to [[type:...]] for the gui code
-                # to process
+                # Type answer field; convert it to [[type:...]] for
+                # the gui code to process
                 return "[[%s]]" % tag_name
             elif mod.startswith('cq-') or mod.startswith('ca-'):
                 # cloze deletion
                 mod, extra = mod.split("-")
-                txt = self.clozeText(txt, extra, mod[1]) if txt and extra else ""
+                txt = self.clozeText(
+                    txt, extra, mod[1]) if txt and extra else ""
             else:
                 # hook-based field modifier
-                txt = runFilter('fmod_' + mod, txt or '', extra, context,
-                                tag, tag_name);
+                txt = runFilter(
+                    'fmod_' + mod, txt or '', extra, context, tag, tag_name)
                 if txt is None:
                     return '{unknown field %s}' % tag_name
         return txt
