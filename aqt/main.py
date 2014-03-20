@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+from distutils.version import StrictVersion
+from send2trash import send2trash
 import os
 import pprint
 import re
@@ -9,19 +11,20 @@ import signal
 import sys
 import traceback
 import zipfile
-from send2trash import send2trash
+
 from PyQt4.QtCore import Qt, QThread, SIGNAL, SLOT
 from PyQt4.QtGui import QAction, QDialog, QDialogButtonBox, QFontInfo, \
     QKeySequence, QMainWindow, QPushButton, QShortcut, QStyleFactory, \
     QTextEdit, QVBoxLayout
 from PyQt4.QtWebKit import QWebSettings
+
 from anki import Collection
 from anki.utils import ids2str, intTime, isMac, isWin, splitFields
 from anki.hooks import runHook, addHook
 from anki.lang import _, ngettext
 from aqt.deckbrowser import DeckBrowser
 from aqt.overview import Overview
-from aqt.qt import qtmajor
+from aqt.qt import qt_version
 from aqt.reviewer import Reviewer
 from aqt.studydeck import StudyDeck
 from aqt.sync import SyncManager
@@ -96,7 +99,7 @@ class AnkiQt(QMainWindow):
                 self.onAppMsg(unicode(deck_to_load, "utf8", "ignore"))
         # Load profile in a timer so we can let the window finish init and not
         # close on profile load error.
-        if isMac and qtmajor >= 5:
+        if isMac and qt_version >= StritVersion("5.0"):
             self.show()
         self.progress.timer(10, self.setupProfile, False)
 
