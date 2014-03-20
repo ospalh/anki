@@ -388,11 +388,6 @@ class Browser(QMainWindow):
         self.onSearch()
         self.show()
 
-    def _headerKey(self):
-        if qtmajor >= 5:
-            return "editor2"
-        return "editor"
-
     def setupToolbar(self):
         self.toolbarWeb = AnkiWebView()
         self.toolbarWeb.setFixedHeight(32 + self.mw.fontHeightDelta)
@@ -480,7 +475,7 @@ class Browser(QMainWindow):
         self.editor.setNote(None)
         saveGeom(self, "editor")
         saveState(self, "editor")
-        saveHeader(self.form.tableView.horizontalHeader(), self._headerKey())
+        saveHeader(self.form.tableView.horizontalHeader(), "editor")
         self.col.conf['activeCols'] = self.model.activeCols
         self.col.setMod()
         self.hide()
@@ -648,7 +643,7 @@ class Browser(QMainWindow):
         if not isWin:
             vh.hide()
             hh.show()
-        restoreHeader(hh, self._headerKey())
+        restoreHeader(hh, "editor")
         hh.setHighlightSections(False)
         hh.setMinimumSectionSize(50)
         hh.setMovable(True)
@@ -741,11 +736,9 @@ by clicking on one on the left."""))
 
     def setColumnSizes(self):
         hh = self.form.tableView.horizontalHeader()
-        for i in range(len(self.model.activeCols)):
-            if hh.visualIndex(i) == len(self.model.activeCols) - 1:
-                hh.setResizeMode(i, QHeaderView.Stretch)
-            else:
-                hh.setResizeMode(i, QHeaderView.Interactive)
+        hh.setResizeMode(QHeaderView.Interactive)
+        hh.setResizeMode(hh.logicalIndex(len(self.model.activeCols)-1),
+                         QHeaderView.Stretch)
         # this must be set post-resize or it doesn't work
         hh.setCascadingSectionResizes(False)
 
