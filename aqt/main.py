@@ -21,6 +21,7 @@ from anki.hooks import runHook, addHook
 from anki.lang import _, ngettext
 from aqt.deckbrowser import DeckBrowser
 from aqt.overview import Overview
+from aqt.qt import qtmajor
 from aqt.reviewer import Reviewer
 from aqt.studydeck import StudyDeck
 from aqt.sync import SyncManager
@@ -95,6 +96,8 @@ class AnkiQt(QMainWindow):
                 self.onAppMsg(unicode(deck_to_load, "utf8", "ignore"))
         # Load profile in a timer so we can let the window finish init and not
         # close on profile load error.
+        if isMac and qtmajor >= 5:
+            self.show()
         self.progress.timer(10, self.setupProfile, False)
 
     def setupUI(self):
