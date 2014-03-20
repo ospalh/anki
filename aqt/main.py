@@ -21,6 +21,7 @@ from anki.hooks import runHook, addHook
 from anki.lang import _, ngettext
 from aqt.deckbrowser import DeckBrowser
 from aqt.overview import Overview
+from aqt.qt import qtmajor
 from aqt.reviewer import Reviewer
 from aqt.studydeck import StudyDeck
 from aqt.sync import SyncManager

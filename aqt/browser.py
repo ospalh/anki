@@ -20,7 +20,6 @@ from anki.consts import MODEL_CLOZE
 from anki.hooks import runHook, addHook, remHook
 from anki.utils import fmtTimeSpan, ids2str, stripHTMLMedia, isWin, intTime, \
     isMac
-from aqt.qt import qtmajor
 from aqt.toolbar import Toolbar
 from aqt.utils import applyStyles, askUser, getBase, getTag,  mungeQA, \
     openHelp, restoreGeom, restoreHeader, restoreSplitter, restoreState, \
