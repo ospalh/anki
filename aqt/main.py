@@ -99,7 +99,7 @@ class AnkiQt(QMainWindow):
                 self.onAppMsg(unicode(deck_to_load, "utf8", "ignore"))
         # Load profile in a timer so we can let the window finish init and not
         # close on profile load error.
-        if isMac and qt_version >= StritVersion("5.0"):
+        if isMac and qt_version >= StrictVersion("5.0"):
             self.show()
         self.progress.timer(10, self.setupProfile, False)
 
