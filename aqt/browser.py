@@ -482,7 +482,6 @@ class Browser(QMainWindow):
         self.teardownHooks()
         self.mw.maybeReset()
         evt.accept()
-        self.deleteLater()
 
     def canClose(self):
         return True
@@ -883,7 +882,7 @@ by clicking on one on the left."""))
         d = QDialog(self)
         l = QVBoxLayout()
         l.setMargin(0)
-        w = AnkiWebView()
+        w = AnkiWebView(canCopy=True)
         l.addWidget(w)
         w.stdHtml(info + "<p>" + reps)
         bb = QDialogButtonBox(QDialogButtonBox.Close)
