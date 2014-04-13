@@ -217,21 +217,21 @@ class DataModel(QAbstractTableModel):
     def columnData(self, index):
         # row = index.row()
         col = index.column()
-        type = self.columnType(col)
+        column_type = self.columnType(col)
         c = self.getCard(index)
-        if type == "question":
+        if column_type == "question":
             return self.question(c)
-        elif type == "answer":
+        elif column_type == "answer":
             return self.answer(c)
-        elif type == "noteFld":
+        elif column_type == "noteFld":
             f = c.note()
             return self.formatQA(f.fields[self.col.models.sortIdx(f.model())])
-        elif type == "template":
+        elif column_type == "template":
             t = c.template()['name']
             if c.model()['type'] == MODEL_CLOZE:
                 t += " %d" % (c.ord + 1)
             return t
-        elif type == "cardDue":
+        elif column_type == "cardDue":
             # catch invalid dates
             try:
                 t = self.nextDue(c, index)
@@ -240,32 +240,32 @@ class DataModel(QAbstractTableModel):
             if c.queue < 0:
                 t = "(" + t + ")"
             return t
-        elif type == "noteCrt":
+        elif column_type == "noteCrt":
             return time.strftime(
                 "%Y-%m-%d", time.localtime(c.note().id / 1000))
-        elif type == "noteMod":
+        elif column_type == "noteMod":
             return time.strftime("%Y-%m-%d", time.localtime(c.note().mod))
-        elif type == "cardMod":
+        elif column_type == "cardMod":
             return time.strftime("%Y-%m-%d", time.localtime(c.mod))
-        elif type == "cardReps":
+        elif column_type == "cardReps":
             return str(c.reps)
-        elif type == "cardLapses":
+        elif column_type == "cardLapses":
             return str(c.lapses)
-        elif type == "noteTags":
+        elif column_type == "noteTags":
             return " ".join(c.note().tags)
-        elif type == "note":
+        elif column_type == "note":
             return c.model()['name']
-        elif type == "cardIvl":
+        elif column_type == "cardIvl":
             if c.type == 0:
                 return _("(new)")
             elif c.type == 1:
                 return _("(learning)")
             return fmtTimeSpan(c.ivl * 86400)
-        elif type == "cardEase":
+        elif column_type == "cardEase":
             if c.type == 0:
                 return _("(new)")
             return "%d%%" % (c.factor / 10)
-        elif type == "deck":
+        elif column_type == "deck":
             if c.odid:
                 # in a cram deck
                 return "%s (%s)" % (
@@ -482,7 +482,6 @@ class Browser(QMainWindow):
         self.teardownHooks()
         self.mw.maybeReset()
         evt.accept()
-        self.deleteLater()
 
     def canClose(self):
         return True
@@ -878,7 +877,7 @@ by clicking on one on the left."""))
         d = QDialog(self)
         l = QVBoxLayout()
         l.setMargin(0)
-        w = AnkiWebView()
+        w = AnkiWebView(canCopy=True)
         l.addWidget(w)
         w.stdHtml(info + "<p>" + reps)
         bb = QDialogButtonBox(QDialogButtonBox.Close)

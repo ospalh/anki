@@ -54,7 +54,6 @@ class DeckStats(QDialog):
     def reject(self):
         saveGeom(self, self.name)
         QDialog.reject(self)
-        self.deleteLater()
 
     def browser(self):
         name = time.strftime("-%Y-%m-%d@%H-%M-%S.png",
