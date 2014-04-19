@@ -203,8 +203,8 @@ class Template(object):
             else:
                 # hook-based field modifier
                 mod, extra = re.search("^(.*?)(?:\((.*)\))?$", mod).groups()
-                txt = runFilter(
-                    'fmod_' + mod, txt or '', extra, context, tag, tag_name)
+                txt = runFilter('fmod_' + mod, txt or '', extra or '', context,
+                                tag, tag_name);
                 if txt is None:
                     return '{unknown field %s}' % tag_name
         return txt
