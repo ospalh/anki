@@ -8,6 +8,7 @@ from PyQt4.QtCore import QEventLoop, Qt, QTimer, SIGNAL
 from PyQt4.QtGui import QApplication, QCursor, QProgressDialog
 
 from anki.lang import _
+from anki.util import isMac
 
 # fixme: if mw->subwindow opens a progress dialog with mw as the parent, mw
 # gets raised on finish on compiz. perhaps we should be using the progress
