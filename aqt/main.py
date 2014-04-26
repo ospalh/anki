@@ -413,13 +413,14 @@ the manual for information on how to restore from an automatic backup."))
     ##########################################################################
 
     def moveToState(self, state, *args):
-        #print "-> move from", self.state, "to", state
         oldState = self.state or "dummy"
         cleanup = getattr(self, "_" + oldState + "Cleanup", None)
         if cleanup:
             cleanup(state)
         self.state = state
+        runHook('beforeStateChange', state, oldState, *args)
         getattr(self, "_" + state + "State")(oldState, *args)
+        runHook('afterStateChange', state, oldState, *args)
 
     def _deckBrowserState(self, oldState):
         self.deckBrowser.show()
@@ -548,13 +549,13 @@ title="%s">%s</button>''' % (
         self.toolbar = aqt.toolbar.Toolbar(self, tweb)
         self.toolbar.draw()
         # main area
-        self.web = aqt.webview.AnkiWebView()
+        self.web = aqt.webview.AnkiWebView(canFocus=True)
         self.web.setObjectName("mainText")
         self.web.setFocusPolicy(Qt.WheelFocus)
         self.web.setMinimumWidth(400)
         # bottom area
         sweb = self.bottomWeb = aqt.webview.AnkiWebView()
-        #sweb.hide()
+        # sweb.hide()
         sweb.setFixedHeight(100)
         sweb.setObjectName("bottomWeb")
         sweb.setFocusPolicy(Qt.WheelFocus)
@@ -819,7 +820,7 @@ title="%s">%s</button>''' % (
     def setupMenus(self):
         m = self.form
         s = SIGNAL("triggered()")
-        #self.connect(m.actionDownloadSharedPlugin, s, self.onGetSharedPlugin)
+        # self.connect(m.actionDownloadSharedPlugin, s, self.onGetSharedPlugin)
         self.connect(m.actionSwitchProfile, s, self.unloadProfile)
         self.connect(m.actionImport, s, self.onImport)
         self.connect(m.actionExport, s, self.onExport)
