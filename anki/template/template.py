@@ -10,7 +10,7 @@ from anki.utils import stripHTML, stripHTMLMedia
 furigana.install()
 hint.install()
 
-clozeReg = r"\{\{c%s::(.*?)(::(.*?))?\}\}"
+clozeReg = r"(?s)\{\{c%s::(.*?)(::(.*?))?\}\}"
 
 modifiers = {}
 

@@ -416,7 +416,9 @@ the manual for information on how to restore from an automatic backup."))
         if cleanup:
             cleanup(state)
         self.state = state
+        runHook('beforeStateChange', state, oldState, *args)
         getattr(self, "_" + state + "State")(oldState, *args)
+        runHook('afterStateChange', state, oldState, *args)
 
     def _deckBrowserState(self, oldState):
         self.deckBrowser.show()
@@ -710,7 +712,7 @@ title="%s">%s</button>''' % (
     def maybeEnableUndo(self):
         if self.col and self.col.undoName():
             self.form.actionUndo.setText(_("Undo %s") %
-                                         self.col.undoName())
+                                            self.col.undoName())
             self.form.actionUndo.setEnabled(True)
             runHook("undoState", True)
         else:
@@ -910,7 +912,7 @@ and if the problem comes up again, please ask on the support site."""))
                 f.write("nid\tmid\tfields\n")
             for id, mid, flds in col.db.execute(
                     "select id, mid, flds from notes where id in %s" %
-                    ids2str(nids)):
+                ids2str(nids)):
                 fields = splitFields(flds)
                 f.write(
                     ("\t".join([str(id), str(mid)] + fields)).encode("utf8"))
@@ -1171,7 +1173,7 @@ will be lost. Continue?"""))
             if buf != "raise":
                 showInfo(_("""\
 Please ensure a profile is open and Anki is not busy, then try again."""),
-                         parent=None)
+                     parent=None)
             return
         # raise window
         if isWin:
