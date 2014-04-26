@@ -8,7 +8,6 @@ from PyQt4.QtCore import QEventLoop, Qt, QTimer, SIGNAL
 from PyQt4.QtGui import QApplication, QCursor, QProgressDialog
 
 from anki.lang import _
-from anki.util import isMac
 
 # fixme: if mw->subwindow opens a progress dialog with mw as the parent, mw
 # gets raised on finish on compiz. perhaps we should be using the progress
@@ -121,8 +120,8 @@ Your pysqlite2 is too old. Anki will appear frozen during long operations."""
         self._disabled = False
 
     def update(self, label=None, value=None, process=True, maybeShow=True):
-        #print self._min, self._counter, self._max, label, time.time()
-        #- self._lastTime
+        # print self._min, self._counter, self._max, label, time.time() \
+        #     - self._lastTime
         if maybeShow:
             self._maybeShow()
         self._lastTime = time.time()

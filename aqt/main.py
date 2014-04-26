@@ -410,7 +410,6 @@ the manual for information on how to restore from an automatic backup."))
     ##########################################################################
 
     def moveToState(self, state, *args):
-        #print "-> move from", self.state, "to", state
         oldState = self.state or "dummy"
         cleanup = getattr(self, "_" + oldState + "Cleanup", None)
         if cleanup:
@@ -553,7 +552,7 @@ title="%s">%s</button>''' % (
         self.web.setMinimumWidth(400)
         # bottom area
         sweb = self.bottomWeb = aqt.webview.AnkiWebView()
-        #sweb.hide()
+        # sweb.hide()
         sweb.setFixedHeight(100)
         sweb.setObjectName("bottomWeb")
         sweb.setFocusPolicy(Qt.WheelFocus)
@@ -712,7 +711,7 @@ title="%s">%s</button>''' % (
     def maybeEnableUndo(self):
         if self.col and self.col.undoName():
             self.form.actionUndo.setText(_("Undo %s") %
-                                            self.col.undoName())
+                                         self.col.undoName())
             self.form.actionUndo.setEnabled(True)
             runHook("undoState", True)
         else:
@@ -818,7 +817,7 @@ title="%s">%s</button>''' % (
     def setupMenus(self):
         m = self.form
         s = SIGNAL("triggered()")
-        #self.connect(m.actionDownloadSharedPlugin, s, self.onGetSharedPlugin)
+        # self.connect(m.actionDownloadSharedPlugin, s, self.onGetSharedPlugin)
         self.connect(m.actionSwitchProfile, s, self.unloadProfile)
         self.connect(m.actionImport, s, self.onImport)
         self.connect(m.actionExport, s, self.onExport)
@@ -912,7 +911,7 @@ and if the problem comes up again, please ask on the support site."""))
                 f.write("nid\tmid\tfields\n")
             for id, mid, flds in col.db.execute(
                     "select id, mid, flds from notes where id in %s" %
-                ids2str(nids)):
+                    ids2str(nids)):
                 fields = splitFields(flds)
                 f.write(
                     ("\t".join([str(id), str(mid)] + fields)).encode("utf8"))
@@ -1173,7 +1172,7 @@ will be lost. Continue?"""))
             if buf != "raise":
                 showInfo(_("""\
 Please ensure a profile is open and Anki is not busy, then try again."""),
-                     parent=None)
+                         parent=None)
             return
         # raise window
         if isWin:
