@@ -9,7 +9,7 @@ import itertools
 import random
 import time
 
-#from anki.cards import Card
+# from anki.cards import Card
 from anki.consts import DYN_ADDED, DYN_BIGINT, DYN_DUE, DYN_DUEPRIORITY, \
     DYN_LAPSES, DYN_OLDEST, DYN_RANDOM, DYN_REVADDED, DYN_SMALLINT, \
     NEW_CARDS_DISTRIBUTE, NEW_CARDS_DUE, NEW_CARDS_FIRST, NEW_CARDS_LAST, \
