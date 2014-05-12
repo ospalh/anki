@@ -109,7 +109,7 @@ class ImportDialog(QDialog):
                 did = 1
         else:
             did = self.importer.model['did']
-        #self.deck.setText(self.mw.col.decks.name(did))
+        # self.deck.setText(self.mw.col.decks.name(did))
 
     def onDelimiter(self):
         str = getOnlyText(_("""\
@@ -148,7 +148,7 @@ you can enter it here. Use \\t to represent tab."""),
             d = repr(d)  # or str(d)
         txt = _("Fields separated by: %s") % d
         self.frm.autoDetect.setText(txt)
-        
+
     def accept(self):
         self.importer.mapping = self.mapping
         if not self.importer.mappingOk():

@@ -7,12 +7,13 @@ import cgi
 import time
 import re
 from operator import itemgetter
-from PyQt4.QtCore import QAbstractTableModel, Qt, SIGNAL, SLOT
+from PyQt4.QtCore import QAbstractTableModel, Qt, SIGNAL, SLOT, pyqtSignal
 from PyQt4.QtGui import QAbstractItemView, QBrush, QColor, QComboBox, \
     QDialog, QDialogButtonBox, QFont, QGridLayout, QHBoxLayout, QHeaderView, \
-    QIcon, QItemDelegate, QItemSelection, QItemSelectionModel, QKeySequence, \
-    QLabel, QMainWindow, QMenu, QPalette, QShortcut, QTreeWidgetItem, \
-    QVBoxLayout, QWidget
+    QIcon, QInputDialog, QItemDelegate, QItemSelection, QItemSelectionModel, \
+    QKeySequence, QLabel, QLineEdit, QMainWindow, QMenu, QMessageBox, \
+    QPalette, QShortcut, QStyle, QToolButton, QTreeWidgetItem, QVBoxLayout, \
+    QWidget
 from PyQt4.QtWebKit import QWebPage
 from anki.lang import _, ngettext
 
@@ -53,10 +54,10 @@ class DataModel(QAbstractTableModel):
         self.cardObjs = {}
 
     def getCard(self, index):
-        id = self.cards[index.row()]
-        if not id in self.cardObjs:
-            self.cardObjs[id] = self.col.getCard(id)
-        return self.cardObjs[id]
+        id_ = self.cards[index.row()]
+        if id_ not in self.cardObjs:
+            self.cardObjs[id_] = self.col.getCard(id_)
+        return self.cardObjs[id_]
 
     def refreshNote(self, note):
         refresh = False
@@ -134,8 +135,8 @@ class DataModel(QAbstractTableModel):
         # old data first
         self.cards = []
         self.cards = self.col.findCards(txt, order=True)
-        #self.browser.mw.pm.profile['fullSearch'])
-        #print "fetch cards in %dms" % ((time.time() - t)*1000)
+        # self.browser.mw.pm.profile['fullSearch'])
+        # print "fetch cards in %dms" % ((time.time() - t)*1000)
         if reset:
             self.endReset()
 
@@ -847,9 +848,10 @@ by clicking on one on the left."""))
         root.setExpanded(True)
         root.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
         for name, filt in saved.items():
-            item = self.CallbackItem(root, name, lambda s=filt: self.setFilter(s))
+            item = self.CallbackItem(
+                root, name, lambda s=filt: self.setFilter(s))
             item.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
-    
+
     def _userTagTree(self, root):
         for t in sorted(self.col.tags.all()):
             if t.lower() == "marked" or t.lower() == "leech":
@@ -1779,7 +1781,7 @@ class FavouritesLineEdit(QLineEdit):
         self.mw = mw
         self.browser = browser
         # add conf if missing
-        if not self.mw.col.conf.has_key('savedFilters'):
+        if 'savedFilters' not in self.mw.col.conf:
             self.mw.col.conf['savedFilters'] = {}
         self.button = QToolButton(self)
         self.button.setStyleSheet('border: 0px;')
@@ -1792,7 +1794,7 @@ class FavouritesLineEdit(QLineEdit):
         self.name = None
         self.buttonClicked.connect(self.onClicked)
         self.connect(self, SIGNAL("textEdited(QString)"), self.updateButton)
-    
+
     def resizeEvent(self, event):
         buttonSize = self.button.sizeHint()
         frameWidth = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
@@ -1806,7 +1808,7 @@ class FavouritesLineEdit(QLineEdit):
     def setText(self, txt):
         super(FavouritesLineEdit, self).setText(txt)
         self.updateButton()
-        
+
     def updateButton(self, reset=True):
         # If search text is a saved query, switch to the delete button.
         # Otherwise show save button.
@@ -1819,13 +1821,13 @@ class FavouritesLineEdit(QLineEdit):
                 return
         self.doSave = True
         self.setIcon(QIcon(":/icons/emblem-favorite-off.png"))
-    
+
     def onClicked(self):
         if self.doSave:
             self.saveClicked()
         else:
             self.deleteClicked()
-    
+
     def saveClicked(self):
         txt = unicode(self.text()).strip()
         dlg = QInputDialog(self)
@@ -1838,15 +1840,14 @@ class FavouritesLineEdit(QLineEdit):
         name = dlg.textValue()
         if ok:
             self.mw.col.conf['savedFilters'][name] = txt
-            
+
         self.updateButton()
         self.browser.setupTree()
-    
+
     def deleteClicked(self):
         msg = _('Remove "%s" from your saved searches?') % self.name
-        ok = QMessageBox.question(self, _('Remove search'),
-                         msg, QMessageBox.Yes, QMessageBox.No)
-    
+        ok = QMessageBox.question(
+            self, _('Remove search'), msg, QMessageBox.Yes, QMessageBox.No)
         if ok == QMessageBox.Yes:
             self.mw.col.conf['savedFilters'].pop(self.name, None)
             self.updateButton()
