@@ -39,7 +39,7 @@ class DB(object):
             # execute("...where id = ?", 5)
             res = self._db.execute(sql, a)
         if self.echo:
-            #print a, ka
+            # print a, ka
             print sql, "%0.3fms" % ((time.time() - t) * 1000)
             if self.echo == "2":
                 print a, ka

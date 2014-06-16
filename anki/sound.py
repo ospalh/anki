@@ -237,7 +237,7 @@ class _Recorder(object):
     def postprocess(self, encode=True):
         self.encode = encode
         for c in processingChain:
-            #print c
+            # print c
             if not self.encode and c[0] == 'lame':
                 continue
             try:

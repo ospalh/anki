@@ -164,4 +164,4 @@ select flds from notes where csum = ? and id != ? and mid = ?""",
             # popping up a dialog while editing is confusing; instead we can
             # document that the user should open the templates window to
             # garbage collect empty cards
-            #self.col.remEmptyCards(ids)
+            # self.col.remEmptyCards(ids)

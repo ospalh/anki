@@ -67,8 +67,8 @@ defaultTemplate = {
     'bqfmt': "",
     'bafmt': "",
     # we don't define these so that we pick up system font size until set
-    #'bfont': "Arial",
-    #'bsize': 12,
+    # 'bfont': "Arial",
+    # 'bsize': 12,
 }
 
 

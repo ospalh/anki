@@ -6,7 +6,7 @@ import datetime
 import time
 
 from PyQt4.QtCore import Qt, SIGNAL
-from PyQt4.QtGui import QDialog
+from PyQt4.QtGui import QDialog, QDialogButtonBox
 
 from anki.lang import _
 from aqt.utils import openFolder, showWarning, getText, openHelp, showInfo
@@ -24,6 +24,9 @@ class Preferences(QDialog):
         self.prof = self.mw.pm.profile
         self.form = aqt.forms.preferences.Ui_Preferences()
         self.form.setupUi(self)
+        self.form.buttonBox.button(QDialogButtonBox.Help).setAutoDefault(False)
+        self.form.buttonBox.button(
+            QDialogButtonBox.Close).setAutoDefault(False)
         self.connect(self.form.buttonBox, SIGNAL("helpRequested()"),
                      lambda: openHelp("profileprefs"))
         self.setupCollection()

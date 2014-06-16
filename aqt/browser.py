@@ -382,7 +382,6 @@ class Browser(QMainWindow):
         self.setupEditor()
         self.updateFont()
         self.onUndoState(self.mw.form.actionUndo.isEnabled())
-        self.form.searchEdit.setLineEdit(FavouritesLineEdit(self.mw, self))
         self.form.searchEdit.setFocus()
         self.form.searchEdit.lineEdit().setText("is:current")
         self.form.searchEdit.lineEdit().selectAll()
@@ -522,13 +521,13 @@ class Browser(QMainWindow):
 
     def setupSearch(self):
         self.filterTimer = None
+        self.form.searchEdit.setLineEdit(FavouritesLineEdit(self.mw, self))
         self.connect(self.form.searchButton,
                      SIGNAL("clicked()"),
                      self.onSearch)
         self.connect(self.form.searchEdit.lineEdit(),
                      SIGNAL("returnPressed()"),
                      self.onSearch)
-        self.setTabOrder(self.form.searchEdit, self.form.tableView)
         self.form.searchEdit.setCompleter(None)
         self.form.searchEdit.addItems(self.mw.pm.profile['searchHistory'])
         self.connect(self.form.searchEdit.lineEdit(),
@@ -1793,7 +1792,7 @@ class FavouritesLineEdit(QLineEdit):
         # name of current saved filter (if query matches)
         self.name = None
         self.buttonClicked.connect(self.onClicked)
-        self.connect(self, SIGNAL("textEdited(QString)"), self.updateButton)
+        self.connect(self, SIGNAL("textChanged(QString)"), self.updateButton)
 
     def resizeEvent(self, event):
         buttonSize = self.button.sizeHint()

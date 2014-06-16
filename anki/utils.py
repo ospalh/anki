@@ -18,6 +18,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import traceback
 
 from anki.lang import _, ngettext
 
@@ -419,3 +420,18 @@ def platDesc():
         except:
             continue
     return theos
+
+
+# Debugging
+##############################################################################
+
+class TimedLog(object):
+
+    def __init__(self):
+        self._last = time.time()
+
+    def log(self, s):
+        path, num, fn, y = traceback.extract_stack(limit=2)[0]
+        sys.stderr.write(
+            "%5dms: %s(): %s\n" % ((time.time() - self._last)*1000, fn, s))
+        self._last = time.time()
