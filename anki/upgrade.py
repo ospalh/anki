@@ -353,7 +353,7 @@ insert or replace into col select id, cast(created as int), :t,
             else:
                 conf[k] = v
         # don't use a learning mode for upgrading users
-        #gc['new']['delays'] = [10]
+        # gc['new']['delays'] = [10]
         _addColVars(db, g, gc, conf)
         # clean up
         db.execute("drop table decks")

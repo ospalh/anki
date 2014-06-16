@@ -20,7 +20,7 @@ def getAudio(parent, encode=True):
     mb.setIconPixmap(QPixmap(":/icons/media-record.png"))
     but = QPushButton(_("  Stop"))
     but.setIcon(QIcon(":/icons/media-playback-stop.png"))
-    #but.setIconSize(QSize(32, 32))
+    # but.setIconSize(QSize(32, 32))
     mb.addButton(but, QMessageBox.RejectRole)
     t = time.time()
     r.start()

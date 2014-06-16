@@ -375,7 +375,8 @@ group by day order by day""" % (self._limit(), lim),
                 tot, period, unit))
         if total and tot:
             perMin = total / float(tot)
-            perMin = ngettext("%d card/minute", "%d cards/minute", perMin) % round(perMin)
+            perMin = ngettext(
+                "%d card/minute", "%d cards/minute", perMin) % round(perMin)
             self._line(
                 i, _("Average answer time"),
                 _("%(a)0.1fs (%(b)s)") % dict(a=(tot*60)/total, b=perMin))
@@ -769,7 +770,7 @@ from cards where did in %s""" % self._limit())
         else:
             conf['legend'] = {'container': "#%sLegend" % id, 'noColumns': 10}
         conf['series'] = dict(stack=True)
-        if not 'yaxis' in conf:
+        if 'yaxis' not in conf:
             conf['yaxis'] = {}
         conf['yaxis']['labelWidth'] = 40
         if 'xaxis' not in conf:
@@ -804,7 +805,7 @@ from cards where did in %s""" % self._limit())
                         color="#000"
                     )))
 
-            #conf['legend'] = dict(show=False)
+            # conf['legend'] = dict(show=False)
         return ("""\
 <table cellpadding=0 cellspacing=10>
 <tr>

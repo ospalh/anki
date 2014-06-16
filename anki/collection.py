@@ -771,8 +771,8 @@ select id from cards where odid > 0 and did in %s""" % ids2str(dids))
             problems.append(
                 ngettext("Fixed %d card with invalid properties.",
                          "Fixed %d cards with invalid properties.", cnt) % cnt)
-            self.db.execute("update cards set odid=0, odue=0 where id in "+
-                ids2str(ids))
+            self.db.execute(
+                "update cards set odid=0, odue=0 where id in " + ids2str(ids))
         # tags
         self.tags.registerNotes()
         # field cache

@@ -426,14 +426,17 @@ def platDesc():
             continue
     return theos
 
+
 # Debugging
 ##############################################################################
 
 class TimedLog(object):
+
     def __init__(self):
         self._last = time.time()
+
     def log(self, s):
         path, num, fn, y = traceback.extract_stack(limit=2)[0]
-        sys.stderr.write("%5dms: %s(): %s\n" % ((time.time() - self._last)*1000, fn, s))
+        sys.stderr.write(
+            "%5dms: %s(): %s\n" % ((time.time() - self._last)*1000, fn, s))
         self._last = time.time()
-

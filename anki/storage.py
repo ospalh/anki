@@ -93,7 +93,7 @@ def _upgrade(col, ver):
         col.modSchema()
         clozes = []
         for m in col.models.all():
-            if not "{{cloze:" in m['tmpls'][0]['qfmt']:
+            if "{{cloze:" not in m['tmpls'][0]['qfmt']:
                 m['type'] = MODEL_STD
                 col.models.save(m)
             else:

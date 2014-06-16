@@ -114,7 +114,7 @@ class SupermemoXmlImporter(NoteImporter):
         self.META.resetLearningData = False  # implemented
         self.META.onlyMemorizedItems = False  # implemented
         self.META.loggerLevel = 2             # implemented
-            # 0no,1info,2error,3debug
+        # 0no,1info,2error,3debug
         self.META.tagAllTopics = True
         # path patterns to be tagged - in gui entered like 'Advanced
         # English 97|My Vocablary'
@@ -126,7 +126,7 @@ class SupermemoXmlImporter(NoteImporter):
 
         self.notes = []
 
-## TOOLS
+# TOOLS
 
     def _fudgeText(self, text):
         "Replace sm syntax to Anki syntax"
@@ -149,8 +149,8 @@ class SupermemoXmlImporter(NoteImporter):
         s = re.sub(u'&amp;', u'&', s)
         # unescaped solitary chars < or > that were ok for minidom
         # confuse btfl soup
-        #s = re.sub(u'>',u'&gt;',s)
-        #s = re.sub(u'<',u'&lt;',s)
+        # s = re.sub(u'>',u'&gt;',s)
+        # s = re.sub(u'<',u'&lt;',s)
 
         return unicode(
             btflsoup(s, selfClosingTags=['br', 'hr', 'img', ' wbr'],
@@ -178,7 +178,7 @@ class SupermemoXmlImporter(NoteImporter):
 
         return ef
 
-## DEFAULT IMPORTER METHODS
+# # DEFAULT IMPORTER METHODS
 
     def foreignNotes(self):
 
@@ -200,7 +200,7 @@ class SupermemoXmlImporter(NoteImporter):
     def fields(self):
         return 2
 
-## PARSER METHODS
+# # PARSER METHODS
 
     def addItemToCards(self, item):
         "This method actually do conversion"
@@ -344,7 +344,7 @@ class SupermemoXmlImporter(NoteImporter):
             handlerMethod(node)
         else:
             self.logger(u'No handler for method %s' % _method, level=3)
-            #print traceback.print_exc()
+            # print traceback.print_exc()
 
     def parse_Text(self, node):
         "Parse text inside elements. Text is stored into local buffer."
@@ -352,7 +352,7 @@ class SupermemoXmlImporter(NoteImporter):
         text = node.data
         self.cntBuf.append(text)
 
-    #def parse_Comment(self, node):
+    # def parse_Comment(self, node):
     #    """
     #    Source can contain XML comments, but we ignore them
     #    """
@@ -373,16 +373,16 @@ class SupermemoXmlImporter(NoteImporter):
         self.cntElm.append(SuperMemoElement())
         self.cntElm[-1]['lTitle'] = self.cntMeta['title']
 
-        #parse all child elements
+        # parse all child elements
         for child in node.childNodes:
             self.parse(child)
 
-        #strip all saved strings, just for sure
+        # strip all saved strings, just for sure
         for key in self.cntElm[-1].keys():
             if hasattr(self.cntElm[-1][key], 'strip'):
                 self.cntElm[-1][key] = self.cntElm[-1][key].strip()
 
-        #pop current element
+        # pop current element
         smel = self.cntElm.pop()
 
         # Process cntElm if is valid Item (and not an Topic etc..)
@@ -398,12 +398,12 @@ class SupermemoXmlImporter(NoteImporter):
                     self.logger(
                         u'Element skiped  \t- not memorized ...', level=3)
                 else:
-                    #import sm element data to Anki
+                    # import sm element data to Anki
                     self.addItemToCards(smel)
                     self.logger(
                         u"Import element \t- " + smel['Question'], level=3)
 
-                    #print element
+                    # print element
                     self.logger('-' * 45, level=3)
                     for key in smel.keys():
                         self.logger(
@@ -438,12 +438,12 @@ class SupermemoXmlImporter(NoteImporter):
                 self.cntElm[-1][child.tagName] = child.firstChild.data
 
     # It's being processed in do_Content now
-    #def do_Question(self, node):
+    # def do_Question(self, node):
     #    for child in node.childNodes: self.parse(child)
     #    self.cntElm[-1][node.tagName]=self.cntBuf.pop()
 
     # It's being processed in do_Content now
-    #def do_Answer(self, node):
+    # def do_Answer(self, node):
     #    for child in node.childNodes: self.parse(child)
     #    self.cntElm[-1][node.tagName]=self.cntBuf.pop()
 

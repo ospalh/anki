@@ -30,7 +30,7 @@ class Exporter(object):
         text = text.replace("\t", " " * 8)
         text = re.sub("(?i)<style>.*?</style>", "", text)
         if "\"" in text:
-        	text = "\"" + text.replace("\"", "\"\"") + "\""
+            text = "\"" + text.replace("\"", "\"\"") + "\""
         return text
 
     def cardIds(self):

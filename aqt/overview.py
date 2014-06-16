@@ -188,7 +188,7 @@ text-align: center;
             links.append(["E", "empty", _("Empty")])
         else:
             links.append(["C", "studymore", _("Custom Study")])
-            #links.append(["F", "cram", _("Filter/Cram")])
+            # links.append(["F", "cram", _("Filter/Cram")])
         if self.mw.col.sched.haveBuried():
             links.append(["U", "unbury", _("Unbury")])
         buf = ""

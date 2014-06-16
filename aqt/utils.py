@@ -131,7 +131,7 @@ class ButtonedDialog(QMessageBox):
         if help:
             self.addButton(_("Help"), QMessageBox.HelpRole)
             buttons.append(_("Help"))
-        #self.setLayout(v)
+        # self.setLayout(v)
 
     def run(self):
         self.exec_()
@@ -268,7 +268,7 @@ def getFile(parent, title, cb, filter="*.*", dir=None, key=None):
 
     def accept():
         # work around an osx crash
-        #aqt.mw.app.processEvents()
+        # aqt.mw.app.processEvents()
         file = unicode(list(d.selectedFiles())[0])
         if dirkey:
             dir = os.path.dirname(file)
