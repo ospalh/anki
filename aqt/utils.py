@@ -64,7 +64,7 @@ def showInfo(text, parent=False, help="", type="info"):
     return mb.exec_()
 
 
-def showText(txt, parent=None, type="text", run=True):
+def showText(txt, parent=None, type="text", run=True, geomKey=None):
     if not parent:
         parent = aqt.mw.app.activeWindow() or aqt.mw
     diag = QDialog(parent)
@@ -80,9 +80,15 @@ def showText(txt, parent=None, type="text", run=True):
     layout.addWidget(text)
     box = QDialogButtonBox(QDialogButtonBox.Close)
     layout.addWidget(box)
-    diag.connect(box, SIGNAL("rejected()"), diag, SLOT("reject()"))
+    def onReject():
+        if geomKey:
+            saveGeom(diag, geomKey)
+        QDialog.reject(diag)
+    diag.connect(box, SIGNAL("rejected()"), onReject)
     diag.setMinimumHeight(400)
     diag.setMinimumWidth(500)
+    if geomKey:
+        restoreGeom(diag, geomKey)
     if run:
         diag.exec_()
     else:
@@ -310,7 +316,7 @@ def saveGeom(widget, key):
     aqt.mw.pm.profile[key] = widget.saveGeometry()
 
 
-def restoreGeom(widget, key, offset=None):
+def restoreGeom(widget, key, offset=None, adjustSize=False):
     key += "Geom"
     if aqt.mw.pm.profile.get(key):
         widget.restoreGeometry(aqt.mw.pm.profile[key])
@@ -320,6 +326,9 @@ def restoreGeom(widget, key, offset=None):
                 s = widget.size()
                 widget.resize(s.width(), s.height() + offset * 2)
 
+    else:
+        if adjustSize:
+            widget.adjustSize()
 
 def saveState(widget, key):
     key += "State"

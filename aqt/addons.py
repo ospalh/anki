@@ -148,7 +148,9 @@ class GetAddons(QDialog):
         b = self.form.buttonBox.addButton(
             _("Browse"), QDialogButtonBox.ActionRole)
         self.connect(b, SIGNAL("clicked()"), self.onBrowse)
+        restoreGeom(self, "getaddons", adjustSize=True)
         self.exec_()
+        saveGeom(self, "getaddons")
 
     def onBrowse(self):
         openLink(aqt.appShared + "addons/")
