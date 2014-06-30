@@ -5,17 +5,17 @@
 from cStringIO import StringIO
 import re
 import os
-import send2trash
 import sys
+import traceback
 import unicodedata
 import urllib
 import zipfile
 
-from anki.consts import MEDIA_ADD, MEDIA_REM, MODEL_CLOZE, SYNC_ZIP_COUNT, \
-    SYNC_ZIP_SIZE
+from anki.consts import MODEL_CLOZE, SYNC_ZIP_COUNT, SYNC_ZIP_SIZE
 from anki.db import DB
 from anki.latex import mungeQA
 from anki.utils import checksum, isMac, isWin, json
+
 
 class MediaManager(object):
 
@@ -84,7 +84,8 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
                 self.db.execute('attach "../collection.media.db" as old')
                 self.db.execute("""
     insert into media
-     select m.fname, csum, mod, ifnull((select 1 from log l2 where l2.fname=m.fname), 0) as dirty
+     select m.fname, csum, mod,
+      ifnull((select 1 from log l2 where l2.fname=m.fname), 0) as dirty
      from old.media m
      left outer join old.log l using (fname)
      union
@@ -96,10 +97,11 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
                 self.db.execute("detach old")
                 self.db.commit()
                 self.db.execute("vacuum analyze")
-            except Exception, e:
-                # if we couldn't import the old db for some reason, just start
+            except:  # Catch everything.
+                # If we couldn't import the old db for some reason, just start
                 # anew
-                self.col.log("failed to import old media db:"+traceback.format_exc())
+                self.col.log(
+                    "failed to import old media db:"+traceback.format_exc())
             os.rename("../collection.media.db", "../collection.media.db.old")
 
     def close(self):
@@ -374,7 +376,7 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
     def _changes(self):
         self.cache = {}
         for (name, csum, mod) in self.db.execute(
-            "select fname, csum, mtime from media"):
+                "select fname, csum, mtime from media"):
             self.cache[name] = [csum, mod, False]
         added = []
         removed = []
@@ -457,8 +459,8 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
         sz = 0
 
         for c, (fname, csum) in enumerate(self.db.execute(
-                        "select fname, csum from media where dirty=1"
-                        " limit %d"%SYNC_ZIP_COUNT)):
+                "select fname, csum from media where dirty=1"
+                " limit %d" % SYNC_ZIP_COUNT)):
 
             fnames.append(fname)
             normname = unicodedata.normalize("NFC", fname)

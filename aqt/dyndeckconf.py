@@ -6,7 +6,7 @@ from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QDialog, QDialogButtonBox
 
 from anki.lang import _
-from aqt.utils import askUser, openHelp, showWarning
+from aqt.utils import askUser, openHelp, restoreGeom, saveGeom, showWarning
 import aqt
 
 

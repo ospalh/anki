@@ -363,12 +363,14 @@ Unable to import from a read-only file."""))
             mw.progress.finish()
         mw.reset()
 
+
 def invalidZipMsg():
     return _("""\
 This file does not appear to be a valid .apkg file. If you're getting this \
 error from a file downloaded from AnkiWeb, chances are that your download \
 failed. Please try again, and if the problem persists, please try again \
 with a different browser.""")
+
 
 def setupApkgImport(mw, importer):
     base = os.path.basename(importer.file).lower()

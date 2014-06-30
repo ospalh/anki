@@ -80,6 +80,7 @@ def showText(txt, parent=None, type="text", run=True, geomKey=None):
     layout.addWidget(text)
     box = QDialogButtonBox(QDialogButtonBox.Close)
     layout.addWidget(box)
+
     def onReject():
         if geomKey:
             saveGeom(diag, geomKey)
@@ -329,6 +330,7 @@ def restoreGeom(widget, key, offset=None, adjustSize=False):
     else:
         if adjustSize:
             widget.adjustSize()
+
 
 def saveState(widget, key):
     key += "State"

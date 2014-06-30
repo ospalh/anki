@@ -10,7 +10,7 @@ import random
 import sys
 import urllib
 
-from anki.consts import REM_CARD, REM_NOTE, SYNC_URL, SYNC_VER
+from anki.consts import REM_CARD, REM_NOTE, SYNC_BASE, SYNC_VER, SYNC_ZIP_COUNT
 from anki.db import DB
 from anki.utils import ids2str, intTime, json, isWin, isMac, platDesc, checksum
 from hooks import runHook
@@ -560,7 +560,7 @@ class HttpSyncer(object):
     # more compatible choice.
 
     def req(self, method, fobj=None, comp=6, badAuthRaises=False):
-        BOUNDARY="Anki-sync-boundary"
+        BOUNDARY = "Anki-sync-boundary"
         bdry = "--"+BOUNDARY
         buf = StringIO()
         # post vars
@@ -679,7 +679,7 @@ class FullSyncer(HttpSyncer):
         HttpSyncer.__init__(self, hkey, con)
         self.postVars = dict(
             k=self.hkey,
-            v="ankidesktop,%s,%s"%(anki.version, platDesc()),
+            v="ankidesktop,%s,%s" % (anki.version, platDesc()),
         )
         self.col = col
 
@@ -749,11 +749,11 @@ class MediaSyncer(object):
             return "noChanges"
 
         # loop through and process changes from server
-        self.col.log("last local usn is %s"%lastUsn)
+        self.col.log("last local usn is %s" % lastUsn)
         while True:
             data = self.server.mediaChanges(lastUsn=lastUsn)
 
-            self.col.log("mediaChanges resp count %d"%len(data))
+            self.col.log("mediaChanges resp count %d" % len(data))
             if not data:
                 break
 
@@ -762,7 +762,7 @@ class MediaSyncer(object):
             for fname, rusn, rsum in data:
                 lsum, ldirty = self.col.media.syncInfo(fname)
                 self.col.log(
-                    "check: lsum=%s rsum=%s ldirty=%d rusn=%d fname=%s"%(
+                    "check: lsum=%s rsum=%s ldirty=%d rusn=%d fname=%s" % (
                         (lsum and lsum[0:4]),
                         (rsum and rsum[0:4]),
                         ldirty,
@@ -792,8 +792,8 @@ class MediaSyncer(object):
 
             self._downloadFiles(need)
 
-            self.col.log("update last usn to %d"%lastUsn)
-            self.col.media.setLastUsn(lastUsn) # commits
+            self.col.log("update last usn to %d" % lastUsn)
+            self.col.media.setLastUsn(lastUsn)  # commits
 
         # at this point we're all up to date with the server's changes,
         # and we need to send our own
@@ -831,13 +831,13 @@ class MediaSyncer(object):
             return ret
 
     def _downloadFiles(self, fnames):
-        self.col.log("%d files to fetch"%len(fnames))
+        self.col.log("%d files to fetch" % len(fnames))
         while fnames:
             top = fnames[0:SYNC_ZIP_COUNT]
-            self.col.log("fetch %s"%top)
+            self.col.log("fetch %s" % top)
             zipData = self.server.downloadFiles(files=top)
             cnt = self.col.media.addFilesFromZip(zipData)
-            self.col.log("received %d files"%cnt)
+            self.col.log("received %d files" % cnt)
             fnames = fnames[cnt:]
 
     def files(self):
@@ -863,7 +863,7 @@ class RemoteMediaServer(HttpSyncer):
     def begin(self):
         self.postVars = dict(
             k=self.hkey,
-            v="ankidesktop,%s,%s"%(anki.version, platDesc())
+            v="ankidesktop,%s,%s" % (anki.version, platDesc())
         )
         ret = self._dataOnly(json.loads(self.req(
             "begin", StringIO(json.dumps(dict())))))
@@ -895,8 +895,8 @@ class RemoteMediaServer(HttpSyncer):
 
     def _dataOnly(self, resp):
         if resp['err']:
-            self.col.log("error returned:%s"%resp['err'])
-            raise Exception("SyncError:%s"%resp['err'])
+            self.col.log("error returned:%s" % resp['err'])
+            raise Exception("SyncError:%s" % resp['err'])
         return resp['data']
 
     # only for unit tests

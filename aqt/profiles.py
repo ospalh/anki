@@ -159,7 +159,7 @@ a flash drive.""" % self.base)
                     oldFolder = midFolder
                 else:
                     showWarning(_("Please remove the folder %s and try again.")
-                            % midFolder)
+                                % midFolder)
                     self.name = oldName
                     return
             else:

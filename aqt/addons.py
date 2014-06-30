@@ -11,7 +11,8 @@ import traceback
 
 from anki.lang import _
 from aqt.downloader import download
-from aqt.utils import showInfo, openFolder, isWin, openLink, askUser
+from aqt.utils import askUser, isWin, openFolder, openLink, restoreGeom, \
+    saveGeom, showInfo
 from zipfile import ZipFile
 import aqt
 import aqt.forms

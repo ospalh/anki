@@ -27,8 +27,8 @@ from aqt.studydeck import StudyDeck
 from aqt.sync import SyncManager
 from aqt.upgrade import Upgrader
 from aqt.utils import applyStyles, askUser, checkInvalidFilename, \
-    getOnlyText, openHelp, openLink, restoreGeom, restoreState, showInfo, \
-    showText, showWarning, tooltip
+    getOnlyText, openHelp, openLink, restoreGeom, restoreState, saveGeom, \
+    showInfo, showText, showWarning, tooltip
 import aqt
 import aqt.about
 import aqt.addons
@@ -1024,7 +1024,7 @@ will be lost. Continue?"""))
         part1 = ngettext("%d card", "%d cards", len(cids)) % len(cids)
         part1 = _("%s to delete:") % part1
         diag, box = showText(part1 + "\n\n" + report, run=False,
-                geomKey="emptyCards")
+                             geomKey="emptyCards")
         box.addButton(_("Delete Cards"), QDialogButtonBox.AcceptRole)
         box.button(QDialogButtonBox.Close).setDefault(True)
 

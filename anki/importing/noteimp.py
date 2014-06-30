@@ -196,7 +196,8 @@ class NoteImporter(Importer):
         else:
             self.col.sched.orderCards(did)
 
-        part1 = ngettext("%d note added", "%d notes added", len(new)) % len(new)
+        part1 = ngettext("%d note added", "%d notes added",
+                         len(new)) % len(new)
         part2 = ngettext("%d note updated", "%d notes updated",
                          self.updateCount) % self.updateCount
         if self.importMode == 0:

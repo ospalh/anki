@@ -376,7 +376,8 @@ group by day order by day""" % (self._limit(), lim),
         if total and tot:
             perMin = total / float(tot)
             perMin = round(perMin, 1)
-            perMin = ngettext("%d card/minute", "%.01f cards/minute", perMin) % perMin
+            perMin = ngettext("%d card/minute", "%.01f cards/minute",
+                              perMin) % perMin
             # don't round down to zero
             if float(perMin.split(' ')[0]) < 0.1:
                 perMin = ''.join(["<", _("%.01f cards/minute")]) % 0.1
@@ -685,11 +686,12 @@ group by hour having count() > 30 order by hour""" % lim,
         div = self._cards()
         d = []
         for c, (t, col) in enumerate((
-            (_("Mature"), colMature),
-            (_("Young+Learn"), colYoung),
-            (_("Unseen"), colUnseen),
-            (_("Suspended+Buried"), colSusp))):
-            d.append(dict(data=div[c], label="%s: %s" % (t, div[c]), color=col))
+                (_("Mature"), colMature),
+                (_("Young+Learn"), colYoung),
+                (_("Unseen"), colUnseen),
+                (_("Suspended+Buried"), colSusp))):
+            d.append(
+                dict(data=div[c], label="%s: %s" % (t, div[c]), color=col))
         # text data
         i = []
         (c, f) = self.col.db.first("""
