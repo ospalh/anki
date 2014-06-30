@@ -11,7 +11,8 @@ import traceback
 
 from anki.lang import _
 from aqt.downloader import download
-from aqt.utils import showInfo, openFolder, isWin, openLink, askUser
+from aqt.utils import askUser, isWin, openFolder, openLink, restoreGeom, \
+    saveGeom, showInfo
 from zipfile import ZipFile
 import aqt
 import aqt.forms
@@ -148,7 +149,9 @@ class GetAddons(QDialog):
         b = self.form.buttonBox.addButton(
             _("Browse"), QDialogButtonBox.ActionRole)
         self.connect(b, SIGNAL("clicked()"), self.onBrowse)
+        restoreGeom(self, "getaddons", adjustSize=True)
         self.exec_()
+        saveGeom(self, "getaddons")
 
     def onBrowse(self):
         openLink(aqt.appShared + "addons/")

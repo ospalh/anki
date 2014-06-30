@@ -30,8 +30,8 @@ from aqt.studydeck import StudyDeck
 from aqt.sync import SyncManager
 from aqt.upgrade import Upgrader
 from aqt.utils import applyStyles, askUser, checkInvalidFilename, \
-    getOnlyText, openHelp, openLink, restoreGeom, restoreState, showInfo, \
-    showText, showWarning, tooltip
+    getOnlyText, openHelp, openLink, restoreGeom, restoreState, saveGeom, \
+    showInfo, showText, showWarning, tooltip
 import aqt
 import aqt.about
 import aqt.addons
@@ -308,14 +308,13 @@ attempting to import."""))
             self.col = Collection(cpath, log=True)
         except anki.db.Error:
             # warn user
-            showWarning("""\
-Your collection is corrupt. Please see the manual for \
-how to restore from a backup.""")
-            # move it out of the way so the profile can be used again
-            newpath = cpath+str(intTime())
-            os.rename(cpath, newpath)
-            # then close
-            sys.exit(1)
+            showWarning(_("""\
+Your collection is corrupt. Please create a new profile, then \
+see the manual for how to restore from an automatic backup.
+
+Debug info:
+""")+traceback.format_exc())
+            self.unloadProfile()
         except Exception as e:
             # the custom exception handler won't catch this if we immediately
             # unload, so we have to manually handle it
@@ -789,8 +788,8 @@ title="%s">%s</button>''' % (
     def onImport(self):
         aqt.importing.onImport(self)
 
-    def onExport(self):
-        aqt.exporting.ExportDialog(self)
+    def onExport(self, did=None):
+        aqt.exporting.ExportDialog(self, did=did)
 
     # Cramming
     ##########################################################################
@@ -994,7 +993,9 @@ will be lost. Continue?"""))
         diag.connect(box, SIGNAL("rejected()"), diag, SLOT("reject()"))
         diag.setMinimumHeight(400)
         diag.setMinimumWidth(500)
+        restoreGeom(diag, "checkmediadb")
         diag.exec_()
+        saveGeom(diag, "checkmediadb")
 
     def deleteUnused(self, unused, diag):
         if not askUser(_("Delete unused media?")):
@@ -1002,7 +1003,8 @@ will be lost. Continue?"""))
         mdir = self.col.media.dir()
         for f in unused:
             path = os.path.join(mdir, f)
-            send2trash(path)
+            if os.path.exists(path):
+                send2trash(path)
         tooltip(_("Deleted."))
         diag.close()
 
@@ -1024,11 +1026,13 @@ will be lost. Continue?"""))
         self.progress.finish()
         part1 = ngettext("%d card", "%d cards", len(cids)) % len(cids)
         part1 = _("%s to delete:") % part1
-        diag, box = showText(part1 + "\n\n" + report, run=False)
+        diag, box = showText(part1 + "\n\n" + report, run=False,
+                             geomKey="emptyCards")
         box.addButton(_("Delete Cards"), QDialogButtonBox.AcceptRole)
         box.button(QDialogButtonBox.Close).setDefault(True)
 
         def onDelete():
+            saveGeom(diag, "emptyCards")
             QDialog.accept(diag)
             self.checkpoint(_("Delete Empty"))
             self.col.remCards(cids)

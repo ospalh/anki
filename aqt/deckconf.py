@@ -10,7 +10,7 @@ from PyQt4.QtGui import QCursor, QDialog, QDialogButtonBox, QMenu
 import aqt
 from anki.lang import _, ngettext
 from aqt.utils import askUser, getOnlyText, openHelp, showInfo, showWarning, \
-    tooltip
+    tooltip, saveGeom, restoreGeom
 
 
 class DeckConf(QDialog):
@@ -37,9 +37,10 @@ class DeckConf(QDialog):
             SIGNAL("clicked()"), self.onRestore)
         self.setWindowTitle(_("Options for %s") % self.deck['name'])
         # qt doesn't size properly with altered fonts otherwise
+        restoreGeom(self, "deckconf", adjustSize=True)
         self.show()
-        self.adjustSize()
         self.exec_()
+        saveGeom(self, "deckconf")
 
     def setupCombos(self):
         import anki.consts as cs

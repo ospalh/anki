@@ -804,8 +804,9 @@ by clicking on one on the left."""))
             txt = "-" + txt
         if self.mw.app.keyboardModifiers() & Qt.ControlModifier:
             cur = unicode(self.form.searchEdit.lineEdit().text())
-            if cur:
-                txt = cur + " " + txt
+            if cur and cur != \
+                    _("<type here to search; hit enter to show current deck>"):
+                        txt = cur + " " + txt
         elif self.mw.app.keyboardModifiers() & Qt.ShiftModifier:
             cur = unicode(self.form.searchEdit.lineEdit().text())
             if cur:
@@ -1033,6 +1034,11 @@ where id in %s""" % ids2str(sf))
         self._previewWeb = AnkiWebView(True)
         vbox.addWidget(self._previewWeb)
         bbox = QDialogButtonBox()
+        self._previewReplay = bbox.addButton(
+            _("Replay Audio"), QDialogButtonBox.ActionRole)
+        self._previewReplay.setAutoDefault(False)
+        self._previewReplay.setShortcut(QKeySequence("R"))
+        self._previewReplay.setToolTip(_("Shortcut key: %s" % "R"))
         self._previewPrev = bbox.addButton("<", QDialogButtonBox.ActionRole)
         self._previewPrev.setAutoDefault(False)
         self._previewPrev.setShortcut(QKeySequence("Left"))
@@ -1041,6 +1047,7 @@ where id in %s""" % ids2str(sf))
         self._previewNext.setShortcut(QKeySequence("Right"))
         c(self._previewPrev, SIGNAL("clicked()"), self._onPreviewPrev)
         c(self._previewNext, SIGNAL("clicked()"), self._onPreviewNext)
+        c(self._previewReplay, SIGNAL("clicked()"), self._onReplayAudio)
         vbox.addWidget(bbox)
         self._previewWindow.setLayout(vbox)
         restoreGeom(self._previewWindow, "preview")
@@ -1067,6 +1074,9 @@ where id in %s""" % ids2str(sf))
         else:
             self.onNextCard()
         self._updatePreviewButtons()
+
+    def _onReplayAudio(self):
+        self.mw.reviewer.replayAudio(self)
 
     def _updatePreviewButtons(self):
         if not self._previewWindow:
@@ -1348,7 +1358,10 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
         frm.field.addItems([_("All Fields")] + fields)
         self.connect(frm.buttonBox, SIGNAL("helpRequested()"),
                      self.onFindReplaceHelp)
-        if not d.exec_():
+        restoreGeom(d, "findreplace")
+        r = d.exec_()
+        saveGeom(d, "findreplace")
+        if not r:
             return
         if frm.field.currentIndex() == 0:
             field = None
@@ -1799,6 +1812,7 @@ class FavouritesLineEdit(QLineEdit):
         frameWidth = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
         self.button.move(self.rect().right() - frameWidth - buttonSize.width(),
                          (self.rect().bottom() - buttonSize.height() + 1) / 2)
+        self.setTextMargins(0, 0, buttonSize.width() * 1.5, 0)
         super(FavouritesLineEdit, self).resizeEvent(event)
 
     def setIcon(self, path):

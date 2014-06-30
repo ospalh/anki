@@ -6,7 +6,7 @@ from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QDialog, QDialogButtonBox
 
 from anki.lang import _
-from aqt.utils import askUser, openHelp, showWarning
+from aqt.utils import askUser, openHelp, restoreGeom, saveGeom, showWarning
 import aqt
 
 
@@ -30,6 +30,7 @@ class DeckConf(QDialog):
                      SIGNAL("helpRequested()"),
                      lambda: openHelp("filtered"))
         self.setWindowTitle(_("Options for %s") % self.deck['name'])
+        restoreGeom(self, "dyndeckconf")
         self.setupOrder()
         self.loadConf()
         if search:
@@ -37,6 +38,7 @@ class DeckConf(QDialog):
         self.form.search.selectAll()
         self.show()
         self.exec_()
+        saveGeom(self, "dyndeckconf")
 
     def setupOrder(self):
         import anki.consts as cs
