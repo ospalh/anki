@@ -346,7 +346,7 @@ body {
   margin-top: 0.5em;
 }
 img {
-  max-width: 100%;
+
 }
 .marked {
   position:absolute;
@@ -355,9 +355,9 @@ img {
   display: none;
 }
 
-.typeGood { background: #0f0; }
-.typeBad { background: #f00; }
-.typeMissed { background: #ccc; }
+.typeGood { background-color: #0f0; }
+.typeBad { background-color: #f00; }
+.typeMissed { background-color: #ccc; }
 """
 
     def _styles(self):
