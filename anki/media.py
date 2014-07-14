@@ -88,8 +88,8 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
     def maybeUpgrade(self):
         oldpath = self.dir()+".db"
         if os.path.exists(oldpath):
+            self.db.execute('attach "../collection.media.db" as old')
             try:
-                self.db.execute('attach "../collection.media.db" as old')
                 self.db.execute("""
     insert into media
      select m.fname, csum, mod,
@@ -102,15 +102,17 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
                 self.db.execute("""
     insert into meta select dirMod, usn from old.meta
     """)
-                self.db.execute("detach old")
                 self.db.commit()
-                self.db.execute("vacuum analyze")
             except:  # Catch everything.
                 # If we couldn't import the old db for some reason, just start
                 # anew
                 self.col.log(
                     "failed to import old media db:"+traceback.format_exc())
-            os.rename("../collection.media.db", "../collection.media.db.old")
+            self.db.execute("detach old")
+            npath = "../collection.media.db.old"
+            if os.path.exists(npath):
+                os.unlink(npath)
+            os.rename("../collection.media.db", npath)
 
     def close(self):
         if self.col.server:
@@ -388,7 +390,7 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
     def _changes(self):
         self.cache = {}
         for (name, csum, mod) in self.db.execute(
-                "select fname, csum, mtime from media"):
+            "select fname, csum, mtime from media where csum is not null"):
             self.cache[name] = [csum, mod, False]
         added = []
         removed = []
@@ -478,10 +480,12 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
             normname = unicodedata.normalize("NFC", fname)
 
             if csum:
+                self.col.log("+media zip", fname)
                 z.write(fname, str(c))
                 meta.append((normname, str(c)))
                 sz += os.path.getsize(fname)
             else:
+                self.col.log("-media zip", fname)
                 meta.append((normname, ""))
 
             if sz >= SYNC_ZIP_SIZE:

@@ -238,7 +238,15 @@ and no other programs are accessing your profile folders, then try again."""))
 
         def recover():
             # if we can't load profile, start with a new one
-            os.rename(path, path+".broken")
+            if self.db:
+                try:
+                    self.db.close()
+                except:
+                    pass
+            broken = path+".broken"
+            if os.path.exists(broken):
+                os.unlink(broken)
+            os.rename(path, broken)
             QMessageBox.warning(
                 None, "Preferences Corrupt", """\
 Anki's prefs.db file was corrupt and has been recreated. If you were \

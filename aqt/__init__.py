@@ -226,6 +226,14 @@ def parseArgs(argv):
 
 
 def run():
+    try:
+        _run()
+    except Exception, e:
+        QMessageBox.critical(None, "Startup Error",
+                             "Please notify support of this error:\n\n"+
+                             traceback.format_exc())
+
+def _run():
     global mw
     from anki.utils import isMac
 
@@ -304,6 +312,3 @@ may experience issues such as images failing to show up during review.""")
     import aqt.main
     mw = aqt.main.AnkiQt(app, pm, args)
     app.exec_()
-
-if __name__ == "__main__":
-    run()

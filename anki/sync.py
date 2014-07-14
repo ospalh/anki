@@ -617,6 +617,8 @@ class RemoteServer(HttpSyncer):
         HttpSyncer.__init__(self, hkey)
 
     def syncURL(self):
+        if os.getenv("DEV"):
+            return "http://localhost:5000/sync/"
         return SYNC_BASE + "sync/"
 
     def hostKey(self, user, pw):
@@ -813,9 +815,11 @@ class MediaSyncer(object):
 
             if serverLastUsn - processedCnt == lastUsn:
                 self.col.log("lastUsn in sync, updating local")
-                self.col.media.setLastUsn(serverLastUsn)
+                self.col.media.setLastUsn(serverLastUsn) # commits
             else:
                 self.col.log("concurrent update, skipping usn update")
+                # commit for markClean
+                self.col.media.db.commit()
                 updateConflict = True
 
         if updateConflict:
@@ -858,6 +862,8 @@ class RemoteMediaServer(HttpSyncer):
         HttpSyncer.__init__(self, hkey, con)
 
     def syncURL(self):
+        if os.getenv("DEV"):
+            return "http://localhost:5001/"
         return SYNC_BASE + "msync/"
 
     def begin(self):
