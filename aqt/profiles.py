@@ -365,6 +365,8 @@ def default_base():
 
     Returns the path to the default directory to store all the data
     when the user didn't provide one.
+
+    N.B. The paths used are different from vanilla Anki.
     """
     if isWin:
         if StrictVersion(QT_VERSION_STR) >= StrictVersion("5.0"):
