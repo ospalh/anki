@@ -74,6 +74,7 @@ class ProfileManager(object):
         # set up the QApplication now, so it has to be set before
         # this.
         self.name = None
+        self.db = None
         self.base = base
         self.new_base_asked = False
         self.ensureBaseExists()
