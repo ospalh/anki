@@ -140,6 +140,23 @@ class Reviewer(object):
 <script>
 var ankiPlatform = "desktop";
 var typeans;
+
+
+function resizeImages() {
+    if (window.innerWidth === 0 || window.innerHeight === 0) {
+        return;
+    }
+    $( "img" ).on('load', function() {
+        var maxWidth = window.innerWidth * 0.975;
+        // We ignore the zoom. If that is >1, allow the image to be bigger.
+        // We also ignore to high images. Scroll.
+        if (this.width > maxWidth) {
+            this.height = this.height * (maxWidth / this.width);
+            this.width = maxWidth;
+        }
+    });
+}
+
 function _updateQA (q, answerMode, klass) {
     $("#qa").html(q);
     typeans = document.getElementById("typeans");
@@ -159,6 +176,8 @@ function _updateQA (q, answerMode, klass) {
     $("img").attr("draggable", false);
     $("embed").attr("draggable", false);
     $("object").attr("draggable", false);
+    setTimeout(function(){$('.hnt').addClass('chint');}, 30000);
+    resizeImages();
 };
 
 function _toggleStar (show) {
