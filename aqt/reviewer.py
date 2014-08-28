@@ -176,7 +176,7 @@ function _updateQA (q, answerMode, klass) {
     $("img").attr("draggable", false);
     $("embed").attr("draggable", false);
     $("object").attr("draggable", false);
-    setTimeout(function(){$('.hnt').addClass('chint');}, 30000);
+    // setTimeout(function(){$('.hnt').addClass('chint');}, 30000);
     resizeImages();
 };
 
