@@ -3,7 +3,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from PyQt4.QtCore import Qt, SIGNAL
-from PyQt4.QtGui import QDialog
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QKeySequence
 
 from anki.hooks import addHook, remHook
 from anki.lang import _
@@ -27,11 +27,9 @@ class EditCurrent(QDialog):
         self.setWindowTitle(_("Edit Current"))
         self.setMinimumHeight(400)
         self.setMinimumWidth(500)
-        self.connect(self,
-                     SIGNAL("rejected()"),
-                     self.onSave)
+        self.connect(self, SIGNAL("rejected()"), self.onSave)
         self.form.buttonBox.button(QDialogButtonBox.Close).setShortcut(
-                QKeySequence("Ctrl+Return"))
+            QKeySequence("Ctrl+Return"))
         self.editor = aqt.editor.Editor(self.mw, self.form.fieldsArea, self)
         self.editor.setNote(self.mw.reviewer.card.note())
         restoreGeom(self, "editcurrent")
