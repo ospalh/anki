@@ -521,8 +521,12 @@ onkeypress="_typeAnsPress();">""", buf)
         givenElems, correctElems = self.tokenizeComparison(given, correct)
 
         def vspace(s):
-            u"""Replace spaces characters with open boxes."""
-            return re.sub(u'\s', u'␣', s, flags=re.UNICODE)
+            u"""Replace spaces characters with open boxes.
+
+            Replace spaces characters with open boxes followed by a
+            zero width space so we break on thoses spaces/boxes.
+            """
+            return re.sub(u'\s', u'␣\u200b', s, flags=re.UNICODE)
 
         def good(s):
             return u"<span class=typeGood>{0}</span>".format(cgi.escape(s))
@@ -535,7 +539,10 @@ onkeypress="_typeAnsPress();">""", buf)
             return u"<span class=typeMissed>{0}</span>".format(
                 vspace(cgi.escape(s)))
         if given == correct:
-            res = u"<span class=allgood>{0}</span>".format(good(given))
+            # Just a check mark. No need to just repeat the right
+            # answer.
+            res = u"""<span class=allgood></span>\
+ <span class="checkmark decoration">{0}</span>""".format(good(u'✔'))
         else:
             ge = u""
             for ok, txt in givenElems:
@@ -551,7 +558,7 @@ onkeypress="_typeAnsPress();">""", buf)
                     ce += missed(txt)
             res = u"""
 
-<span class=given>{ge}</span><span class=arrow>→</span>\
+<span class=given>{ge}</span><span class="arrow decoration">→</span>\
 <span class=correct>{ce}</span>
 """.format(ge=ge, ce=ce)
         return u"<span id=typeans>{rs}</span>".format(rs=res)
