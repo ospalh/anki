@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+import re
 import sys
-from anki.hooks import runHook
+import urllib
 
-from PyQt4.QtCore import pyqtSlot, QObject, Qt, SIGNAL
+from PyQt4.QtCore import pyqtSlot, QObject, Qt, QUrl, SIGNAL
 from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QPainter
 from PyQt4.QtWebKit import QWebPage, QWebView
 
+from anki.hooks import runHook
 from anki.lang import _
-from aqt.utils import openLink
 from anki.utils import isMac, isWin
+from aqt.utils import openLink
 import anki.js
 
 
@@ -116,10 +118,18 @@ class AnkiWebView(QWebView):
         # handler should return true if event should be swallowed
         self._keyHandler = handler
 
+
     def setHtml(self, html, loadCB=None):
         self.key = None
         self._loadFinishedCB = loadCB
-        QWebView.setHtml(self, html)
+        try:
+            base_url = QUrl(urllib.unquote(re.search(
+                u'<base href="(.*?)">', html).group(1)) + "__viewer__.html")
+        except AttributeError:
+            QWebView.setHtml(self, html)
+        else:
+            QWebView.setHtml(self, html, base_url)
+
 
     def stdHtml(self, body, css="", bodyClass="", loadCB=None, js=None,
                 head=""):
