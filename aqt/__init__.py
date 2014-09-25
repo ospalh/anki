@@ -22,6 +22,7 @@ import optparse
 import os
 import sys
 import tempfile
+import traceback
 
 from PyQt4.QtCore import QCoreApplication, QEvent, QIODevice, \
     QSharedMemory, QTranslator, Qt, QT_VERSION_STR, SIGNAL
@@ -229,7 +230,7 @@ def parseArgs(argv):
 def run():
     try:
         _run()
-    except Exception, e:
+    except:
         QMessageBox.critical(None, "Startup Error",
                              "Please notify support of this error:\n\n"+
                              traceback.format_exc())
