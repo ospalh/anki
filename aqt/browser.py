@@ -448,10 +448,6 @@ class Browser(QMainWindow):
         self.delCut1 = QShortcut(QKeySequence("Delete"), self)
         self.delCut1.setAutoRepeat(False)
         c(self.delCut1, SIGNAL("activated()"), self.deleteNotes)
-        if isMac:
-            self.delCut2 = QShortcut(QKeySequence("Backspace"), self)
-            self.delCut2.setAutoRepeat(False)
-            c(self.delCut2, SIGNAL("activated()"), self.deleteNotes)
         # add-on hook
         runHook('browser.setupMenus', self)
         self.mw.maybeHideAccelerators(self)
@@ -1863,6 +1859,7 @@ class FavouritesLineEdit(QLineEdit):
         name = dlg.textValue()
         if ok:
             self.mw.col.conf['savedFilters'][name] = txt
+            self.mw.col.setMod()
 
         self.updateButton()
         self.browser.setupTree()
@@ -1873,5 +1870,6 @@ class FavouritesLineEdit(QLineEdit):
             self, _('Remove search'), msg, QMessageBox.Yes, QMessageBox.No)
         if ok == QMessageBox.Yes:
             self.mw.col.conf['savedFilters'].pop(self.name, None)
+            self.mw.col.setMod()
             self.updateButton()
             self.browser.setupTree()
