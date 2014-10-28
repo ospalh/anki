@@ -30,7 +30,7 @@ src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
         """(?i)(<object[^>]+\
 data=(?P<str>["'])(?P<fname>[^>]+?)(?P=str)[^>]*>)""",
         """(?i)(<object[^>]+\
-src=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
+data=(?!['"])(?P<fname>[^ >]+)[^>]*?>)""",
 
     ]
     regexps = soundRegexps + imgRegexps
