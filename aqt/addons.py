@@ -12,10 +12,11 @@ import traceback
 from anki.lang import _
 from aqt.downloader import download
 from aqt.utils import askUser, isWin, openFolder, openLink, restoreGeom, \
-    saveGeom, showInfo
+    saveGeom, showInfo, showWarning
 from zipfile import ZipFile
 import aqt
 import aqt.forms
+from anki.lang import _
 
 # in the future, it would be nice to save the addon id and unzippped file list
 # to the config so that we can clear up all files and check for updates
@@ -129,7 +130,11 @@ class AddonManager(object):
             open(path, "wb").write(data)
             return
         # .zip file
-        z = ZipFile(StringIO(data))
+        try:
+            z = ZipFile(StringIO(data))
+        except zipfile.BadZipFile:
+            showWarning(_("The download was corrupt. Please try again."))
+            return
         base = self.addonsFolder()
         for n in z.namelist():
             if n.endswith("/"):

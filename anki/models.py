@@ -309,7 +309,7 @@ and notes.mid = ? and cards.ord = ?""", m['id'], ord)
 
     def renameField(self, m, field, newName):
         self.col.modSchema(check=True)
-        pat = r'{{(.*)([:#^/]|[^:#/^}][^:}]*?:|)%s}}'
+        pat = r'{{([^{}]*)([:#^/]|[^:#/^}][^:}]*?:|)%s}}'
 
         def wrap(txt):
             def repl(match):
