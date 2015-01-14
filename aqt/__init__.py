@@ -242,10 +242,11 @@ def parseArgs(argv):
 def run():
     try:
         _run()
+    except Exception as e:
+        print('startup error:')
+        traceback.format_exc()
     except:
-        QMessageBox.critical(None, "Startup Error",
-                             "Please notify support of this error:\n\n"+
-                             traceback.format_exc())
+        print('What.')
 
 def _run():
     global mw
