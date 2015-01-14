@@ -1188,6 +1188,9 @@ Please ensure a profile is open and Anki is not busy, then try again."""),
             self.raise_()
         if buf == "raise":
             return
+        if buf == "sync":
+            self.onSync()
+            return
         # import
         if not isinstance(buf, unicode):
             buf = unicode(buf, "utf8", "ignore")

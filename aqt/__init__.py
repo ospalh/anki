@@ -149,7 +149,16 @@ class AnkiApp(QApplication):
         self._shmem = QSharedMemory(self.key)
         self.alreadyRunning = self._shmem.attach()
 
-    def secondInstance(self, decks_to_load):
+    def secondInstance(self, decks_to_load, opts):
+        if opts.sync:
+            if self.alreadyRunning:
+                self.sendMsg('sync')
+            else:
+                print(u'No runnig instance found. Not syncing.')
+            return True
+            # “sync” means we want to sync the other instance, i.e. we
+            # *are* the second instance, even if there is no first
+            # instance.
         if not self.alreadyRunning:
             # use a 1 byte shared memory instance to signal we exist
             if not self._shmem.create(1):
@@ -163,14 +172,14 @@ class AnkiApp(QApplication):
             print 'key:', self.key
             print 'server listens on:', self._srv.serverName()
         else:
-            print "Raising existing window."
-            # Treat all remaining args as decks to load. If there are
-            # none, send a blank screen to just raise the existing
-            # window
             if decks_to_load:
+                # Treat all remaining args as decks to load. If there are
+                # none, send a blank screen to just raise the existing
+                # window
                 for deck_to_load in decks_to_load:
                     self.sendMsg(os.path.abspath(deck_to_load))
             else:
+                print "Raising existing window."
                 self.sendMsg('raise')
         # Always return a Bolean
         return self.alreadyRunning
@@ -224,6 +233,9 @@ def parseArgs(argv):
     parser.add_option("-b", "--base", help="path to base folder")
     parser.add_option("-p", "--profile", help="profile name to load")
     parser.add_option("-l", "--lang", help="interface language (en, de, etc)")
+    parser.add_option(
+        "-s", "--sync", action="store_true", dest="sync",
+        help="sync running instance")
     return parser.parse_args(argv[1:])
 
 
@@ -274,7 +286,7 @@ def _run():
     app = AnkiApp(sys.argv, opts.base)
     QCoreApplication.setApplicationName("Anki")
     # Pass along the remaining args.
-    if app.secondInstance(args):
+    if app.secondInstance(args, opts):
         # we've signaled the primary instance, so we should close
         return
 
