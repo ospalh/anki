@@ -392,8 +392,8 @@ select id from cards where did = ? and queue = 0 order by due limit ?""",
     def _updateNewCardRatio(self):
         if self.col.conf['newSpread'] == NEW_CARDS_DISTRIBUTE:
             if self.newCount:
-                self.newCardModulus = (
-                    (self.newCount + self.revCount) // self.newCount)
+                self.newCardModulus = \
+                    (self.newCount + self.revCount) // (self.newCount + 1)
                 # if there are cards to review, ensure modulo >= 2
                 if self.revCount:
                     self.newCardModulus = max(2, self.newCardModulus)
