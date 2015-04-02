@@ -26,9 +26,8 @@ from aqt.utils import shortcut, showInfo, showWarning, getBase, getFile, \
 import aqt
 import anki.js
 
-pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg")
-audio = (
-    "wav", "mp3", "ogg", "flac", "mp4", "swf", "mov", "mpeg", "mkv", "m4a")
+pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg", "webp")
+audio =  ("wav", "mp3", "ogg", "flac", "mp4", "swf", "mov", "mpeg", "mkv", "m4a", "3gp", "spx", "oga")
 
 _html = """
 <!doctype html>
