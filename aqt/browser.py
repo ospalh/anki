@@ -1862,7 +1862,7 @@ class FavouritesLineEdit(QLineEdit):
             self.mw.col.setMod()
 
         self.updateButton()
-        self.browser.setupTree()
+        self.browser.buildTree()
 
     def deleteClicked(self):
         msg = _('Remove "%s" from your saved searches?') % self.name
@@ -1872,4 +1872,4 @@ class FavouritesLineEdit(QLineEdit):
             self.mw.col.conf['savedFilters'].pop(self.name, None)
             self.mw.col.setMod()
             self.updateButton()
-            self.browser.setupTree()
+            self.browser.buildTree()
