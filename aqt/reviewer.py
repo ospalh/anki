@@ -33,7 +33,7 @@ class Reviewer(object):
         self.hadCardQueue = False
         self._answeredIds = []
         self._recordedAudio = None
-        self.typeCorrect = None  # web init happens before this is set
+        self.typeCorrect = None # web init happens before this is set
         self.state = None
         self.bottom = aqt.toolbar.BottomBar(mw, mw.bottomWeb)
         # qshortcut so we don't autorepeat
@@ -73,13 +73,12 @@ class Reviewer(object):
     def nextCard(self):
         elapsed = self.mw.col.timeboxReached()
         if elapsed:
-            part1 = ngettext("%d card studied in",
-                             "%d cards studied in", elapsed[1]) % elapsed[1]
+            part1 = ngettext("%d card studied in", "%d cards studied in", elapsed[1]) % elapsed[1]
             mins = int(round(elapsed[0]/60))
             part2 = ngettext("%s minute.", "%s minutes.", mins) % mins
             fin = _("Finish")
-            diag = askUserDialog(
-                "%s %s" % (part1, part2), [_("Continue"), fin])
+            diag = askUserDialog("%s %s" % (part1, part2),
+                             [_("Continue"), fin])
             diag.setIcon(QMessageBox.Information)
             if diag.run() == fin:
                 return self.mw.moveToState("deckBrowser")
@@ -207,7 +206,8 @@ function _typeAnsPress() {
         base = getBase(self.mw.col)
         # main window
         self.web.stdHtml(self._revHtml, self._styles(),
-                         loadCB=lambda x: self._showQuestion(), head=base)
+            loadCB=lambda x: self._showQuestion(),
+            head=base)
         # show answer / ease buttons
         self.bottom.web.show()
         self.bottom.web.stdHtml(
@@ -236,7 +236,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             playFromText(q)
         # render & update bottom
         q = self._mungeQA(q)
-        klass = "card card%d" % (c.ord + 1)
+        klass = "card card%d" % (c.ord+1)
         self.web.eval("_updateQA(%s, false, '%s');" % (json.dumps(q), klass))
         self._toggleStar()
         if self._bottomReady:
@@ -374,7 +374,7 @@ img {
 
 }
 .marked {
-  position:absolute;
+  position: fixed;
   right: 7px;
   top: 7px;
   display: none;
