@@ -2,17 +2,14 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from PyQt4.QtCore import QPoint, Qt, SIGNAL
-from PyQt4.QtGui import QCursor, QMenu
-
-from anki.errors import DeckRenameError
-from anki.lang import _, ngettext
-from anki.sound import clearAudioQueue
-from anki.utils import ids2str, isMac, fmtTimeSpan
-from aqt.utils import askUser, getOnlyText, openHelp, openLink, shortcut, \
-    showWarning
+from aqt.qt import *
+from aqt.utils import askUser, getOnlyText, openLink, showWarning, shortcut, \
+    openHelp
+from anki.utils import isMac, ids2str, fmtTimeSpan
 import anki.js
+from anki.errors import DeckRenameError
 import aqt
+from anki.sound import clearAudioQueue
 
 
 def nonzero_color(cnt, colour):
@@ -198,7 +195,6 @@ body { margin: 1em; -webkit-user-select: none; }
 
         py.link("drag:" + draggedDeckId + "," + ontoDeckId);
     }
-
 </script>
 """
 
@@ -307,7 +303,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
                 return buff
         prefix = u"⌄"
         if self.mw.col.decks.get(did)['collapsed']:
-            prefix = u"➤"
+            prefix = u"➢"
 
         def indent():
             return "&nbsp;" * 6 * depth
@@ -331,22 +327,21 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
  href='open:%d'>%s</a></td>""" % (
             indent(), collapse, extraclass, did, name)
         # due counts
-        buf += """<td align=right>{}</td><td align=right>{}</td>\
+        buf += u"""<td align=right>{}</td><td align=right>{}</td>\
 <td align=right>{}</td>""".format(
             nonzero_color(new, "#009"),
             nonzero_color(lrn, "#900"),
             nonzero_color(due, "#070"))
         # options
-        buf += "<td align=right class=opts>%s</td></tr>" % self.mw.button(
+        buf += u"<td align=right class=opts>%s</td></tr>" % self.mw.button(
             link="opts:%d" % did,
-            name="<img valign=bottom src='qrc:/icons/gears.png'>&#9662;")
+            name=u"<img valign=bottom src='qrc:/icons/gears.png'>▾")
         # children
-        buf += self._renderDeckTree(children, depth + 1)
+        buf += self._renderDeckTree(children, depth+1)
         return buf
 
     def _topLevelDragRow(self):
-        return \
-            "<tr class='top-level-drag-row'><td colspan='6'>&nbsp;</td></tr>"
+        return "<tr class='top-level-drag-row'><td colspan='6'>&nbsp;</td></tr>"
 
     def _dueImg(self, due, new):
         if due:
@@ -418,13 +413,12 @@ where id > ?""", (self.mw.col.sched.dayCutoff - 86400) * 1000)
                 "select count() from cards where did in {0} or "
                 "odid in {0}".format(ids2str(dids)))
             if cnt:
-                extra = ngettext(
-                    " It has %d card.", " It has %d cards.", cnt) % cnt
+                extra = ngettext(" It has %d card.", " It has %d cards.", cnt) % cnt
             else:
                 extra = None
         if deck['dyn'] or not extra or askUser(
-                (_("Are you sure you wish to delete %s?") % deck['name']) +
-                extra):
+            (_("Are you sure you wish to delete %s?") % deck['name']) +
+            extra):
             self.mw.progress.start(immediate=True)
             try:
                 parent_did = self.mw.col.decks.parents(did)[-1]['id']
