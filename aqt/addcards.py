@@ -10,7 +10,7 @@ from anki.hooks import addHook, remHook, runHook
 from anki.lang import _
 from anki.sound import clearAudioQueue
 from anki.utils import stripHTMLMedia, isMac
-from aqt.utils import addCloseShortcut, askUser, openHelp, restoreGeom, \
+from aqt.utils import addCloseShortcut, askUser, downArrow, openHelp, restoreGeom, \
     saveGeom, shortcut, showWarning, tooltip
 import aqt.deckchooser
 import aqt.editor
@@ -65,14 +65,17 @@ class AddCards(QDialog):
         # close
         self.closeButton = QPushButton(_("Close"))
         self.closeButton.setAutoDefault(False)
-        bb.addButton(self.closeButton, QDialogButtonBox.RejectRole)
+        bb.addButton(self.closeButton,
+                                        QDialogButtonBox.RejectRole)
         # help
         self.helpButton = QPushButton(_("Help"))
         self.helpButton.setAutoDefault(False)
-        bb.addButton(self.helpButton, QDialogButtonBox.HelpRole)
+        bb.addButton(self.helpButton,
+                                        QDialogButtonBox.HelpRole)
         self.connect(self.helpButton, SIGNAL("clicked()"), self.helpRequested)
         # history
-        b = bb.addButton(_("History") + u" ▾", ar)
+        b = bb.addButton(
+            _("History")+ u" "+downArrow(), ar)
         if isMac:
             sc = "Ctrl+Shift+H"
         else:
@@ -127,7 +130,7 @@ class AddCards(QDialog):
             a.connect(a, SIGNAL("triggered()"),
                       lambda nid=nid: self.editHistory(nid))
         runHook("AddCards.onHistory", self, m)
-        m.exec_(self.historyButton.mapToGlobal(QPoint(0, 0)))
+        m.exec_(self.historyButton.mapToGlobal(QPoint(0,0)))
 
     def editHistory(self, nid):
         browser = aqt.dialogs.open("Browser", self.mw)
@@ -145,9 +148,8 @@ class AddCards(QDialog):
         if '{{cloze:' in note.model()['tmpls'][0]['qfmt']:
             if not self.mw.col.models._availClozeOrds(
                     note.model(), note.joinedFields(), False):
-                if not askUser(_("""\
-You have a cloze deletion note type but have not made any cloze \
-deletions. Proceed?""")):
+                if not askUser(_("You have a cloze deletion note type "
+                "but have not made any cloze deletions. Proceed?")):
                     return
         cards = self.mw.col.addNote(note)
         if not cards:
@@ -175,7 +177,7 @@ question on all cards."""), help="AddItems")
     def keyPressEvent(self, evt):
         "Show answer on RET or register answer."
         if (evt.key() in (Qt.Key_Enter, Qt.Key_Return)
-                and self.editor.tags.hasFocus()):
+            and self.editor.tags.hasFocus()):
             evt.accept()
             return
         return QDialog.keyPressEvent(self, evt)
@@ -197,6 +199,6 @@ question on all cards."""), help="AddItems")
 
     def canClose(self):
         if (self.forceClose or self.editor.fieldsAreBlank() or
-                askUser(_("Close and lose current input?"))):
+            askUser(_("Close and lose current input?"))):
             return True
         return False

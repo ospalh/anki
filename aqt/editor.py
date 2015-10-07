@@ -15,6 +15,8 @@ import os
 import re
 import urllib
 import urllib2
+import ctypes
+import urllib
 
 from anki.hooks import runHook, runFilter
 from anki.lang import _
@@ -25,6 +27,7 @@ from aqt.utils import shortcut, showInfo, showWarning, getBase, getFile, \
     openHelp, tooltip
 import aqt
 import anki.js
+from BeautifulSoup import BeautifulSoup
 
 pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg", "webp")
 audio =  ("wav", "mp3", "ogg", "flac", "mp4", "swf", "mov", "mpeg", "mkv", "m4a", "3gp", "spx", "oga")
@@ -119,11 +122,11 @@ function onFocus(elem) {
     setTimeout(function () { caretToEnd() }, 1);
     // scroll if bottom of element off the screen
     function pos(obj) {
-        var cur = 0;
+    	var cur = 0;
         do {
           cur += obj.offsetTop;
          } while (obj = obj.offsetParent);
-        return cur;
+    	return cur;
     }
     var y = pos(elem);
     if ((window.pageYOffset+window.innerHeight) < (y+elem.offsetHeight) ||
@@ -276,7 +279,6 @@ document.onclick = function (evt) {
 </body></html>
 """
 
-
 # caller is responsible for resetting note on reset
 class Editor(object):
     def __init__(self, mw, widget, parentWindow, addMode=False):
@@ -331,7 +333,8 @@ class Editor(object):
             b.setFixedHeight(20)
             b.setFixedWidth(20)
         if not native:
-            b.setStyle(self.plastiqueStyle)
+            if self.plastiqueStyle:
+               b.setStyle(self.plastiqueStyle)
             b.setFocusPolicy(Qt.NoFocus)
         else:
             b.setAutoDefault(False)
@@ -351,33 +354,37 @@ class Editor(object):
     def setupButtons(self):
         self._buttons = {}
         # button styles for mac
-        self.plastiqueStyle = QStyleFactory.create("plastique")
-        if not self.plastiqueStyle:
-            # plastique was removed in qt5
-            self.plastiqueStyle = QStyleFactory.create("fusion")
-        self.widget.setStyle(self.plastiqueStyle)
+        if not isMac:
+            self.plastiqueStyle = QStyleFactory.create("plastique")
+            if not self.plastiqueStyle:
+                # plastique was removed in qt5
+                self.plastiqueStyle = QStyleFactory.create("fusion")
+            self.widget.setStyle(self.plastiqueStyle)
+        else:
+            self.plastiqueStyle = None
         # icons
         self.iconsBox = QHBoxLayout()
         if not isMac:
             self.iconsBox.setMargin(6)
+            self.iconsBox.setSpacing(0)
         else:
             self.iconsBox.setMargin(0)
-        self.iconsBox.setSpacing(0)
+            self.iconsBox.setSpacing(14)
         self.outerLayout.addLayout(self.iconsBox)
         b = self._addButton
         b("fields", self.onFields, "",
           shortcut(_("Customize Fields")), size=False, text=_("Fields..."),
           native=True, canDisable=False)
-        self.iconsBox.addItem(QSpacerItem(6, 1, QSizePolicy.Fixed))
+        self.iconsBox.addItem(QSpacerItem(6,1, QSizePolicy.Fixed))
         b("layout", self.onCardLayout, _("Ctrl+L"),
           shortcut(_("Customize Cards (Ctrl+L)")),
           size=False, text=_("Cards..."), native=True, canDisable=False)
         # align to right
-        self.iconsBox.addItem(QSpacerItem(20, 1, QSizePolicy.Expanding))
+        self.iconsBox.addItem(QSpacerItem(20,1, QSizePolicy.Expanding))
         b("text_bold", self.toggleBold, _("Ctrl+B"), _("Bold text (Ctrl+B)"),
           check=True)
-        b("text_italic", self.toggleItalic, _("Ctrl+I"),
-          _("Italic text (Ctrl+I)"), check=True)
+        b("text_italic", self.toggleItalic, _("Ctrl+I"), _("Italic text (Ctrl+I)"),
+          check=True)
         b("text_under", self.toggleUnderline, _("Ctrl+U"),
           _("Underline text (Ctrl+U)"), check=True)
         b("text_super", self.toggleSuper, _("Ctrl+Shift+="),
@@ -437,11 +444,11 @@ class Editor(object):
             ord = 0
         # passing parentWindow leads to crash on windows at the moment
         if isWin:
-            parent = None
+            parent=None
         else:
-            parent = self.parentWindow
+            parent=self.parentWindow
         CardLayout(self.mw, self.note, ord=ord, parent=parent,
-                   addMode=self.addMode)
+               addMode=self.addMode)
         self.loadNote()
         if isWin:
             self.parentWindow.activateWindow()
@@ -469,9 +476,8 @@ class Editor(object):
                 self.disableButtons()
                 # run any filters
                 if runFilter(
-                        "editFocusLost", False, self.note, self.currentField):
+                    "editFocusLost", False, self.note, self.currentField):
                     # something updated the note; schedule reload
-
                     def onUpdate():
                         if not self.note:
                             return
@@ -839,15 +845,16 @@ to a cloze type first, via Edit>Change Note Type."""))
 
     def isURL(self, s):
         s = s.lower()
-        return (s.startswith("http://") or s.startswith("https://")
-                or s.startswith("ftp://") or s.startswith("file://"))
+        return (s.startswith("http://")
+            or s.startswith("https://")
+            or s.startswith("ftp://")
+            or s.startswith("file://"))
 
     def _retrieveURL(self, url):
         "Download file into media folder and return local filename or None."
-        # urllib doesn't understand percent-escaped utf8, but requires
-        # things like '#' to be escaped. we don't try to unquote the
-        # incoming URL, because we should only be receiving file://
-        # urls from url mime, which is unquoted
+        # urllib doesn't understand percent-escaped utf8, but requires things like
+        # '#' to be escaped. we don't try to unquote the incoming URL, because
+        # we should only be receiving file:// urls from url mime, which is unquoted
         if url.lower().startswith("file://"):
             url = url.replace("%", "%25")
             url = url.replace("#", "%23")
@@ -883,8 +890,7 @@ to a cloze type first, via Edit>Change Note Type."""))
                 new = []
                 for attr in attrs:
                     sattr = attr.strip()
-                    if sattr and sattr not in (
-                            "font-style: normal", "font-weight: normal"):
+                    if sattr and sattr not in ("font-style: normal", "font-weight: normal"):
                         new.append(sattr)
                 doc.span['style'] = ";".join(new)
             # filter out implicit formatting from webkit
@@ -1007,7 +1013,6 @@ to a cloze type first, via Edit>Change Note Type."""))
 # Pasting, drag & drop, and keyboard layouts
 ######################################################################
 
-
 class EditorWebView(AnkiWebView):
 
     def __init__(self, parent, editor):
@@ -1104,8 +1109,7 @@ class EditorWebView(AnkiWebView):
         clip.setMimeData(self.savedClip, mode=mode)
 
     def saveClip(self, mode):
-        # We don't own the clipboard object, so we need to copy it or
-        # we'll crash.
+        # we don't own the clipboard object, so we need to copy it or we'll crash
         mime = self.editor.mw.app.clipboard().mimeData(mode=mode)
         n = QMimeData()
         if mime.hasText():
@@ -1179,21 +1183,19 @@ class EditorWebView(AnkiWebView):
         html = mime.html()
         newMime = QMimeData()
         if self.strip and not html.startswith("<!--anki-->"):
-            # Special case for google images: if after stripping
-            # there's no text and there are image links, we'll paste
-            # those as html instead
+            # special case for google images: if after stripping there's no text
+            # and there are image links, we'll paste those as html instead
             if not stripHTML(html).strip():
                 newHtml = ""
                 mid = self.editor.note.mid
                 for url in self.editor.mw.col.media.filesInStr(
-                        mid, html, includeRemote=True):
+                    mid, html, includeRemote=True):
                     newHtml += self.editor.urlToLink(url)
                 if not newHtml and mime.hasImage():
                     return self._processImage(mime)
                 newMime.setHtml(newHtml)
             else:
-                # Use .text() if available so newlines are preserved;
-                # otherwise strip
+                # use .text() if available so newlines are preserved; otherwise strip
                 if mime.hasText():
                     return self._processText(mime)
                 else:

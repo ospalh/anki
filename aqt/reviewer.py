@@ -7,7 +7,9 @@ import HTMLParser
 import cgi
 import difflib
 import re
+import cgi
 import unicodedata as ucd
+import HTMLParser
 
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui import QCursor, QKeySequence, QMenu, QMessageBox, QShortcut
@@ -18,7 +20,7 @@ from anki.sound import clearAudioQueue, play, playFromText
 from anki.utils import isMac, json, stripHTML
 from aqt.sound import getAudio
 from aqt.utils import askUser, askUserDialog, getBase, mungeQA, openLink, \
-    tooltip
+    tooltip, downArrow
 import aqt
 
 
@@ -50,7 +52,7 @@ class Reviewer(object):
         if isMac:
             self.bottom.web.setFixedHeight(46)
         else:
-            self.bottom.web.setFixedHeight(54 + self.mw.fontHeightDelta * 4)
+            self.bottom.web.setFixedHeight(52+self.mw.fontHeightDelta*4)
         self.bottom.web.setLinkHandler(self._linkHandler)
         self._reps = None
         self.nextCard()
@@ -452,7 +454,6 @@ onkeypress="_typeAnsPress();">""", buf)
         # compare with typed answer
         res = self.correct(given, cor, showBad=False)
         # and update the type answer area
-
         def repl(match):
             # can't pass a string in directly, and can't use re.escape as it
             # escapes too much
@@ -463,7 +464,6 @@ onkeypress="_typeAnsPress();">""", buf)
         matches = re.findall("\{\{c%s::(.+?)\}\}" % idx, txt)
         if not matches:
             return None
-
         def noHint(txt):
             if "::" in txt:
                 return txt.split("::")[0]
@@ -490,11 +490,9 @@ onkeypress="_typeAnsPress();">""", buf)
         givenPoint = 0
         correctPoint = 0
         offby = 0
-
         def logBad(old, new, str, array):
             if old != new:
                 array.append((False, str[old:new]))
-
         def logGood(start, cnt, str, array):
             if cnt:
                 array.append((True, str[start:start+cnt]))
@@ -506,8 +504,8 @@ onkeypress="_typeAnsPress();">""", buf)
             # log any proceeding bad elems
             logBad(givenPoint, x, given, givenElems)
             logBad(correctPoint, y, correct, correctElems)
-            givenPoint = x + cnt
-            correctPoint = y + cnt
+            givenPoint = x+cnt
+            correctPoint = y+cnt
             # log the match
             logGood(x, cnt, given, givenElems)
             logGood(y, cnt, correct, correctElems)
@@ -615,7 +613,7 @@ button#defease {font-weight: bold; text-shadow: 1px 1px 4px #666;}
 </td>
 <td width=50 align=right valign=top class=stat><span id=time class=stattxt>
 </span><br>
-<button onclick="py.link('more');">%(more)s &#9662;</button>
+<button onclick="py.link('more');">%(more)s %(downArrow)s</button>
 </td>
 </tr>
 </table>
@@ -663,7 +661,9 @@ function showAnswer(txt) {
 </script>
 """ % dict(rem=self._remaining(), edit=_("Edit"),
            editkey=_("Shortcut key: %s") % "E",
-           more=_("More"), time=self.card.timeTaken() // 1000)
+           more=_("More"),
+           downArrow=downArrow(),
+           time=self.card.timeTaken() // 1000)
 
     def _showAnswerButton(self):
         self._bottomReady = True
@@ -792,7 +792,7 @@ onclick='py.link("ease{e}");'>{t}</button></td>'''.format(
             a = m.addAction(label)
             a.setShortcut(QKeySequence(scut))
             a.connect(a, SIGNAL("triggered()"), func)
-        runHook("Reviewer.contextMenuEvent", self, m)
+        runHook("Reviewer.contextMenuEvent",self,m)
         m.exec_(QCursor.pos())
 
     def onOptions(self):

@@ -1,4 +1,5 @@
 # Copyright: Damien Elmes <anki@ichi2.net>
+# -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import os
@@ -425,6 +426,12 @@ def addCloseShortcut(widg):
     widg._closeShortcut = QShortcut(QKeySequence("Ctrl+W"), widg)
     widg.connect(widg._closeShortcut, SIGNAL("activated()"),
                  widg, SLOT("reject()"))
+
+def downArrow():
+    if isWin:
+        return u"▼"
+    # windows 10 is lacking the smaller arrow on English installs
+    return u"▾"
 
 # Tooltips
 ######################################################################
