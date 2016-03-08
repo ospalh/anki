@@ -9,6 +9,7 @@ from PyQt4.QtGui import QDesktopServices, QDialog, QDialogButtonBox, \
     QPushButton
 
 from anki.exporting import exporters
+from anki.hooks import addHook, remHook
 from anki.lang import _, ngettext
 from aqt.utils import getSaveFile, tooltip, showWarning, askUser, \
     checkInvalidFilename
@@ -66,8 +67,8 @@ class ExportDialog(QDialog):
         else:
             name = self.decks[self.frm.deck.currentIndex()]
             self.exporter.did = self.col.decks.id(name)
-        if self.isApkg and self.exporter.includeSched \
-                and not self.exporter.did:
+        if (self.isApkg and self.exporter.includeSched and not
+            self.exporter.did):
             verbatim = True
             # it's a verbatim apkg export, so place on desktop instead of
             # choosing file; use homedir if no desktop
@@ -90,9 +91,8 @@ class ExportDialog(QDialog):
             # Get deck name and remove invalid filename characters
             deck_name = self.decks[self.frm.deck.currentIndex()]
             deck_name = re.sub('[\\\\/?<>:*|"^]', '_', deck_name)
-            filename = os.path.join(
-                aqt.mw.pm.base,
-                u'{0}{1}'.format(deck_name, self.exporter.ext))
+            filename = os.path.join(aqt.mw.pm.base,
+                                    u'{0}{1}'.format(deck_name, self.exporter.ext))
             while 1:
                 file = getSaveFile(self, _("Export"), "export",
                                    self.exporter.key, self.exporter.ext,
@@ -108,11 +108,17 @@ class ExportDialog(QDialog):
             try:
                 f = open(file, "wb")
                 f.close()
-            except (OSError, IOError) as e:
+            except (OSError, IOError), e:
                 showWarning(_("Couldn't save file: %s") % unicode(e))
             else:
                 os.unlink(file)
+                exportedMedia = lambda cnt: self.mw.progress.update(
+                        label=ngettext("Exported %d media file",
+                                       "Exported %d media files", cnt) % cnt
+                        )
+                addHook("exportedMediaFiles", exportedMedia)
                 self.exporter.exportInto(file)
+                remHook("exportedMediaFiles", exportedMedia)
                 if verbatim:
                     if usingHomedir:
                         msg = _("A file called %s was saved in your home directory.")

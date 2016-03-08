@@ -26,11 +26,13 @@ class Exporter(object):
 
     def escapeText(self, text):
         "Escape newlines, tabs, CSS and quotechar."
-        text = text.replace("\n", "<br>")
+        # fixme: we should probably quote fields with newlines
+        # instead of converting them to spaces
+        text = text.replace("\n", " ")
         text = text.replace("\t", " " * 8)
         text = re.sub("(?i)<style>.*?</style>", "", text)
         if "\"" in text:
-            text = "\"" + text.replace("\"", "\"\"") + "\""
+        	text = "\"" + text.replace("\"", "\"\"") + "\""
         return text
 
     def cardIds(self):
@@ -56,8 +58,7 @@ class TextCardExporter(Exporter):
 
     def doExport(self, file):
         ids = sorted(self.cardIds())
-        # strids = ids2str(ids)
-
+        strids = ids2str(ids)
         def esc(s):
             # strip off the repeated question in answer if exists
             s = re.sub("(?si)^.*<hr id=answer>\n*", "", s)
@@ -68,7 +69,6 @@ class TextCardExporter(Exporter):
             out += esc(c.q())
             out += "\t" + esc(c.a()) + "\n"
         file.write(out.encode("utf-8"))
-
 
 # Notes as TSV
 ######################################################################
@@ -105,7 +105,6 @@ where cards.id in %s)""" % ids2str(cardIds)):
         out = "\n".join(data)
         file.write(out.encode("utf-8"))
 
-
 # Anki decks
 ######################################################################
 # media files are stored in self.mediaFiles, but not exported.
@@ -137,7 +136,7 @@ class AnkiExporter(Exporter):
         nids = {}
         data = []
         for row in self.src.db.execute(
-                "select * from cards where id in " + ids2str(cids)):
+            "select * from cards where id in "+ids2str(cids)):
             nids[row[1]] = True
             data.append(row)
         self.dst.db.executemany(
@@ -147,7 +146,7 @@ class AnkiExporter(Exporter):
         strnids = ids2str(nids.keys())
         notedata = []
         for row in self.src.db.all(
-                "select * from notes where id in "+strnids):
+            "select * from notes where id in "+strnids):
             # remove system tags if not exporting scheduling info
             if not self.includeSched:
                 row = list(row)
@@ -157,12 +156,12 @@ class AnkiExporter(Exporter):
             "insert into notes values (?,?,?,?,?,?,?,?,?,?,?)",
             notedata)
         # models used by the notes
-        mids = self.dst.db.list(
-            "select distinct mid from notes where id in " + strnids)
+        mids = self.dst.db.list("select distinct mid from notes where id in "+
+                                strnids)
         # card history and revlog
         if self.includeSched:
             data = self.src.db.all(
-                "select * from revlog where cid in " + ids2str(cids))
+                "select * from revlog where cid in "+ids2str(cids))
             self.dst.db.executemany(
                 "insert into revlog values (?,?,?,?,?,?,?,?,?)",
                 data)
@@ -210,7 +209,12 @@ class AnkiExporter(Exporter):
             if self.mediaDir:
                 for fname in os.listdir(self.mediaDir):
                     if fname.startswith("_"):
+                        # Scan all models in mids for reference to fname
+                        for m in self.src.models.all():
+                            if int(m['id']) in mids:
+                                if self._modelHasMedia(m, fname):
                         media[fname] = True
+                                    break
         self.mediaFiles = media.keys()
         self.dst.crt = self.src.crt
         # todo: tags?
@@ -223,10 +227,19 @@ class AnkiExporter(Exporter):
         # overwrite to apply customizations to the deck before it's closed,
         # such as update the deck description
         pass
-
+    
     def removeSystemTags(self, tags):
         return self.src.tags.remFromStr("marked leech", tags)
 
+    def _modelHasMedia(self, model, fname):
+        # First check the styling
+        if fname in model["css"]:
+            return True
+        # If no reference to fname then check the templates as well
+        for t in model["tmpls"]:
+            if fname in t["qfmt"] or fname in t["afmt"]:
+                return True
+        return False
 
 # Packaged Anki decks
 ######################################################################
@@ -241,7 +254,7 @@ class AnkiPackageExporter(AnkiExporter):
 
     def exportInto(self, path):
         # open a zip file
-        z = zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED)
+        z = zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED, allowZip64=True)
         # if all decks and scheduling included, full export
         if self.includeSched and not self.did:
             media = self.exportVerbatim(z)
@@ -261,11 +274,12 @@ class AnkiPackageExporter(AnkiExporter):
         self.prepareMedia()
         media = {}
         for c, file in enumerate(self.mediaFiles):
-            c = str(c)
+            cStr = str(c)
             mpath = os.path.join(self.mediaDir, file)
             if os.path.exists(mpath):
-                z.write(mpath, c)
-                media[c] = file
+                z.write(mpath, cStr, zipfile.ZIP_STORED)
+                media[cStr] = file
+                runHook("exportedMediaFiles", c)
         # tidy up intermediate files
         os.unlink(colfile)
         p = path.replace(".apkg", ".media.db2")
@@ -287,18 +301,19 @@ class AnkiPackageExporter(AnkiExporter):
         media = {}
         mdir = self.col.media.dir()
         for c, file in enumerate(os.listdir(mdir)):
-            c = str(c)
+            cStr = str(c)
             mpath = os.path.join(mdir, file)
             if os.path.exists(mpath):
-                z.write(mpath, c)
-                media[c] = file
+                z.write(mpath, cStr, zipfile.ZIP_STORED)
+                media[cStr] = file
+                runHook("exportedMediaFiles", c)
+
         return media
 
     def prepareMedia(self):
         # chance to move each file in self.mediaFiles into place before media
         # is zipped up
         pass
-
 
 # Export modules
 ##########################################################################
