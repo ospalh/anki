@@ -32,7 +32,7 @@ class Exporter(object):
         text = text.replace("\t", " " * 8)
         text = re.sub("(?i)<style>.*?</style>", "", text)
         if "\"" in text:
-        	text = "\"" + text.replace("\"", "\"\"") + "\""
+            text = "\"" + text.replace("\"", "\"\"") + "\""
         return text
 
     def cardIds(self):
@@ -213,7 +213,7 @@ class AnkiExporter(Exporter):
                         for m in self.src.models.all():
                             if int(m['id']) in mids:
                                 if self._modelHasMedia(m, fname):
-                        media[fname] = True
+                                    media[fname] = True
                                     break
         self.mediaFiles = media.keys()
         self.dst.crt = self.src.crt
@@ -227,7 +227,7 @@ class AnkiExporter(Exporter):
         # overwrite to apply customizations to the deck before it's closed,
         # such as update the deck description
         pass
-    
+
     def removeSystemTags(self, tags):
         return self.src.tags.remFromStr("marked leech", tags)
 
