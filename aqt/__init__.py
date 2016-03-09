@@ -240,15 +240,6 @@ def parseArgs(argv):
 
 
 def run():
-    try:
-        _run()
-    except Exception as e:
-        print('startup error:')
-        traceback.format_exc()
-    except:
-        print('What.')
-
-def _run():
     global mw
     from anki.utils import isMac
 
