@@ -214,6 +214,13 @@ def _run():
 
     # work around pyqt loading wrong GL library
     if isLin:
+        # Use software aceleration, as suggested by
+        # https://stackoverflow.com/questions/35410566/qtwebengine-demo-application-crashes#38401190
+        # QApplication.setAttribute(Qt.AA_UseDesktopOpenGL)
+        # QApplication.setAttribute(Qt.AA_UseSoftwareOpenGL)
+        QApplication.setAttribute(Qt.AA_UseDesktopOpenGL)
+        QCoreApplication.setAttribute(Qt.AA_UseDesktopOpenGL)
+        QGuiApplication.setAttribute(Qt.AA_UseDesktopOpenGL)
         import ctypes
         ctypes.CDLL('libGL.so.1', ctypes.RTLD_GLOBAL)
 
