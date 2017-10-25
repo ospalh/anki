@@ -158,13 +158,11 @@ class AnkiWebView(QWebEngineView):
                 urllib.parse.unquote(
                     re.search('<base href="(.*?)">', html).group(1)) +
                 "__viewer__.html")
-            print("base_url: {}".format(base_url))
         except AttributeError as ae:
-            print("AtributeError: {}".format(ae))
             self._page.setHtml(html)
         else:
             self._page.setHtml(html, base_url)
-            # work around webengine stealing focus on setHtml()
+        # work around webengine stealing focus on setHtml()
         if oldFocus:
             oldFocus.setFocus()
 
