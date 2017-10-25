@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+import re
 import sys
 import math
+import urllib.parse
 from anki.hooks import runHook
 from aqt.qt import *
 from aqt.utils import openLink, showWarning
@@ -151,8 +153,18 @@ class AnkiWebView(QWebEngineView):
         app = QApplication.instance()
         oldFocus = app.focusWidget()
         self._domDone = False
-        self._page.setHtml(html)
-        # work around webengine stealing focus on setHtml()
+        try:
+            base_url = QUrl(
+                urllib.parse.unquote(
+                    re.search('<base href="(.*?)">', html).group(1)) +
+                "__viewer__.html")
+            print("base_url: {}".format(base_url))
+        except AttributeError as ae:
+            print("AtributeError: {}".format(ae))
+            self._page.setHtml(html)
+        else:
+            self._page.setHtml(html, base_url)
+            # work around webengine stealing focus on setHtml()
         if oldFocus:
             oldFocus.setFocus()
 
@@ -220,7 +232,7 @@ border-radius:5px; font-family: Helvetica }"""
 body {{ zoom: {self.zoomFactor()}; {fontspec} }}
 {buttonspec}
 </style>
-  
+
 {head}
 </head>
 
